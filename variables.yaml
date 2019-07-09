@@ -1,0 +1,15 @@
+---
+name: var1
+type: real
+initialState: 0
+lowerLimit: 0
+upperLimit: 10
+
+---
+name: var2
+type: binary
+initialState: 0
+lowerLimit: 0
+upperLimit: 1
+
+...

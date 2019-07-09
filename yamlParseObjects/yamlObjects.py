@@ -8,3 +8,6 @@ class simulationConfig():
     def simfunc(self):
         print('This is from the simulation function...')
         return 
+
+    
+    
