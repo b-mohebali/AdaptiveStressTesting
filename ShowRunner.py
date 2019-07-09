@@ -1,7 +1,6 @@
 from yamlParseObjects.yamlObjects import *
 
 
-myObj = simulationConfig()
-
-myObj.simfunc()
+simConfig = simulationConfig('simulation.yaml')
+print(simConfig.name)
 
