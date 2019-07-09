@@ -11,10 +11,7 @@ class simulationConfig():
         self.eventWindowStart = yamlObj['eventWindowStart']
         self.eventWindowEnd = yamlObj['eventWindowEnd']
         self.description = yamlObj['description'] if 'description' in yamlObj else None
-
-
-    
-
+        self.timeStep = yamlObj['timeStep'] if 'timeStep' in yamlObj else 0.05
 
 class variableConfig():
 
@@ -24,6 +21,7 @@ class variableConfig():
         self.varType = varType
         self.lowerLimit = lowerLimit
         self.upperLimit = upperLimit
+
 
 def getAllVariableConfigs(yamlFileAddress):
     with open(yamlFileAddress,'rt') as fp:
