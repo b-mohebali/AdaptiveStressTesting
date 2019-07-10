@@ -17,3 +17,4 @@ logging.basicConfig(filename=logFile, filemode='w',
                     format='%(asctime)s - %(process)d - %(levelname)s - %(message)s')
 
 logging.debug('This is the debug message')
+print('This is added from the CAPS computer')
