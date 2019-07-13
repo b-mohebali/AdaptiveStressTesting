@@ -1,4 +1,5 @@
 import yaml
+from math import inf
 
 class simulationConfig():
     def __init__(self, yamlFileAddress):
@@ -15,13 +16,14 @@ class simulationConfig():
 
 class variableConfig():
 
-    def __init__(self, name, initial, varType, lowerLimit, upperLimit):
+    def __init__(self, name, initial, varType, lowerLimit, upperLimit, risingRateLimit = inf, fallingRateLimit = inf):
         self.name = name
         self.initialState = initial
         self.varType = varType
         self.lowerLimit = lowerLimit
         self.upperLimit = upperLimit
-
+        self.risingRateLimit = risingRateLimit
+        self.fallingRateLimit = fallingRateLimit
 
 def getAllVariableConfigs(yamlFileAddress):
     with open(yamlFileAddress,'rt') as fp:
