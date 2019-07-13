@@ -13,6 +13,8 @@ class simulationConfig():
         self.eventWindowEnd = yamlObj['eventWindowEnd']
         self.description = yamlObj['description'] if 'description' in yamlObj else None
         self.timeStep = yamlObj['timeStep'] if 'timeStep' in yamlObj else 0.05
+        self.codeBase = yamlObj['codeBase'] if 'codeBase' in yamlObj else []
+
 
 class variableConfig():
 

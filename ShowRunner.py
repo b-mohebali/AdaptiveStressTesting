@@ -1,7 +1,8 @@
 from yamlParseObjects.yamlObjects import *
 import logging 
 from eventManager.eventsLogger import * 
-import os
+import os, sys
+from Codes import *
 
 simConfig = simulationConfig('simulation.yaml')
 print(simConfig.name)
@@ -18,3 +19,11 @@ logging.basicConfig(filename=logFile, filemode='w',
 
 logging.debug('This is the debug message')
 print('This is added from the CAPS computer')
+
+##
+for p in simConfig.codeBase:
+    sys.path.insert(0,p)
+
+for p in sys.path:
+    print(p)
+sys.path.append('../')
