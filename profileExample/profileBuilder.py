@@ -14,7 +14,7 @@ def buildCsvProfile(fileLoc = '.', fileName = 'sample'):
         
         t = 0.0
         while t < 10.0 + 0.05:
-            data = [t, 1+0.5*sin(t), 7 + 0.5* cos(t)]
+            data = [float("{0:.10f}".format(t)), 1+0.5*sin(t), 7 + 0.5* cos(t)]
             csvWriter.writerow(data)
             t += 0.05
     return 
