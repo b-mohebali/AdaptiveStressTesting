@@ -2,28 +2,28 @@ from yamlParseObjects.yamlObjects import *
 import logging 
 from eventManager.eventsLogger import * 
 import os, sys
-from Codes import *
-
+import subprocess
+from profileExample.profileBuilder import * 
 simConfig = simulationConfig('simulation.yaml')
 print(simConfig.name)
+for p in simConfig.codeBase: sys.path.insert(0,p)
+
+#import simulation
+
 
 dirPath = os.getcwd()
-print(dirPath)
-print(os.path.isdir(dirPath + "\log"))
 logFile = getLoggerFileAddress(fileName='MyLoggerFile')
 print(logFile)
 
 logging.basicConfig(filename=logFile, filemode='w', 
-                    level = logging.DEBUG,
+                    level = logging.INFO,
                     format='%(asctime)s - %(process)d - %(levelname)s - %(message)s')
 
 logging.debug('This is the debug message')
-print('This is added from the CAPS computer')
 
-##
-for p in simConfig.codeBase:
-    sys.path.insert(0,p)
-
-for p in sys.path:
-    print(p)
-sys.path.append('../')
+scriptName = 'test'
+cmd = ['py', 'C:/Users/bm12m/Google Drive/codes/testing/'+f'{scriptName}.py']
+print(cmd)
+logCommand(cmd)
+subprocess.call(cmd)
+buildCsvProfile(simConfig.profileLoc)

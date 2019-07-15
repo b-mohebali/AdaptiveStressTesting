@@ -10,4 +10,10 @@ def getLoggerFileAddress(absolutePath='', fileName = 'app'):
     fileAddress = logDirectory + fileNameEx
     return fileAddress
 
+def logCommand(cmd):
+    cmdString = 'Running "'
+    for pars in cmd:
+        cmdString += pars + ' '
+    logging.info(cmdString + '"')
+
 
