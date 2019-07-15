@@ -1,9 +1,6 @@
 import csv
 from math import sin,cos
 
-    
-
-print(csv.list_dialects())
 
 def buildCsvProfile(fileLoc = '.', fileName = 'sample'):
     fileNameExt = fileLoc + '/' +fileName + '.csv'

@@ -1,6 +1,6 @@
 import yaml
-from math import inf
-
+import math
+import platform
 class simulationConfig():
     def __init__(self, yamlFileAddress):
         with open(yamlFileAddress,'rt') as fp:
@@ -13,12 +13,13 @@ class simulationConfig():
         self.eventWindowEnd = yamlObj['eventWindowEnd']
         self.description = yamlObj['description'] if 'description' in yamlObj else None
         self.timeStep = yamlObj['timeStep'] if 'timeStep' in yamlObj else 0.05
-        self.codeBase = yamlObj['codeBase'] if 'codeBase' in yamlObj else []
+        codeBaseName = 'codeBase_' + platform.system() 
+        self.codeBase = yamlObj[codeBaseName] if codeBaseName in yamlObj else []
         self.profileLoc = yamlObj['profileLoc'] if 'profileLoc' in yamlObj else '.'
 
 class variableConfig():
 
-    def __init__(self, name, initial, varType, lowerLimit, upperLimit, risingRateLimit = inf, fallingRateLimit = inf):
+    def __init__(self, name, initial, varType, lowerLimit, upperLimit, risingRateLimit = float('inf'), fallingRateLimit = float('inf')):
         self.name = name
         self.initialState = initial
         self.varType = varType
