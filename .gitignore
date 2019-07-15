@@ -2,3 +2,5 @@
 /__pycache__/
 .vs/
 yamlParseObjects/__pycache__/
+simulation.yaml
+
