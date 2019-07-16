@@ -6,7 +6,7 @@ class simulationConfig():
         with open(yamlFileAddress,'rt') as fp:
             yamlString = fp.read()
         fp.close()
-        yamlObj= yaml.load(yamlString)
+        yamlObj= yaml.load(yamlString, Loader = yaml.SafeLoader)
         self.name = yamlObj['name']
         self.length = yamlObj['length']
         self.eventWindowStart = yamlObj['eventWindowStart']
@@ -33,7 +33,7 @@ def getAllVariableConfigs(yamlFileAddress):
         yamlString = fp.read()
     fp.close()
     varList = []
-    for yamlVar in yaml.load_all(yamlString):
+    for yamlVar in yaml.load_all(yamlString, Loader = yaml.SafeLoader):
         name = yamlVar['name']
         t = yamlVar['type']
         initialState = yamlVar['initialState']

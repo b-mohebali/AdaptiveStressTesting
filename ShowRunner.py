@@ -13,8 +13,11 @@ for p in simConfig.codeBase:
     print(p + ' is added to the path')
 
 from autoRTDS import Trial
+from controls import Control
 
-dirPath = os.getcwd()
+variables = getAllVariableConfigs('variables.yaml')
+for v in variables: 
+    print(v.name)
 logFile = getLoggerFileAddress(fileName='MyLoggerFile')
 print(logFile)
 
@@ -24,4 +27,4 @@ logging.basicConfig(filename=logFile, filemode='w',
 
 logging.debug('This is the debug message from the CAPS machine...')
 
-print(platform.system())
+buildCsvProfile(fileName='NewProfile')
