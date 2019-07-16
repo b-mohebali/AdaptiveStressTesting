@@ -13,7 +13,7 @@ for p in simConfig.codeBase:
     print(p + ' is added to the path')
 
 from autoRTDS import Trial
-from controls import Control
+from controls import Control, InternalControl
 
 variables = getAllVariableConfigs('variables.yaml')
 for v in variables: 
@@ -28,3 +28,28 @@ logging.basicConfig(filename=logFile, filemode='w',
 logging.debug('This is the debug message from the CAPS machine...')
 
 buildCsvProfile(fileName='NewProfile')
+
+class PGM_control(Control):
+    NAME = 'PGM_control'
+
+    def __init__(self, ctrl_str, controls_dir):
+        logging.info('Instantiating the PGM control')
+        self.start_file_name = None
+        self.ctrl_str        = ctrl_str
+        self.start_file      = None
+        self.controls_dir    = controls_dir
+
+
+        self.simulation = self.pull_case(f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V2/')
+        self.dft_file = self.simulation.dft_file
+        
+        self.simulation.set_int_control(internal_ctrl = True)
+
+
+myControl = PGM_control('', './')
+controlsToRun = [myControl]
+
+testDropLoc = Trial.init_test_drop(myControl.NAME)
+ctrl = myControl
+trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+trial.run()
