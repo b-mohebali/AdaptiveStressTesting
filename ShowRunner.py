@@ -27,7 +27,6 @@ logging.basicConfig(filename=logFile, filemode='w',
 
 logging.debug('This is the debug message from the CAPS machine...')
 
-buildCsvProfile(fileName='NewProfile')
 
 class PGM_control(Control):
     NAME = 'PGM_control'

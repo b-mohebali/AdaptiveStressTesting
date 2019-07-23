@@ -1,7 +1,6 @@
 import csv
 from math import sin,cos
 
-
 def buildCsvProfile(fileLoc = '.', fileName = 'sample'):
     fileNameExt = fileLoc + '/' +fileName + '.csv'
     print(fileNameExt)
@@ -17,4 +16,15 @@ def buildCsvProfile(fileLoc = '.', fileName = 'sample'):
     return 
 
 
+class ProfileBuilder:
+    
+    def __init__(self, simConfig,variables):
+        self.timeStep = simConfig.timeStep
+        self.vars = variables
+    
+    ## TODO
+    def randomizeVariables(self):
+        pass
+
+    
 
