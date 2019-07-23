@@ -4,4 +4,5 @@ __pycache__/
 .vs/
 *.pyc
 simulation.yaml
+*/*.pyc
 
