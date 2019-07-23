@@ -1,10 +1,10 @@
-
 from yamlParseObjects.yamlObjects import *
 import logging 
 import os, sys
 import subprocess
 from profileExample.profileBuilder import * 
 import platform
+from eventManager.eventsLogger import * 
 
 simConfig = simulationConfig('simulation.yaml')
 print(simConfig.name)
@@ -14,7 +14,6 @@ for p in simConfig.codeBase:
 
 from autoRTDS import Trial
 from controls import Control, InternalControl
-import case_Setup
 
 variables = getAllVariableConfigs('variables.yaml')
 for v in variables: 
