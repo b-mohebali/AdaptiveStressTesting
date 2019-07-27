@@ -27,30 +27,11 @@ logging.basicConfig(filename=logFile, filemode='w',
 
 logging.debug('This is the debug message from the CAPS machine...')
 
-<<<<<<< HEAD
 buildCsvProfile(fileName='sampleProfile')
-=======
-buildCsvProfile(fileLoc='profileExample', fileName='NewProfileExample')
->>>>>>> 67210f0f906f67fe01050274f53715c3a80ab9ea
 
 # class PGM_control(Control):
 #     NAME = 'PGM_control'
 
-<<<<<<< HEAD
-    def __init__(self, ctrl_str, controls_dir):
-        super().__init__(ctrl_str, controls_dir)
-        logging.info('Instantiating the PGM control')
-        self.start_file_name = None
-        self.ctrl_str        = ctrl_str
-        self.start_file      = None
-        self.controls_dir    = f'{case_Setup.CEF_BASE_DIR}/Behshad/controls'
-        print(f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V2/')
- 
-        self.simulation = self.pull_case(f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V2/')
-        self.dft_file = self.simulation.dft_file
-        # self.simulation.set_run_function('start_case()')
-        self.simulation.set_run_script('Start_Case.scr')
-=======
 #     def __init__(self, ctrl_str, controls_dir):
 #         super().__init__(ctrl_str, controls_dir)
 #         logging.info('Instantiating the PGM control')
@@ -63,7 +44,6 @@ buildCsvProfile(fileLoc='profileExample', fileName='NewProfileExample')
 #         self.dft_file = self.simulation.dft_file
 #         self.simulation.set_run_function('start_case()')
 #         #self.simulation.set_run_script('Start_Case.scr')
->>>>>>> 67210f0f906f67fe01050274f53715c3a80ab9ea
         
 #         self.simulation.set_int_control(internal_ctrl = True)
 
@@ -71,15 +51,9 @@ buildCsvProfile(fileLoc='profileExample', fileName='NewProfileExample')
 # myControl = PGM_control('', './')
 # controlsToRun = [myControl]
 
-<<<<<<< HEAD
-# myControl = PGM_control('PGM_control', './')
-# controlsToRun = [myControl]
-
-=======
 # This is my new change
 
 # just a change I want to incorporate.
->>>>>>> 67210f0f906f67fe01050274f53715c3a80ab9ea
 # testDropLoc = Trial.init_test_drop(myControl.NAME)
 # ctrl = myControl
 # ctrl.initialize()
