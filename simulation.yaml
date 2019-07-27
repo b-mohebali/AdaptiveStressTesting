@@ -4,9 +4,12 @@ length: 300
 eventWindowStart: 60
 eventWindowEnd: 180
 timeStep: 0.05
-codeBase:
+codeBase_Windows:
   - "C:\\Users\\bm12m\\Google Drive\\codes\\Codes"
   - "C:\\Users\\bm12m\\Google Drive\\codes\\testing"
+codeBase_Linux:
+  - "/home/caps/Auto_RTDS_Deployment/ver13d"
 profileLoc: "./profileExample"
+
 
 ...

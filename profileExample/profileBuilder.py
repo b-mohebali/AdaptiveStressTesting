@@ -1,10 +1,6 @@
 import csv
 from math import sin,cos
 
-    
-
-print(csv.list_dialects())
-
 def buildCsvProfile(fileLoc = '.', fileName = 'sample'):
     fileNameExt = fileLoc + '/' +fileName + '.csv'
     print(fileNameExt)
@@ -14,10 +10,21 @@ def buildCsvProfile(fileLoc = '.', fileName = 'sample'):
         
         t = 0.0
         while t < 10.0 + 0.05:
-            data = [float("{0:.10f}".format(t)), 1+0.5*sin(t), 7 + 0.5* cos(t)]
+            data = [float("{0:.6f}".format(t)), 1+0.5*sin(t), 7 + 0.5* cos(t)]
             csvWriter.writerow(data)
             t += 0.05
     return 
 
 
+class ProfileBuilder:
+    
+    def __init__(self, simConfig,variables):
+        self.timeStep = simConfig.timeStep
+        self.vars = variables
+    
+    ## TODO
+    def randomizeVariables(self):
+        pass
+
+    
 
