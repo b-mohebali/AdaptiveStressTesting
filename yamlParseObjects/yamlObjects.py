@@ -19,7 +19,7 @@ class simulationConfig():
 
 class variableConfig():
 
-    def __init__(self, name, initial, varType, lowerLimit, upperLimit, risingRateLimit = float('inf'), fallingRateLimit = float('inf')):
+    def __init__(self, name, initial, varType, lowerLimit, upperLimit, risingRateLimit = float('inf'), fallingRateLimit = float('inf'), mappedName):
         self.name = name
         self.initialState = initial
         self.varType = varType
@@ -27,6 +27,7 @@ class variableConfig():
         self.upperLimit = upperLimit
         self.risingRateLimit = risingRateLimit
         self.fallingRateLimit = fallingRateLimit
+        self.mappedName = mappedName if mappedName not None else name
 
 def getAllVariableConfigs(yamlFileAddress):
     with open(yamlFileAddress,'rt') as fp:
@@ -39,11 +40,13 @@ def getAllVariableConfigs(yamlFileAddress):
         initialState = yamlVar['initialState']
         lowerLimit = yamlVar['lowerLimit']
         upperLimit = yamlVar['upperLimit']
+        mappedName = yamlVar['mappedName']
         variableCon = variableConfig(name = name, 
                                     initial=initialState, 
                                     varType=t,
                                     lowerLimit=lowerLimit, 
-                                    upperLimit=upperLimit)
+                                    upperLimit=upperLimit,
+                                    mappedName = mappedName)
         varList.append(variableCon)
     return varList
 
