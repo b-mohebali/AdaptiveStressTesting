@@ -30,7 +30,7 @@ logging.basicConfig(filename=logFile, filemode='w',
 
 logging.debug('This is the debug message from the CAPS machine...')
 
-buildCsvProfile(fileName='NewProfile')
+buildCsvProfile(fileName='sampleProfile')
 
 class PGM_control(Control):
     NAME = 'PGM_control'
@@ -41,21 +41,22 @@ class PGM_control(Control):
         self.start_file_name = None
         self.ctrl_str        = ctrl_str
         self.start_file      = None
-        self.controls_dir    = controls_dir
-
+        self.controls_dir    = f'{case_Setup.CEF_BASE_DIR}/Behshad/controls'
+        print(f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V2/')
+ 
         self.simulation = self.pull_case(f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V2/')
         self.dft_file = self.simulation.dft_file
-        self.simulation.set_run_function('start_case()')
-        #self.simulation.set_run_script('Start_Case.scr')
+        # self.simulation.set_run_function('start_case()')
+        self.simulation.set_run_script('Start_Case.scr')
         
         self.simulation.set_int_control(internal_ctrl = True)
 
 
-myControl = PGM_control('', './')
-controlsToRun = [myControl]
+# myControl = PGM_control('PGM_control', './')
+# controlsToRun = [myControl]
 
-testDropLoc = Trial.init_test_drop(myControl.NAME)
-ctrl = myControl
-ctrl.initialize()
-trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-trial.run()
+# testDropLoc = Trial.init_test_drop(myControl.NAME)
+# ctrl = myControl
+# ctrl.initialize()
+# trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+# trial.run()
