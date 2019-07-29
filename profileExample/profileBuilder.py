@@ -1,9 +1,16 @@
 import csv
 from math import sin,cos
 from yamlParseObjects.yamlObjects import *
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, ABCMeta
 import logging
 import os
+
+class WrongConfigObject(Exception):
+    pass
+
+class WronfFileType(Exception):
+    pass
+
 
 # This function creates a sample scenario with two sine waves. 
 def buildSampleProfile(fileLoc = '.', fileName = 'sample'):
@@ -76,16 +83,44 @@ class ScenarioBuilder:
     context. The specific events are defined as children of the 
     'abstract' event. 
 '''
-class Event():
+class Event(ABCMeta):
 
-    def __init__(self):
+    def __init__(self, variables, simConfig):
+        # Checking the type of the variables config list and the simulation config object.
+        if not isinstance(variables, list) or not isinstance(variables[0], variableConfig):
+            errMessage = 'The variable configuration list does not match expected format.'
+            logging.error(errMessage)
+            raise WrongConfigObject(errMessage)
+        if not isinstance(simConfig, simulationConfig):
+            errMessage = 'The simulation configuration list does not match expected format.'
+            logging.error(errMessage)
+            raise WrongConfigObject(errMessage)
+            
+        varDict = getVariablesDict(variables)
+        varNames = [var.name for var in variables]
+
         self.duration = 0
+        self.name = 'AbsractEvent'
     
+    @abstractmethod
+    def setEventWindow(self):
+        pass
+    
+    def setCsvFile(self, csvFileAddress):
+        if not csvFileAddress.endswith('.csv'):
+            errMessage= 'CSV file passed to {self.name} is missing or has the wrong type.'
+            logging.error(errMessage)
+            raise WronfFileType(errMessage)
+        self.csvFile = csvFileAddress
+        return 
+
+               
     @abstractmethod
     def randomize(self):
         pass
     
     
+class Event1(Event):
 
 
         

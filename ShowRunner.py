@@ -39,9 +39,6 @@ createMappingFile(variables = variables,fileName='mapping', profileFileName='sam
 
 buildInitialCsv(variables,simConfig, fileName ='sampleProfile')
 
-# varDict = getVariablesDict(variables)
-# for varName in varDict.keys():
-    # print(f'varName: {varName}, var upper limit : {varDict[varName].upperLimit}')
 
 # class PGM_control(Control):
 #     NAME = 'PGM_control'
