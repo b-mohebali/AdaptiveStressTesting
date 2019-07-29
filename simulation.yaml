@@ -1,8 +1,8 @@
 ---
 name: "Adaptive Stress Testing"
-length: 300
-eventWindowStart: 60
-eventWindowEnd: 180
+eventWindowStart: 45
+length : 300
+eventWindowEnd: 240
 timeStep: 0.05
 codeBase_Windows:
   - "C:\\Users\\bm12m\\Google Drive\\codes\\Codes"

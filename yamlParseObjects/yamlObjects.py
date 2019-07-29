@@ -1,6 +1,9 @@
 import yaml
 import math
 import platform
+
+
+
 class simulationConfig():
     def __init__(self, yamlFileAddress):
         with open(yamlFileAddress,'rt') as fp:
@@ -8,15 +11,18 @@ class simulationConfig():
         fp.close()
         yamlObj= yaml.load(yamlString, Loader = yaml.SafeLoader)
         self.name = yamlObj['name']
-        self.length = yamlObj['length']
         self.eventWindowStart = yamlObj['eventWindowStart']
         self.eventWindowEnd = yamlObj['eventWindowEnd']
         self.description = yamlObj['description'] if 'description' in yamlObj else None
         self.timeStep = yamlObj['timeStep'] if 'timeStep' in yamlObj else 0.05
-        codeBaseName = 'codeBase_' + platform.system() 
+        # This way we can have different settings for different OS platforms.
+        codeBaseName = 'codeBase_' + platform.system()
         self.codeBase = yamlObj[codeBaseName] if codeBaseName in yamlObj else []
         self.profileLoc = yamlObj['profileLoc'] if 'profileLoc' in yamlObj else '.'
-
+        self.simLength = yamlObj['length'] if 'length' in yamlObj else self.eventWindowEnd
+        
+        
+        
 class variableConfig():
 
     def __init__(self, name, initial, varType, lowerLimit, upperLimit, mappedName, risingRateLimit = float('inf'), fallingRateLimit = float('inf')):
@@ -50,5 +56,7 @@ def getAllVariableConfigs(yamlFileAddress):
         varList.append(variableCon)
     return varList
 
-            
+
+    
+
         

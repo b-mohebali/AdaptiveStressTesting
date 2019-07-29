@@ -1,12 +1,14 @@
 import csv
 from math import sin,cos
-from yamlParseObjects.yamlObjects import variableConfig
+from yamlParseObjects.yamlObjects import *
 from abc import ABC, abstractmethod
+import logging
+import os
 
 # This function creates a sample scenario with two sine waves. 
-def buildCsvProfile(fileLoc = '.', fileName = 'sample'):
-    fileNameExt = fileLoc + '/' +fileName + '.csv'
-    print(fileNameExt)
+def buildSampleProfile(fileLoc = '.', fileName = 'sample'):
+    fileNameExt = fileLoc + '/' + fileNamePlusExt(fileName, '.csv')
+    print(f'The sample profile location: {os.path.abspath(fileNameExt)}')
     with open(fileNameExt, 'w', newline='') as csvFile: 
         csvWriter = csv.writer(csvFile)
         csvWriter.writerow(['Time','var1','var2'])
@@ -18,13 +20,37 @@ def buildCsvProfile(fileLoc = '.', fileName = 'sample'):
                     float("{0:.6f}".format(7 + 0.5* cos(t)))]
             csvWriter.writerow(data)
             t += tStep
+    logging.debug(f'The sample profile is created in {os.path.abspath(fileNameExt)}')
     return 
 
 
+
+def buildInitialCsv(variables, simConfig, fileLoc='.', fileName = 'profile'):
+    varNames = ['Time'] + [var.name for var in variables]
+    fileNameExt = fileLoc + '/' + fileNamePlusExt(fileName, '.csv')
+    with open(fileNameExt, 'w', newline='') as csvFile:
+        csvwriter = csv.writer(csvFile)
+        logging.debug(f'Creating the initial CSV scenario file on {os.path.abspath(fileNameExt)}')
+        logging.debug('These are the vatiables: ' + varNames.__str__())
+        csvwriter.writerow(varNames)
+        initialDataRow = [0.0] + [var.initialState for var in variables]
+        # initialDataRow.insert(0,0.0) # Added for the initial time.
+        csvwriter.writerow(initialDataRow)
+
+        # Inserting the data point for the start of the scenario:
+        scenarioStartPoint = [simConfig.eventWindowStart] + [var.initialState for var in variables]
+        csvwriter.writerow(scenarioStartPoint)
+    return 
+
+def fileNamePlusExt(fileName, ext):
+    return fileName + (ext if not fileName.endswith(ext) else '')
+
+    
 def createMappingFile(variables, fileLoc = '.', fileName = 'mapping', profileFileName = 'sample'):
     fileNameExt = fileLoc + '/' + fileName + '.csv'
     profFile = profileFileName if profileFileName.endswith('.csv') else profileFileName + '.csv'
-    print(f'Mapping file name: {fileNameExt}')
+    print(f'Mapping file name: {os.path.abspath(fileNameExt)}')
+    logging.debug(f'Mapping file name: {fileNameExt}')
     with open(fileNameExt, 'w', newline='') as csvFile: 
         csvWriter = csv.writer(csvFile)
         csvWriter.writerow([profFile,'GTNETSKT1_from.txt','GTNETSKT1_to.txt'])

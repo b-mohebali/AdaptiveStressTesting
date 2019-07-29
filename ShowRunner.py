@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 from yamlParseObjects.yamlObjects import *
 import logging 
 import os, sys
@@ -5,6 +7,8 @@ import subprocess
 from profileExample.profileBuilder import * 
 import platform
 from eventManager.eventsLogger import * 
+import csv
+
 
 simConfig = simulationConfig('simulation.yaml')
 print(simConfig.name)
@@ -15,11 +19,14 @@ for p in simConfig.codeBase:
 from autoRTDS import Trial
 from controls import Control, InternalControl
 
+
+#-----------------------------------------------------------------------------------------
+
+
 variables = getAllVariableConfigs('variables.yaml')
 for v in variables: 
     print(f'Variable: {v.name}, mapped name: {v.mappedName}')
 logFile = getLoggerFileAddress(fileName='MyLoggerFile')
-print(logFile)
 
 logging.basicConfig(filename=logFile, filemode='w', 
                     level = logging.DEBUG,
@@ -27,8 +34,13 @@ logging.basicConfig(filename=logFile, filemode='w',
 
 logging.debug('This is the debug message from the CAPS machine...')
 
-buildCsvProfile(fileName='sampleProfile')
+buildSampleProfile(fileName='sampleProfile.csv')
 createMappingFile(variables = variables,fileName='mapping', profileFileName='sampleProfile')
+
+buildInitialCsv(variables,simConfig, fileName ='sampleProfile')
+
+
+
 
 # class PGM_control(Control):
 #     NAME = 'PGM_control'
