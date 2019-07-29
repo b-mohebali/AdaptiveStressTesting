@@ -57,6 +57,10 @@ def getAllVariableConfigs(yamlFileAddress):
     return varList
 
 
-    
+def getVariablesDict(variables):
+    varMap = {}
+    for var in variables: 
+        varMap[var.name] = var
+    return varMap    
 
         
