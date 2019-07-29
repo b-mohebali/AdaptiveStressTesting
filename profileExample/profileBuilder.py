@@ -120,7 +120,6 @@ class Event(ABCMeta):
         pass
     
     
-class Event1(Event):
 
 
         
