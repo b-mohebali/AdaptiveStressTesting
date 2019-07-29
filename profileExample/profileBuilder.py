@@ -1,12 +1,13 @@
 import csv
 from math import sin,cos
 from yamlParseObjects.yamlObjects import variableConfig
+from abc import ABC, abstractmethod
 
 # This function creates a sample scenario with two sine waves. 
 def buildCsvProfile(fileLoc = '.', fileName = 'sample'):
     fileNameExt = fileLoc + '/' +fileName + '.csv'
     print(fileNameExt)
-    with open(fileNameExt, 'w') as csvFile: 
+    with open(fileNameExt, 'w', newline='') as csvFile: 
         csvWriter = csv.writer(csvFile)
         csvWriter.writerow(['Time','var1','var2'])
         t = 0.0
@@ -22,13 +23,16 @@ def buildCsvProfile(fileLoc = '.', fileName = 'sample'):
 
 def createMappingFile(variables, fileLoc = '.', fileName = 'mapping', profileFileName = 'sample'):
     fileNameExt = fileLoc + '/' + fileName + '.csv'
+    profFile = profileFileName if profileFileName.endswith('.csv') else profileFileName + '.csv'
     print(f'Mapping file name: {fileNameExt}')
-    with open(fileNameExt, 'w') as csvFile: 
+    with open(fileNameExt, 'w', newline='') as csvFile: 
         csvWriter = csv.writer(csvFile)
-
+        csvWriter.writerow([profFile,'GTNETSKT1_from.txt','GTNETSKT1_to.txt'])
+        csvWriter.writerow(['Time','',''])
         for var in variables:
-            var.
-
+            row = [var.name, var.mappedName,'']
+            csvWriter.writerow(row)
+    return 
 
 class ScenarioBuilder:
     
@@ -40,11 +44,22 @@ class ScenarioBuilder:
     def randomizeVariables(self):
         pass
 
-    
+
+'''
+    This is the part that implements the concent of event in this
+    context. The specific events are defined as children of the 
+    'abstract' event. 
+'''
 class Event():
 
     def __init__(self):
         self.duration = 0
-        
+    
+    @abstractmethod
+    def randomize(self):
+        pass
+    
+    
+
 
         

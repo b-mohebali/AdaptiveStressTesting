@@ -17,7 +17,7 @@ from controls import Control, InternalControl
 
 variables = getAllVariableConfigs('variables.yaml')
 for v in variables: 
-    print(v.name)
+    print(f'Variable: {v.name}, mapped name: {v.mappedName}')
 logFile = getLoggerFileAddress(fileName='MyLoggerFile')
 print(logFile)
 
@@ -28,6 +28,7 @@ logging.basicConfig(filename=logFile, filemode='w',
 logging.debug('This is the debug message from the CAPS machine...')
 
 buildCsvProfile(fileName='sampleProfile')
+createMappingFile(variables = variables,fileName='mapping', profileFileName='sampleProfile')
 
 # class PGM_control(Control):
 #     NAME = 'PGM_control'
