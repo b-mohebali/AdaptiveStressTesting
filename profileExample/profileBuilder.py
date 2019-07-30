@@ -4,6 +4,9 @@ from yamlParseObjects.yamlObjects import *
 from abc import ABC, abstractmethod, ABCMeta
 import logging
 import os
+import numpy as np
+from random import * 
+
 
 class WrongConfigObject(Exception):
     pass
@@ -101,10 +104,7 @@ class Event(ABCMeta):
 
         self.duration = 0
         self.name = 'AbsractEvent'
-    
-    @abstractmethod
-    def setEventWindow(self):
-        pass
+
     
     def setCsvFile(self, csvFileAddress):
         if not csvFileAddress.endswith('.csv'):
@@ -118,7 +118,31 @@ class Event(ABCMeta):
     @abstractmethod
     def randomize(self):
         pass
+
+
+class VariableChangeSameTime(Event):
     
+    # The default length of the event window is set to be 30 seconds
+    def __init__(self, variables, simConfig, length = 30, startPoint):
+        super().__init__(variables, simConfig)
+        self.eventWindow = length
+        self.name = 'Event: Changing variables values at the same time'
+        self.startPoint = startPoint
+        self.endPoint = self.startPoint + length
+        self.simConfig = simConfig
+        self.createTimeVector()
+
+
+
+    def createTimeVector(self):
+        steps = int(self.eventWindow / self.simConfig.timeStep)
+        self.timeVec = np.linspace(start = self.startPoint, stop = self.endPoint, num=steps, endpoint=True)
+        return 
+
+    def randomizeTime(self):
+
+
+
     
 
 
