@@ -22,12 +22,12 @@ def buildSampleProfile(fileLoc = '.', fileName = 'sample'):
         t = 0.0
         tStep = 0.01
         while t < 210.0 + tStep:
-            data = [float("{0:.6f}".format(t)), 
-                    float("{0:.6f}".format(1+0.5*sin(t*3))),  
-                    float("{0:.6f}".format(7 + 0.5* cos(t)))]
+            data = [float("{0:.10f}".format(t)), 
+                    float("{0:.10f}".format(1+0.5*sin(t*3))),  
+                    float("{0:.10f}".format(7 + 0.5* cos(t)))]
             csvWriter.writerow(data)
             t += tStep
-    logging.debug(f'The sample profile is created in {os.path.abspath(fileNameExt)}')
+    logging.info(f'The sample profile is created in {os.path.abspath(fileNameExt)}')
     return 
 
 
@@ -37,8 +37,8 @@ def buildInitialCsv(variables, simConfig, fileLoc='.', fileName = 'profile'):
     fileNameExt = fileLoc + '/' + fileNamePlusExt(fileName, '.csv')
     with open(fileNameExt, 'w', newline='') as csvFile:
         csvwriter = csv.writer(csvFile)
-        logging.debug(f'Creating the initial CSV scenario file on {os.path.abspath(fileNameExt)}')
-        logging.debug('These are the vatiables: ' + varNames.__str__())
+        logging.info(f'Creating the initial CSV scenario file on {os.path.abspath(fileNameExt)}')
+        logging.info('These are the vatiables: ' + varNames.__str__())
         csvwriter.writerow(varNames)
         initialDataRow = [0.0] + [var.initialState for var in variables]
         # initialDataRow.insert(0,0.0) # Added for the initial time.
@@ -57,7 +57,7 @@ def createMappingFile(variables, fileLoc = '.', fileName = 'mapping', profileFil
     fileNameExt = fileLoc + '/' + fileName + '.csv'
     profFile = profileFileName if profileFileName.endswith('.csv') else profileFileName + '.csv'
     print(f'Mapping file name: {os.path.abspath(fileNameExt)}')
-    logging.debug(f'Mapping file name: {fileNameExt}')
+    logging.info(f'Mapping file name: {fileNameExt}')
     with open(fileNameExt, 'w', newline='') as csvFile: 
         csvWriter = csv.writer(csvFile)
         csvWriter.writerow([profFile,'GTNETSKT1_from.txt','GTNETSKT1_to.txt'])
@@ -95,7 +95,8 @@ class Event(ABCMeta):
             errMessage = 'The simulation configuration list does not match expected format.'
             logging.error(errMessage)
             raise WrongConfigObject(errMessage)
-            
+
+        # Constructing a dictionary that has the variables config keyed with their names.     
         varDict = getVariablesDict(variables)
         varNames = [var.name for var in variables]
 
@@ -108,10 +109,11 @@ class Event(ABCMeta):
     
     def setCsvFile(self, csvFileAddress):
         if not csvFileAddress.endswith('.csv'):
-            errMessage= 'CSV file passed to {self.name} is missing or has the wrong type.'
+            errMessage= f'CSV file passed to {self.name} is missing or has the wrong type.'
             logging.error(errMessage)
             raise WronfFileType(errMessage)
         self.csvFile = csvFileAddress
+        logging.info(f'{self.name} got the CSV file : {self.csvFile}')
         return 
 
                
@@ -119,7 +121,7 @@ class Event(ABCMeta):
     def randomize(self):
         pass
     
-    
+
 
 
         

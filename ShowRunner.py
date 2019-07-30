@@ -37,7 +37,7 @@ logging.debug('This is the debug message from the CAPS machine...')
 buildSampleProfile(fileName='sampleProfile.csv')
 createMappingFile(variables = variables,fileName='mapping', profileFileName='sampleProfile')
 
-buildInitialCsv(variables,simConfig, fileName ='sampleProfile')
+# buildInitialCsv(variables,simConfig, fileName ='sampleProfile')
 
 
 # class PGM_control(Control):
