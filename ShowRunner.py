@@ -40,32 +40,35 @@ createMappingFile(variables = variables,fileName='mapping', profileFileName='sam
 # buildInitialCsv(variables,simConfig, fileName ='sampleProfile')
 
 
-class PGM_control(Control):
-    NAME = 'PGM_control'
+myEvent = VariableChangeSameTime(variables = variables, simConfig = simConfig, startPoint=45, length = 30)
+print(myEvent)
 
-    def __init__(self, ctrl_str, controls_dir):
-        super().__init__(ctrl_str, controls_dir)
-        logging.info('Instantiating the PGM control')
-        self.start_file_name = None
-        self.ctrl_str        = ctrl_str
-        self.start_file      = None
-        self.controls_dir    = controls_dir
+# class PGM_control(Control):
+#     NAME = 'PGM_control'
 
-        self.simulation = self.pull_case(f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V2/')
-        self.dft_file = self.simulation.dft_file
-        self.simulation.set_run_function('start_case()')
-        #self.simulation.set_run_script('Start_Case.scr')
+#     def __init__(self, ctrl_str, controls_dir):
+#         super().__init__(ctrl_str, controls_dir)
+#         logging.info('Instantiating the PGM control')
+#         self.start_file_name = None
+#         self.ctrl_str        = ctrl_str
+#         self.start_file      = None
+#         self.controls_dir    = controls_dir
+
+#         self.simulation = self.pull_case(f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V2/')
+#         self.dft_file = self.simulation.dft_file
+#         self.simulation.set_run_function('start_case()')
+#         #self.simulation.set_run_script('Start_Case.scr')
         
-        self.simulation.set_int_control(internal_ctrl = True)
+#         self.simulation.set_int_control(internal_ctrl = True)
 
 
-myControl = PGM_control('', './')
-controlsToRun = [myControl]
+# myControl = PGM_control('', './')
+# controlsToRun = [myControl]
 
-testDropLoc = Trial.init_test_drop(myControl.NAME)
-ctrl = myControl
-ctrl.initialize()
-trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-# HACK. This checks if it has to do fm metrics. 
-case_Setup.fm = False 
-trial.run()
+# testDropLoc = Trial.init_test_drop(myControl.NAME)
+# ctrl = myControl
+# ctrl.initialize()
+# trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+# # HACK. This checks if it has to do fm metrics. 
+# case_Setup.fm = False 
+# trial.run()

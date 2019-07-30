@@ -86,7 +86,7 @@ class ScenarioBuilder:
     context. The specific events are defined as children of the 
     'abstract' event. 
 '''
-class Event(ABCMeta):
+class Event(ABC):
 
     def __init__(self, variables, simConfig):
         # Checking the type of the variables config list and the simulation config object.
@@ -100,11 +100,12 @@ class Event(ABCMeta):
             raise WrongConfigObject(errMessage)
 
         # Constructing a dictionary that has the variables config keyed with their names.     
-        varDict = getVariablesDict(variables)
-        varNames = [var.name for var in variables]
+        self.varDict = getVariablesDict(variables)
+        self.varNames = [var.name for var in variables]
 
         self.duration = 0
         self.name = 'AbsractEvent'
+        self.variables = variables
 
     
     def setCsvFile(self, csvFileAddress):
@@ -118,22 +119,35 @@ class Event(ABCMeta):
 
                
     @abstractmethod
-    def randomize(self):
+    def randomizeTime(self):
         pass
+
+    @abstractmethod
+    def __str__(self):
+        return ""
 
 
 class VariableChangeSameTime(Event):
     
     # The default length of the event window is set to be 30 seconds
-    def __init__(self, variables, simConfig, length = 30, startPoint):
+    def __init__(self, variables, simConfig, startPoint, length):
         super().__init__(variables, simConfig)
         self.eventWindow = length
-        self.name = 'Event: Changing variables values at the same time'
+        self.name = 'Variables change at the same time'
         self.startPoint = startPoint
         self.endPoint = self.startPoint + length
         self.simConfig = simConfig
         self.createTimeVector()
+        self.changeTime = None
 
+
+    def __str__(self):
+        descriptor = f'''Event:  {self.name}
+        variables: {self.varNames}
+        Event time: {'Not specified yet' if self.changeTime is None else self.changeTime}
+        Event window: {self.startPoint,self.endPoint}
+        '''
+        return descriptor.__str__()
 
 
     def createTimeVector(self):
@@ -142,8 +156,12 @@ class VariableChangeSameTime(Event):
         return 
 
     def randomizeTime(self):
-        pass
-        
+        self.changeTime = sample(self.timeVec, 1)
+        return
+    
+
+
+
 
 
     
