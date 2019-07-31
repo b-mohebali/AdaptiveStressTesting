@@ -26,8 +26,8 @@ def buildSampleProfile(fileLoc = '.', fileName = 'sample'):
         tStep = 0.01
         while t < 210.0 + tStep:
             data = [float("{0:.10f}".format(t)), 
-                    float("{0:.10f}".format(1+0.5*sin(t*3))),  
-                    float("{0:.10f}".format(7 + 0.5* cos(t)))]
+                    float("{0:.10f}".format(7+1.0*sin(t*4))),  
+                    float("{0:.10f}".format(3 + 2* cos(t)))]
             csvWriter.writerow(data)
             t += tStep
     logging.info(f'The sample profile is created in {os.path.abspath(fileNameExt)}')
@@ -139,6 +139,7 @@ class VariableChangeSameTime(Event):
         self.simConfig = simConfig
         self.createTimeVector()
         self.changeTime = None
+        self.randomizeTime()
 
 
     def __str__(self):
@@ -156,7 +157,7 @@ class VariableChangeSameTime(Event):
         return 
 
     def randomizeTime(self):
-        self.changeTime = sample(self.timeVec, 1)
+        # self.changeTime = sample(self.timeVec, 1)
         return
     
 

@@ -1,6 +1,6 @@
 ---
 name: "Adaptive Stress Testing"
-eventWindowStart: 45
+eventWindowStart: 20
 length : 300
 eventWindowEnd: 240
 timeStep: 0.05

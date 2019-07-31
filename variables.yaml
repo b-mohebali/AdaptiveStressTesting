@@ -4,7 +4,7 @@ type: real
 initialState: 0.0
 lowerLimit: 0.0
 upperLimit: 10.0
-mappedName: load1
+mappedName: var1
 
 ---
 name: var2
@@ -12,5 +12,5 @@ type: binary
 initialState: 0.0
 lowerLimit: 0.0
 upperLimit: 1.0
-mappedName: load2
+mappedName: var2
 ...
