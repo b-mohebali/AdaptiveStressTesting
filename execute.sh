@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+echo "This is the execute script!"
+
+./ShowRunner.py
+
+cp mapping.csv /home/caps/.wine/drive_c/cef/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V3/Profiles/mapping.csv
+cp sampleProfile.csv /home/caps/.wine/drive_c/cef/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V3/Profiles/sampleProfile.csv
+
+

@@ -40,7 +40,7 @@ createMappingFile(variables = variables,fileName='mapping', profileFileName='sam
 buildInitialCsv(variables,simConfig, fileName ='sampleProfile')
 
 
-myEvent = VariableChangeSameTime(variables = variables[:2], simConfig = simConfig, startPoint=45, length = 15)
+myEvent = VariableChangeSameTime(variables = variables[:2], simConfig = simConfig, startPoint=30, length = 15)
 print(myEvent)
 
 # class PGM_control(Control):
