@@ -157,8 +157,11 @@ class VariableChangeSameTime(Event):
         return 
 
     def randomizeTime(self):
-        # self.changeTime = sample(self.timeVec, 1)
+        self.changeTime = np.random.choice(self.timeVec)
         return
+    
+    def applyChange(self):
+        pass
     
 
 

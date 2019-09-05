@@ -37,10 +37,10 @@ logging.debug('This is the debug message from the CAPS machine...')
 buildSampleProfile(fileName='sampleProfile.csv')
 createMappingFile(variables = variables,fileName='mapping', profileFileName='sampleProfile')
 
-# buildInitialCsv(variables,simConfig, fileName ='sampleProfile')
+buildInitialCsv(variables,simConfig, fileName ='sampleProfile')
 
 
-myEvent = VariableChangeSameTime(variables = variables, simConfig = simConfig, startPoint=45, length = 15)
+myEvent = VariableChangeSameTime(variables = variables[:2], simConfig = simConfig, startPoint=45, length = 15)
 print(myEvent)
 
 # class PGM_control(Control):

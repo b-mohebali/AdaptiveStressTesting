@@ -1,7 +1,7 @@
 ---
 name: var1
 type: real
-initialState: 0.0
+initialState: 1.0
 lowerLimit: 0.0
 upperLimit: 10.0
 mappedName: var1
@@ -9,8 +9,25 @@ mappedName: var1
 ---
 name: var2
 type: binary
-initialState: 0.0
+initialState: 2.0
 lowerLimit: 0.0
 upperLimit: 1.0
 mappedName: var2
+
+---
+name: loadArate
+type: real
+initialState: 4.5
+lowerLimit: 0.0
+upperLimit: 4.5
+mappedName: loadArate
+
+---
+name: loadBrate
+type: real
+initialState: 4.5
+lowerLimit: 0.0
+upperLimit: 4.5
+mappedName: loadBrate
+
 ...
