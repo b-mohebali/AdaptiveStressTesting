@@ -8,7 +8,7 @@ from profileExample.profileBuilder import *
 import platform
 from eventManager.eventsLogger import * 
 import csv
-
+import platform
 
 simConfig = simulationConfig('simulation.yaml')
 print(simConfig.name)
@@ -16,9 +16,11 @@ for p in simConfig.codeBase:
     sys.path.insert(0,p)
     print(p + ' is added to the path')
 
-from autoRTDS import Trial
-from controls import Control, InternalControl
-import case_Setup
+
+
+    from autoRTDS import Trial
+    from controls import Control, InternalControl
+    import case_Setup
 
 #-----------------------------------------------------------------------------------------
 
