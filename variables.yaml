@@ -47,21 +47,6 @@ type: timeIndep
 initialState: 835
 
 ---
-name: GaRBargd
-type: timeIndep
-initialState: 5000
-
----
-name: GaRBbrgd
-type: timeIndep
-initialState: 5000
-
----
-name: GaMargd
-type: timeIndep
-initialState: 5000
-
----
 name: StatRes
 type: timeIndep
 initialState: 0.006
@@ -110,4 +95,25 @@ initialState: 1
 name: GBkI
 type: timeIndep
 initialState: 100
+
+---
+name: SpIntLimHigh
+type: timeIndep
+initialState: 1.05
+
+---
+name: SpIntyLimLow
+type: timeIndep
+initialState: -1
+
+---
+name: GaRaLiHigh
+type: timeIndep
+initialState: 3.14
+
+---
+name: GaRaLiLow
+type: timeIndep
+initialState: 0.02
+
 ...
