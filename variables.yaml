@@ -30,4 +30,84 @@ lowerLimit: 0.0
 upperLimit: 4.5
 mappedName: loadBrate
 
+---
+name: myVar
+type: timeIndep
+initialState: 2.45
+mappedName: myVar
+
+---
+name: GaMaRf
+type: timeIndep
+initialState: 0.6
+
+---
+name: GaMaCf
+type: timeIndep
+initialState: 835
+
+---
+name: GaRBargd
+type: timeIndep
+initialState: 5000
+
+---
+name: GaRBbrgd
+type: timeIndep
+initialState: 5000
+
+---
+name: GaMargd
+type: timeIndep
+initialState: 5000
+
+---
+name: StatRes
+type: timeIndep
+initialState: 0.006
+
+---
+name: StatReac
+type: timeIndep
+initialState: 0.08
+
+---
+name: RBkp
+type: timeIndep
+initialState: 1
+
+---
+name: RBkI
+type: timeIndep
+initialState: 100
+
+---
+name: GOVkp
+type: timeIndep
+initialState: 10
+
+---
+name: GOVkI
+type: timeIndep
+initialState: 2
+
+---
+name: GaRBaUll
+type: timeIndep
+initialState: 0.1
+
+---
+name: GaRBaUlr
+type: timeIndep
+initialState: 0.0084
+
+---
+name: GBkp
+type: timeIndep
+initialState: 1
+
+---
+name: GBkI
+type: timeIndep
+initialState: 100
 ...

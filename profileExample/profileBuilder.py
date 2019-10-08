@@ -14,6 +14,12 @@ class WrongConfigObject(Exception):
 class WronfFileType(Exception):
     pass
 
+def getCsvHeaders(csvFileAddress):
+    with open(csvFileAddress, 'r') as csvFile:
+        csvReader = csv.reader(csvFile)
+        firstRow = next(csvReader)
+    return firstRow
+
 
 # This function creates a sample scenario with two sine waves. 
 def buildSampleProfile(fileLoc = '.', fileName = 'sample'):
@@ -138,9 +144,10 @@ class VariableChangeSameTime(Event):
         self.endPoint = self.startPoint + length
         self.simConfig = simConfig
         self.createTimeVector()
+        self.changeTimeStep = None
         self.changeTime = None
         self.randomizeTime()
-
+        
 
     def __str__(self):
         descriptor = f'''Event:  {self.name}
@@ -157,8 +164,17 @@ class VariableChangeSameTime(Event):
         return 
 
     def randomizeTime(self):
-        self.changeTime = np.random.choice(self.timeVec)
+        self.changeTimeStep = np.random.choice([_ for _ in range(len(self.timeVec))])
+        self.changeTime = self.timeVec[self.changeTimeStep]
         return
+
+    # TODO: complete the procedure for updateing the profile CSV.
+    def updateCsv(self, csvFileAddress):
+        allVars = getCsvHeaders(csvFileAddress)
+        print(f'Variables: {allVars}')
+        
+        pass
+     
     
     def applyChange(self):
         pass

@@ -7,4 +7,7 @@ echo "This is the execute script!"
 cp mapping.csv /home/caps/.wine/drive_c/cef/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V3/Profiles/mapping.csv
 cp sampleProfile.csv /home/caps/.wine/drive_c/cef/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V3/Profiles/sampleProfile.csv
 
+cd /home/caps/.wine/drive_c/cef/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V3/profiles
+# ls -ltr --time-style=full-iso
+
 

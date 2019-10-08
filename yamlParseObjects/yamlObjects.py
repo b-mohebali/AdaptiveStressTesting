@@ -34,6 +34,14 @@ class variableConfig():
         self.risingRateLimit = risingRateLimit
         self.fallingRateLimit = fallingRateLimit
         self.mappedName = mappedName if mappedName is not None else name
+    
+    def __str__(self):
+        descroptor = f'''Variable name: {self.name}
+        type: {self.varType}
+        Value: {self.initialState}
+        Value range: [{self.lowerLimit:0.6f}, {self.upperLimit:0.6f}]
+        '''
+        return descroptor.__str__()
 
 def getAllVariableConfigs(yamlFileAddress):
     with open(yamlFileAddress,'rt') as fp:
@@ -44,9 +52,9 @@ def getAllVariableConfigs(yamlFileAddress):
         name = yamlVar['name']
         t = yamlVar['type']
         initialState = yamlVar['initialState']
-        lowerLimit = yamlVar['lowerLimit']
-        upperLimit = yamlVar['upperLimit']
-        mappedName = yamlVar['mappedName']
+        lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else initialState*0.9 # Lower bound set to 90% of the initial state.
+        upperLimit = yamlVar['upperLimit'] if 'lowerLimit' in yamlVar else initialState*1.1
+        mappedName = yamlVar['mappedName'] if 'mappedName' in yamlVar else name
         variableCon = variableConfig(name = name, 
                                     initial=initialState, 
                                     varType=t,
@@ -56,11 +64,17 @@ def getAllVariableConfigs(yamlFileAddress):
         varList.append(variableCon)
     return varList
 
+    
 
 def getVariablesDict(variables):
     varMap = {}
-    for var in variables: 
+    for var in [v for v in variables if v.varType.lower() != 'timeindep']: 
         varMap[var.name] = var
     return varMap    
 
-        
+def getTimeIndepVarsDict(variables):
+    varMap = {}
+    for var in [v for v in variables if v.varType.lower() == 'timeindep']:
+        varMap[var.name] = var
+    return varMap
+
