@@ -3,6 +3,8 @@ import math
 import platform
 
 
+variableSpan = 0.2
+
 
 class simulationConfig():
     def __init__(self, yamlFileAddress):
@@ -20,8 +22,7 @@ class simulationConfig():
         self.codeBase = yamlObj[codeBaseName] if codeBaseName in yamlObj else []
         self.profileLoc = yamlObj['profileLoc'] if 'profileLoc' in yamlObj else '.'
         self.simLength = yamlObj['length'] if 'length' in yamlObj else self.eventWindowEnd
-        
-        
+                
         
 class variableConfig():
 
@@ -52,8 +53,8 @@ def getAllVariableConfigs(yamlFileAddress):
         name = yamlVar['name']
         t = yamlVar['type']
         initialState = yamlVar['initialState']
-        lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else initialState*0.9 # Lower bound set to 90% of the initial state.
-        upperLimit = yamlVar['upperLimit'] if 'lowerLimit' in yamlVar else initialState*1.1
+        lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else initialState*(1 - variableSpan) # Lower bound set to 90% of the initial state.
+        upperLimit = yamlVar['upperLimit'] if 'lowerLimit' in yamlVar else initialState*(1 + variableSpan)
         mappedName = yamlVar['mappedName'] if 'mappedName' in yamlVar else name
         variableCon = variableConfig(name = name, 
                                     initial=initialState, 
@@ -66,15 +67,4 @@ def getAllVariableConfigs(yamlFileAddress):
 
     
 
-def getVariablesDict(variables):
-    varMap = {}
-    for var in [v for v in variables if v.varType.lower() != 'timeindep']: 
-        varMap[var.name] = var
-    return varMap    
-
-def getTimeIndepVarsDict(variables):
-    varMap = {}
-    for var in [v for v in variables if v.varType.lower() == 'timeindep']:
-        varMap[var.name] = var
-    return varMap
 

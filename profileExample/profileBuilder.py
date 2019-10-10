@@ -1,6 +1,8 @@
 import csv
 from math import sin,cos
 from yamlParseObjects.yamlObjects import *
+from yamlParseObjects.variablesUtil import *
+
 from abc import ABC, abstractmethod, ABCMeta
 import logging
 import os
@@ -27,13 +29,15 @@ def buildSampleProfile(fileLoc = '.', fileName = 'sample'):
     print(f'The sample profile location: {os.path.abspath(fileNameExt)}')
     with open(fileNameExt, 'w', newline='') as csvFile: 
         csvWriter = csv.writer(csvFile)
-        csvWriter.writerow(['Time','var1','var2'])
+        csvWriter.writerow(['Time','var1','var2', 'loadArate', 'loadBrate'])
         t = 0.0
         tStep = 0.01
         while t < 210.0 + tStep:
             data = [float("{0:.10f}".format(t)), 
                     float("{0:.10f}".format(7+1.0*sin(t*4))),  
-                    float("{0:.10f}".format(3 + 2* cos(t)))]
+                    float("{0:.10f}".format(3 + 2* cos(t))),
+                    4.5,
+                    4.5]
             csvWriter.writerow(data)
             t += tStep
     logging.info(f'The sample profile is created in {os.path.abspath(fileNameExt)}')
@@ -57,6 +61,28 @@ def buildInitialCsv(variables, simConfig, fileLoc='.', fileName = 'profile'):
         scenarioStartPoint = [simConfig.eventWindowStart] + [var.initialState for var in variables]
         csvwriter.writerow(scenarioStartPoint)
     return 
+
+
+# This is a generic scenario for sensitivity analysis of PGM. Just a ramp up and ramp down of the loads
+def buildGenericScenarioCsv(variables, simConfig, fileLoc='.', fileName = 'profile'):
+    timeDepVars = getTimeDepVariables(variables)
+    varNames = ['Time'] + [var.mappedName for var in timeDepVars]
+    fileNameExt = fileLoc + '/' + fileNamePlusExt(fileName, '.csv')
+    with open(fileNameExt, 'w', newline='') as csvFile:
+        csvwriter = csv.writer(csvFile)
+        logging.info(f'Creating the initial CSV scenario file on {os.path.abspath(fileNameExt)}')
+        logging.info('These are the vatiables: ' + varNames.__str__())
+        csvwriter.writerow(varNames)
+        initialRow = [0.0] + [var.initialState for var in timeDepVars]
+        csvwriter.writerow(initialRow)
+        data = [35.0, 15.0, 15.0,4.5, 4.5]
+        csvwriter.writerow(data)
+        data = [65.0, 0.1, 0.1,4.5, 4.5]
+        csvwriter.writerow(data)
+
+        
+        
+
 
 def fileNamePlusExt(fileName, ext):
     return fileName + (ext if not fileName.endswith(ext) else '')

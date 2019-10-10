@@ -1,17 +1,17 @@
 ---
 name: var1
 type: real
-initialState: 1.0
+initialState: 0.1
 lowerLimit: 0.0
-upperLimit: 10.0
+upperLimit: 15.0
 mappedName: var1
 
 ---
 name: var2
-type: binary
-initialState: 2.0
+type: real
+initialState: 0.1
 lowerLimit: 0.0
-upperLimit: 1.0
+upperLimit: 15.0
 mappedName: var2
 
 ---
@@ -102,7 +102,7 @@ type: timeIndep
 initialState: 1.05
 
 ---
-name: SpIntyLimLow
+name: SpIntLimLow
 type: timeIndep
 initialState: -1
 
@@ -115,5 +115,11 @@ initialState: 3.14
 name: GaRaLiLow
 type: timeIndep
 initialState: 0.02
+
+---
+name: mySlider
+type: timeIndep
+initialState: 124
+mappedName: mySlider
 
 ...

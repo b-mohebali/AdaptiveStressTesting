@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 from yamlParseObjects.yamlObjects import *
+from yamlParseObjects.variablesUtil import *
 import logging 
 import os, sys
 import subprocess
@@ -42,7 +43,7 @@ buildSampleProfile(fileName='sampleProfile.csv')
 scenarioVariables = [v for v in variables if v.varType.lower() != 'timeindep']
 createMappingFile(variables = scenarioVariables,fileName='mapping', profileFileName='sampleProfile')
 
-buildInitialCsv(scenarioVariables,simConfig, fileName ='sampleProfile')
+# buildGenericScenarioCsv(scenarioVariables,simConfig, fileName ='sampleProfile')
 
 
 myEvent = VariableChangeSameTime(variables = variables[:2], simConfig = simConfig, startPoint=30, length = 15)
@@ -70,7 +71,7 @@ class PGM_control(Control):
         self.start_file      = None
         self.controls_dir    = controls_dir
         print(case_Setup.CEF_BASE_DIR)
-        self.simulation = self.pull_case(f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V3/')
+        self.simulation = self.pull_case(f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4/')
         self.dft_file = self.simulation.dft_file
         # self.simulation.set_run_function('start_case()')
         self.simulation.set_run_script('Start_Case.scr')
@@ -82,28 +83,57 @@ class PGM_control(Control):
         print('---------------')
         for dv in self.rtds_sys.get_draftvars():
             if dv['Name'] == 'myVar':
-                print(dv['Type'])
                 print('Value before change: ', dv['Value'])
                 dv['Value'] = 2.47
                 # outfile = self.dft_file.str()
-                outfile = '/home/caps/.wine/drive_c/cef/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V3/PGM_V3.dft'
-                print(outfile)
+                outfile = '/home/caps/.wine/drive_c/cef/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4/PGM_V3.dft'
                 self.rtds_sys.save_dft(fpath = outfile)
                 print('Value after change: ', dv.attrs['Value'])
                 dv.modified=True
+        for sv in self.rtds_sys.get_sliders():
+            if sv['Name']=='mySlider':
+                print('Value before change: ', sv['Init'])
+                sv['Init'] = 124
+                outfile = '/home/caps/.wine/drive_c/cef/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4/PGM_V3.dft'
+                self.rtds_sys.save_dft(fpath = outfile)
+                print('Value after change: ', sv.attrs['Init'])
+                sv.modified=True
         print('---------------')
         return
 
+    def _setVariableValues(self, randValues):
+        print('------------------------------------------------------------')
+        print('Setting draft variables to specific values within their range')
+        draftVars = self.rtds_sys.get_draftvars()
+        sliders = self.rtds_sys.get_sliders()
+        for dftVar in draftVars:
+            if dftVar['Name'] in randValues:
+                print(f'Variable name: {dftVar["Name"]}, value before change: {dftVar["Value"]}, Random value: {randValues[dftVar["Name"]]}')
+                dftVar['Value'] = randValues[dftVar['Name']]
+        for sldr in sliders:
+            if sldr['Name'] in randValues:
+                print(f'Slider name: {sldr["Name"]}, value before change: {sldr["Init"]}, Random value: {randValues[sldr["Name"]]}')
+                sldr['Init'] = randValues[sldr['Name']]
+                
+        outfile = '/home/caps/.wine/drive_c/cef/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4/PGM_V3.dft'
+        self.rtds_sys.save_dft(fpath = outfile)            
+        print('------------------------------------------------------------')
 
-        
-timeIndepVars = getTimeIndepVarsDict(variables)
-for tiVar in timeIndepVars:
-    print(timeIndepVars[tiVar])
-
+    def setVariablesToInitialState(self, variables):
+        inits = getVariablesInitialValueDict(variables)
+        self._setVariableValues(inits)
+        return 
+    
+    def setVariablesToRandom(self, variables):
+        timeIndepVars = getTimeIndepVarsDict(variables)
+        randVars = randomizeVariables(timeIndepVars)
+        self._setVariableValues(randVars)
+        return 
+    
 
 # myControl = PGM_control('', './')
 # controlsToRun = [myControl]
-# myControl.getAllVars()
+# myControl.setVariablesToRandom(variables)
 # testDropLoc = Trial.init_test_drop(myControl.NAME)
 # ctrl = myControl
 # ctrl.initialize()
@@ -111,5 +141,5 @@ for tiVar in timeIndepVars:
 # # # HACK. This checks if it has to do fm metrics. 
 # case_Setup.fm = False 
 # print('This is the end of the script')
-# # draftVars = myControl.
-# # trial.run()
+# draftVars = myControl.
+# trial.run()
