@@ -10,6 +10,7 @@ import platform
 from eventManager.eventsLogger import * 
 import csv
 import platform
+import shutil
 import numpy as np
 
 simConfig = simulationConfig('simulation.yaml')
@@ -22,8 +23,11 @@ from autoRTDS import Trial
 from controls import Control, InternalControl
 import case_Setup
 from rscad import rtds
-#-----------------------------------------------------------------------------------------
-
+#-------------------------- File path definitions ---------------------------------------------------------------
+dest = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis/'
+dataFolder = '/home/caps/.wine/drive_c/cef/Data/Automation_Output'
+currentDir = os.getcwd()
+#------------------------------------------------------------------------------
 
 variables = getAllVariableConfigs('variables.yaml')
 for v in variables: 
@@ -127,19 +131,25 @@ class PGM_control(Control):
     def setVariablesToRandom(self, variables):
         timeIndepVars = getTimeIndepVarsDict(variables)
         randVars = randomizeVariables(timeIndepVars)
+        saveVariableValues(randVars, 'variableValues.yaml')
         self._setVariableValues(randVars)
         return 
     
 
-# myControl = PGM_control('', './')
-# controlsToRun = [myControl]
-# myControl.setVariablesToRandom(variables)
-# testDropLoc = Trial.init_test_drop(myControl.NAME)
-# ctrl = myControl
-# ctrl.initialize()
-# trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-# # # HACK. This checks if it has to do fm metrics. 
-# case_Setup.fm = False 
-# print('This is the end of the script')
-# draftVars = myControl.
-# trial.run()
+myControl = PGM_control('', './')
+myControl.setVariablesToRandom(variables)
+testDropLoc = Trial.init_test_drop(myControl.NAME)
+ctrl = myControl
+ctrl.initialize()
+trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+# # HACK. This checks if it has to do fm metrics. 
+case_Setup.fm = False 
+print('This is the end of the script')
+trial.run()
+print('Done with the experiment and metrics run.')
+
+
+### This is where the output is copied to a new location. 
+newF = createNewDatafolder(dest)
+shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
+copyDataToNewLocation(newF, dataFolder)
