@@ -64,11 +64,19 @@ def createNewDatafolder(parent):
     return newFolderPath
 
 def copyDataToNewLocation(newLocation, dataFolder):
-    allFiles = [f for f in os.listdir(dataFolder) if not os.path.isdir(f'{dataFolder.rstrip("/")}/{f}')]
+    allFiles = [f for f in os.listdir(dataFolder) if not os.path.isdir(f'{dataFolder.rstrip("/")}/{f}') and f.endswith('.mat')]
     for f in allFiles:
         filePath = f'{dataFolder.rstrip("/")}/{f}'
         newPath = f'{newLocation.rstrip("/")}/{f}'
         shutil.copyfile(filePath, newPath)
     return
+
+def copyMetricScript(scriptName, location, newFolder):
+    filePath = f'{location.rstrip("/")}/{scriptName}'
+    newFilePath = f'{newFolder.rstrip("/")}/{scriptName}'
+    
+    shutil.copyfile(filePath, newFilePath)
+    return
+
 
 

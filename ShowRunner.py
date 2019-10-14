@@ -24,7 +24,7 @@ from controls import Control, InternalControl
 import case_Setup
 from rscad import rtds
 #-------------------------- File path definitions ---------------------------------------------------------------
-dest = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis/'
+dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis/'
 dataFolder = '/home/caps/.wine/drive_c/cef/Data/Automation_Output'
 currentDir = os.getcwd()
 #------------------------------------------------------------------------------
@@ -131,25 +131,33 @@ class PGM_control(Control):
     def setVariablesToRandom(self, variables):
         timeIndepVars = getTimeIndepVarsDict(variables)
         randVars = randomizeVariables(timeIndepVars)
+        os.chdir(currentDir)
+        os.remove('variableValues.yaml')
         saveVariableValues(randVars, 'variableValues.yaml')
         self._setVariableValues(randVars)
         return 
     
 
-myControl = PGM_control('', './')
-myControl.setVariablesToRandom(variables)
-testDropLoc = Trial.init_test_drop(myControl.NAME)
-ctrl = myControl
-ctrl.initialize()
-trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-# # HACK. This checks if it has to do fm metrics. 
-case_Setup.fm = False 
-print('This is the end of the script')
-trial.run()
-print('Done with the experiment and metrics run.')
+samplesNum = 200
+for counter in range(samplesNum):
+    myControl = PGM_control('', './')   
+    myControl.setVariablesToRandom(variables)
+    testDropLoc = Trial.init_test_drop(myControl.NAME)
+    ctrl = myControl
+    ctrl.initialize()
+    trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+    # # HACK. This checks if it has to do fm metrics. 
+    case_Setup.fm = False 
+    print('This is the end of the script')
+    # trial.run()
+    trial.runWithoutMetrics()
+    ### This is where the output is copied to a new location. 
+    newF = createNewDatafolder(dataRepo)
+    shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
+    copyDataToNewLocation(newF, dataFolder)
+    print('Done with the experiment and copying files to the repository.')
 
 
-### This is where the output is copied to a new location. 
-newF = createNewDatafolder(dest)
-shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
-copyDataToNewLocation(newF, dataFolder)
+
+# I don't think we need to copy the metrics file. 
+# copyMetricScript('Metrics.m', dataRepo,newF)
