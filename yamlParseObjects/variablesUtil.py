@@ -55,11 +55,21 @@ def randomizeVariablesList(variables, sampleNum, subIntervals, saveHists=False):
         # Shuffling is needed for disruption of correlation between the factors.
         np.random.shuffle(randomVar)
         randomLists[var.name] = randomVar
+        # Saving the plots of the distributions. 
         if saveHists:
             plt.figure()
-            plt.hist(x=randomVar, bins=subIntervals, range=(min(var.lowerLimit, var.upperLimit),max(var.lowerLimit, var.upperLimit)))
+            plt.hist(x=randomVar, bins=subIntervals, range=(min(var.lowerLimit, var.upperLimit),max(var.lowerLimit, var.upperLimit)), rwidth=0.95)
             plt.title(var.name)
-            plt.savefig(f'./figures/histo{var.name}.png')
+            plt.xlabel('Bins')
+            plt.ylabel('Number of samples in the bin')
+            plt.savefig(f'./figures/histo_{var.name}.png')
+            plt.close()
+            plt.figure()
+            plt.scatter(range(1,1 + sampleNum),randomVar,marker='.',s=2)
+            plt.title(f'Scatter plot of {var.name} distribution')
+            plt.savefig(f'./figures/scatter_{var.name}.png')
+            plt.xlabel('Number of sample')
+            plt.ylabel('Sample value')
             plt.close()
     randValuesList = []
     for counter in range(sampleNum):

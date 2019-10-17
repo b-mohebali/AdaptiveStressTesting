@@ -180,8 +180,8 @@ class PGM_control(Control):
 # plt.plot(randomVar)     
 # plt.show()   
 # ------------------------------------------------------------
-samplesNum = 800
-subInters = 10
+samplesNum = 450
+subInters = 15
 varDict = getTimeIndepVarsDict(variables)
 randList = randomizeVariablesList(varDict, samplesNum, subInters, saveHists=True)
 
@@ -206,6 +206,3 @@ for randVars in randList:
     print('Done with the experiment and copying files to the repository.')
 
 
-
-# I don't think we need to copy the metrics file. 
-# copyMetricScript('Metrics.m', dataRepo,newF)
