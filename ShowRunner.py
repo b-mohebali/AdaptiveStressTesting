@@ -12,7 +12,7 @@ import csv
 import platform
 import shutil
 import numpy as np
-
+import matplotlib.pyplot as plt
 simConfig = simulationConfig('simulation.yaml')
 print(simConfig.name)
 for p in simConfig.codeBase: 
@@ -24,7 +24,7 @@ from controls import Control, InternalControl
 import case_Setup
 from rscad import rtds
 #-------------------------- File path definitions ---------------------------------------------------------------
-dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis/'
+dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis2/'
 dataFolder = '/home/caps/.wine/drive_c/cef/Data/Automation_Output'
 currentDir = os.getcwd()
 #------------------------------------------------------------------------------
@@ -75,7 +75,8 @@ class PGM_control(Control):
         self.start_file      = None
         self.controls_dir    = controls_dir
         print(case_Setup.CEF_BASE_DIR)
-        self.simulation = self.pull_case(f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4/')
+        self.folder = f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4Backup'
+        self.simulation = self.pull_case(self.folder+'/')
         self.dft_file = self.simulation.dft_file
         # self.simulation.set_run_function('start_case()')
         self.simulation.set_run_script('Start_Case.scr')
@@ -90,7 +91,7 @@ class PGM_control(Control):
                 print('Value before change: ', dv['Value'])
                 dv['Value'] = 2.47
                 # outfile = self.dft_file.str()
-                outfile = '/home/caps/.wine/drive_c/cef/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4/PGM_V3.dft'
+                outfile = f'{self.folder}/PGM_V3.dft'
                 self.rtds_sys.save_dft(fpath = outfile)
                 print('Value after change: ', dv.attrs['Value'])
                 dv.modified=True
@@ -98,7 +99,7 @@ class PGM_control(Control):
             if sv['Name']=='mySlider':
                 print('Value before change: ', sv['Init'])
                 sv['Init'] = 124
-                outfile = '/home/caps/.wine/drive_c/cef/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4/PGM_V3.dft'
+                outfile = f'{self.folder}/PGM_V3.dft'
                 self.rtds_sys.save_dft(fpath = outfile)
                 print('Value after change: ', sv.attrs['Init'])
                 sv.modified=True
@@ -119,7 +120,7 @@ class PGM_control(Control):
                 print(f'Slider name: {sldr["Name"]}, value before change: {sldr["Init"]}, Random value: {randValues[sldr["Name"]]}')
                 sldr['Init'] = randValues[sldr['Name']]
                 
-        outfile = '/home/caps/.wine/drive_c/cef/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4/PGM_V3.dft'
+        outfile = f'{self.folder}/PGM_V3.dft'
         self.rtds_sys.save_dft(fpath = outfile)            
         print('------------------------------------------------------------')
 
@@ -137,11 +138,59 @@ class PGM_control(Control):
         self._setVariableValues(randVars)
         return 
     
+    # This function gets the already randomized list of the variables
+    # and their values.
+    def setVariables(self, randVars):
+        os.chdir(currentDir)
+        os.remove('variableValues.yaml')
+        saveVariableValues(randVars, 'variableValues.yaml')
+        self._setVariableValues(randVars)
+        return 
+    
+    
 
-samplesNum = 200
-for counter in range(samplesNum):
+
+#--------------------------------------------------
+# This block is meant for checking the distribution of the randomly
+# generated factors.
+#  
+# varName = 'RBkI'
+# randList = []
+# var = varDict[varName]
+# lower = min(var.lowerLimit, var.upperLimit)
+# upper = max(var.lowerLimit, var.upperLimit)
+# for _ in myRandList:
+#     randList.append(_[varName])
+#     plt.title(varName)
+# plt.hist(x=randList, bins = subInters, range = (lower,upper))
+# plt.show()
+# plt.plot(range(1,samplesNum+1),randList,marker='.')
+# plt.show()
+
+# lower = 100
+# upper = 300
+# myRand = np.random.rand(samplesNum)
+# interval = upper - lower
+# d = interval / subInters
+
+# randomVar = [rv*d + lower+(idx%subInters)*d for idx,rv in enumerate(myRand)] 
+# np.random.shuffle(randomVar)
+# plt.hist(x = randomVar, bins= subInters, range = (lower, upper))
+# plt.show()   
+# plt.plot(randomVar)     
+# plt.show()   
+# ------------------------------------------------------------
+samplesNum = 20
+subInters = 4
+varDict = getTimeIndepVarsDict(variables)
+randList = randomizeVariablesList(varDict, samplesNum, subInters, saveHists=True)
+
+
+
+for randVars in randList:
     myControl = PGM_control('', './')   
-    myControl.setVariablesToRandom(variables)
+    # myControl.setVariablesToRandom(variables)
+    myControl.setVariables(randVars)
     testDropLoc = Trial.init_test_drop(myControl.NAME)
     ctrl = myControl
     ctrl.initialize()
@@ -149,7 +198,6 @@ for counter in range(samplesNum):
     # # HACK. This checks if it has to do fm metrics. 
     case_Setup.fm = False 
     print('This is the end of the script')
-    # trial.run()
     trial.runWithoutMetrics()
     ### This is where the output is copied to a new location. 
     newF = createNewDatafolder(dataRepo)

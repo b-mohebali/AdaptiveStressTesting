@@ -3,6 +3,7 @@ import numpy as np
 import yaml
 import os
 import shutil
+import matplotlib.pyplot as plt
 
 def getTimeDepVariables(variables):
     vars = []
@@ -36,6 +37,40 @@ def randomizeVariables(variables):
         range = var.upperLimit - var.lowerLimit
         randomValues[var.name] = values[idx] * range + var.lowerLimit
     return randomValues
+
+# This function creates a list of random samples for the given variables. 
+# The creation of all the random samples for the factors can give the user 
+# the control to change the sampling method more conveniently.
+# Also this function uses stratified sampling technique to give a more uniform 
+# distribution.
+def randomizeVariablesList(variables, sampleNum, subIntervals, saveHists=False):
+    randomLists = {}
+    # Making the random lists with stratified 
+    for key in variables:
+        var = variables[key]
+        randomValues = np.random.rand(sampleNum)
+        interval = var.upperLimit - var.lowerLimit
+        d = interval / subIntervals
+        randomVar = [rv*d + var.lowerLimit+(idx%subIntervals)*d for idx,rv in enumerate(randomValues)] 
+        # Shuffling is needed for disruption of correlation between the factors.
+        np.random.shuffle(randomVar)
+        randomLists[var.name] = randomVar
+        if saveHists:
+            plt.figure()
+            plt.hist(x=randomVar, bins=subIntervals, range=(min(var.lowerLimit, var.upperLimit),max(var.lowerLimit, var.upperLimit)))
+            plt.title(var.name)
+            plt.savefig(f'./figures/histo{var.name}.png')
+            plt.close()
+    randValuesList = []
+    for counter in range(sampleNum):
+        randomSample = {}
+        for key in variables:
+            var = variables[key]
+            randomSample[var.name] = randomLists[var.name][counter]
+        randValuesList.append(randomSample)
+    return randValuesList
+
+
 
 
 def getVariablesInitialValueDict(variables):
