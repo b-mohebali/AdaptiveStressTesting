@@ -180,8 +180,8 @@ class PGM_control(Control):
 # plt.plot(randomVar)     
 # plt.show()   
 # ------------------------------------------------------------
-samplesNum = 20
-subInters = 4
+samplesNum = 800
+subInters = 10
 varDict = getTimeIndepVarsDict(variables)
 randList = randomizeVariablesList(varDict, samplesNum, subInters, saveHists=True)
 
