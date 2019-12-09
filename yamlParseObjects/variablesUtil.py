@@ -4,6 +4,7 @@ import yaml
 import os
 import shutil
 import matplotlib.pyplot as plt
+import subprocess
 
 def getTimeDepVariables(variables):
     vars = []
@@ -25,7 +26,8 @@ def getTimeIndepVarsDict(variables):
         varMap[var.name] = var
     return varMap
 
-
+def getTimeIndepVars(variables):
+    return [v for v in variables if v.varType.lower() == 'timeindep']
 
 # This function gets a list of variables config and returns a random value for each one within
 # its specified range of available values. 
@@ -80,7 +82,30 @@ def randomizeVariablesList(variables, sampleNum, subIntervals, saveHists=False):
         randValuesList.append(randomSample)
     return randValuesList
 
-
+# This function creates the samples for One-At-A-Time sensitivity analysis
+# The simulation will run the model for the factors at the extremes of their 
+# range. In the sample set, each factor has k simulation when it is at its 
+# minimum and k simulation when it is at its maximum.
+def OATSampleGenerator(varDict, addMiddle = False):
+    randValuesList = []
+    currentSample = {}
+    middleSample = {}
+    for key in varDict:
+        var = varDict[key]
+        currentSample[var.name] = var.lowerLimit
+        middleSample[var.name] = var.lowerLimit + (var.upperLimit - var.lowerLimit)/2.
+    for key in varDict:
+        var = varDict[key]
+        currentSample[var.name] = var.upperLimit
+        randValuesList.append(currentSample.copy())
+    for key in varDict:
+        var = varDict[key]
+        currentSample[var.name] = var.lowerLimit
+        randValuesList.append(currentSample.copy())
+    # Adding the middle sample:
+    if addMiddle:
+        randValuesList.append(middleSample.copy())
+    return randValuesList
 
 
 def getVariablesInitialValueDict(variables):
@@ -108,6 +133,7 @@ def createNewDatafolder(parent):
     os.mkdir(newFolderPath)
     return newFolderPath
 
+
 def copyDataToNewLocation(newLocation, dataFolder):
     allFiles = [f for f in os.listdir(dataFolder) if not os.path.isdir(f'{dataFolder.rstrip("/")}/{f}') and f.endswith('.mat')]
     for f in allFiles:
@@ -115,6 +141,24 @@ def copyDataToNewLocation(newLocation, dataFolder):
         newPath = f'{newLocation.rstrip("/")}/{f}'
         shutil.copyfile(filePath, newPath)
     return
+
+def copyDataToremoteServer(dataRepo, dataFolder):
+    cmd = f'scp -r {dataFolder} {dataRepo}'
+    print(cmd)
+    os.system(cmd)
+    return   
+
+# This function will remove the old data folders (that are already copied to the remote 
+# server) so that the number of data folders in the source repo stays 
+# at maxSize specified in the function signature. 
+def removeExtraFolders(dataFolder, maxSize):
+    s = [int(f) for f in os.listdir(dataFolder) if f.isdigit()]
+    while len(s) > maxSize:
+        toRemove = f'{dataFolder.rstrip("/")}/{min(s)}'
+        print(f'Removing {toRemove}')
+        shutil.rmtree(toRemove)
+        s = [int(f) for f in os.listdir(dataFolder) if f.isdigit()]
+    return 
 
 def copyMetricScript(scriptName, location, newFolder):
     filePath = f'{location.rstrip("/")}/{scriptName}'

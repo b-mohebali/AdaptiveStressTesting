@@ -25,8 +25,14 @@ import case_Setup
 from rscad import rtds
 #-------------------------- File path definitions ---------------------------------------------------------------
 dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis2/'
-dataFolder = '/home/caps/.wine/drive_c/cef/Data/Automation_Output'
+dataFolder = case_Setup.LOGGER_OUTPUT
+remoteRepo = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample1'
+remoteRepo2 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample2'
+
 currentDir = os.getcwd()
+isRepoRemote = True
+
+
 #------------------------------------------------------------------------------
 
 variables = getAllVariableConfigs('variables.yaml')
@@ -46,9 +52,6 @@ buildSampleProfile(fileName='sampleProfile.csv')
 # Excluding the time independent variables from the scenario.
 scenarioVariables = [v for v in variables if v.varType.lower() != 'timeindep']
 createMappingFile(variables = scenarioVariables,fileName='mapping', profileFileName='sampleProfile')
-
-# buildGenericScenarioCsv(scenarioVariables,simConfig, fileName ='sampleProfile')
-
 
 myEvent = VariableChangeSameTime(variables = variables[:2], simConfig = simConfig, startPoint=30, length = 15)
 print(myEvent)
@@ -146,10 +149,7 @@ class PGM_control(Control):
         saveVariableValues(randVars, 'variableValues.yaml')
         self._setVariableValues(randVars)
         return 
-    
-    
-
-
+        
 #--------------------------------------------------
 # This block is meant for checking the distribution of the randomly
 # generated factors.
@@ -176,33 +176,49 @@ class PGM_control(Control):
 # randomVar = [rv*d + lower+(idx%subInters)*d for idx,rv in enumerate(myRand)] 
 # np.random.shuffle(randomVar)
 # plt.hist(x = randomVar, bins= subInters, range = (lower, upper))
-# plt.show()   
+# plt.show()    
 # plt.plot(randomVar)     
 # plt.show()   
 # ------------------------------------------------------------
-samplesNum = 450
-subInters = 15
-varDict = getTimeIndepVarsDict(variables)
-randList = randomizeVariablesList(varDict, samplesNum, subInters, saveHists=True)
+
+# First order Sensitivity Analysis:
+# samplesNum = 450
+# subInters = 15
+# varDict = getTimeIndepVarsDict(variables)
+# randList = randomizeVariablesList(varDict, samplesNum, subInters, saveHists=True)
 
 
+# experimentCounter = 1
+# for randVars in randList:
+#     myControl = PGM_control('', './')   
+#     # myControl.setVariablesToRandom(variables)
+#     myControl.setVariables(randVars)
+#     testDropLoc = Trial.init_test_drop(myControl.NAME)
+#     ctrl = myControl
+#     ctrl.initialize()
+#     trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+#     # # HACK. This checks if it has to do fm metrics. 
+#     case_Setup.fm = False 
+#     trial.runWithoutMetrics()
+#     ### This is where the output is copied to a new location. 
+#     newF = createNewDatafolder(dataRepo)
+#     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
+#     copyDataToNewLocation(newF, dataFolder)
+#     copyDataToremoteServer(remoteRepo, newF)
+#     removeExtraFolders(dataRepo,3)
+#     print('removed the extra folders from the source repository.')
+#     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
+#     experimentCounter+=1
 
-for randVars in randList:
-    myControl = PGM_control('', './')   
-    # myControl.setVariablesToRandom(variables)
-    myControl.setVariables(randVars)
-    testDropLoc = Trial.init_test_drop(myControl.NAME)
-    ctrl = myControl
-    ctrl.initialize()
-    trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-    # # HACK. This checks if it has to do fm metrics. 
-    case_Setup.fm = False 
-    print('This is the end of the script')
-    trial.runWithoutMetrics()
-    ### This is where the output is copied to a new location. 
-    newF = createNewDatafolder(dataRepo)
-    shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
-    copyDataToNewLocation(newF, dataFolder)
-    print('Done with the experiment and copying files to the repository.')
+#------------------------------------------------------------------
+# One at a time experiment design sensitivity analysis:
+timeIndepVars = getTimeIndepVarsDict(variables)
+randList = OATSampleGenerator(timeIndepVars, addMiddle=True)
+
+# Printing the sample into a text file:
+f = open('OATSample.txt','w')
+for sample in randList:
+    f.write(sample.__str__() + '\n')
+f.close()
 
 

@@ -31,12 +31,6 @@ upperLimit: 4.5
 mappedName: loadBrate
 
 ---
-name: myVar
-type: timeIndep
-initialState: 2.45
-mappedName: myVar
-
----
 name: GaMaRf
 type: timeIndep
 initialState: 0.6
@@ -121,5 +115,17 @@ name: mySlider
 type: timeIndep
 initialState: 124
 mappedName: mySlider
+
+---
+name: maxPower
+type: timeIndep
+initialState: 12.5
+mappedName: maxPower
+
+---
+name: maxRampRate
+type: timeIndep
+initialState: 3.75
+mappedName: maxRampRate
 
 ...

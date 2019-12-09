@@ -10,3 +10,4 @@ simulation.yaml
 */*.pyc
 *.csv
 */*.csv
+*.txt
