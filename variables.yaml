@@ -117,15 +117,15 @@ initialState: 124
 mappedName: mySlider
 
 ---
-name: maxPower
+name: loadLimit
 type: timeIndep
 initialState: 12.5
-mappedName: maxPower
+mappedName: loadLimit
 
 ---
-name: maxRampRate
+name: customRate
 type: timeIndep
 initialState: 3.75
-mappedName: maxRampRate
+mappedName: customRate
 
 ...

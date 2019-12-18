@@ -221,4 +221,24 @@ for sample in randList:
     f.write(sample.__str__() + '\n')
 f.close()
 
-
+experimentCounter = 1
+for randVars in randList:
+    myControl = PGM_control('', './')   
+    # myControl.setVariablesToRandom(variables)
+    myControl.setVariables(randVars)
+    testDropLoc = Trial.init_test_drop(myControl.NAME)
+    ctrl = myControl
+    ctrl.initialize()
+    trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+    # # HACK. This checks if it has to do fm metrics. 
+    case_Setup.fm = False 
+    trial.runWithoutMetrics()
+    ### This is where the output is copied to a new location. 
+    newF = createNewDatafolder(dataRepo)
+    shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
+    copyDataToNewLocation(newF, dataFolder)
+    copyDataToremoteServer(remoteRepo2, newF)
+    removeExtraFolders(dataRepo,3)
+    print('removed the extra folders from the source repository.')
+    print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
+    experimentCounter+=1
