@@ -57,13 +57,13 @@ myEvent = VariableChangeSameTime(variables = variables[:2], simConfig = simConfi
 print(myEvent)
 myEvent.updateCsv('sampleProfile.csv')
 
-
 print('-----------------------------')
 with open('sampleProfile.csv', 'r', newline='') as csvFile:
     csvReader = csv.reader(csvFile)
     firstRow = next(csvReader)
 print(firstRow)
 
+#---------------------------------------------------------------
 
 # This is added from my cubicle machine.
 
@@ -182,6 +182,7 @@ class PGM_control(Control):
 # ------------------------------------------------------------
 
 # First order Sensitivity Analysis:
+
 # samplesNum = 450
 # subInters = 15
 # varDict = getTimeIndepVarsDict(variables)
@@ -212,6 +213,7 @@ class PGM_control(Control):
 
 #------------------------------------------------------------------
 # One at a time experiment design sensitivity analysis:
+
 timeIndepVars = getTimeIndepVarsDict(variables)
 randList = OATSampleGenerator(timeIndepVars, addMiddle=True)
 
@@ -242,3 +244,5 @@ for randVars in randList:
     print('removed the extra folders from the source repository.')
     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
     experimentCounter+=1
+
+

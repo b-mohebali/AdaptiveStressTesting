@@ -88,6 +88,7 @@ def fileNamePlusExt(fileName, ext):
     return fileName + (ext if not fileName.endswith(ext) else '')
 
     
+# This is written according to the format that the CEF will accept.
 def createMappingFile(variables, fileLoc = '.', fileName = 'mapping', profileFileName = 'sample'):
     fileNameExt = fileLoc + '/' + fileName + '.csv'
     profFile = profileFileName if profileFileName.endswith('.csv') else profileFileName + '.csv'
