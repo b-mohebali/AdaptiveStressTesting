@@ -5,6 +5,7 @@ import os
 import shutil
 import matplotlib.pyplot as plt
 import subprocess
+from scipy.linalg import hadamard
 
 def getTimeDepVariables(variables):
     vars = []
@@ -108,6 +109,39 @@ def OATSampleGenerator(varDict, addMiddle = False):
     return randValuesList
 
 
+def next_power_of_2(x):  
+    return 1 if x == 0 else 2**(x - 1).bit_length()
+
+
+# This function takes a LIST of the time independent variable. 
+# The output of the function is an experiment in the form of a series of 
+# simulation parameters that are generated using the Hadamard matrices. 
+# To know more about the details please refer to Saltelli's Global Sensitivity
+# Analysis, a primer book, chapter 2.  
+def fractionalFactorialExperiment(timeIndepVariables,res4=False):
+    h = getFFHMatrix(timeIndepVariables)
+    if res4:
+        M = np.concatenate((h,-h),axis = 0)
+    else:
+        M = h
+    valueList = []
+    simNumber = M.shape[0]
+    for simIndex in range(simNumber):
+        currentSample = {}
+        for varIndex,var in enumerate(timeIndepVariables):
+            currentSample[var.name] = M[simIndex, varIndex]
+        valueList.append(currentSample.copy())
+    return valueList
+
+def getFFHMatrix(vars, dtype = float):
+    k = len(vars)
+    h = hadamard(next_power_of_2(k),dtype = float)
+    for idx,var in enumerate(vars):
+        h[h[:,idx+1]==1,idx+1] = var.upperLimit
+        h[h[:,idx+1]==-1,idx+1] = var.lowerLimit
+    return h[:,1:k+1] # Only returning the part of the H matrix that is used as simulation parameters.
+
+
 def getVariablesInitialValueDict(variables):
     initials = {}
     for var in variables:
@@ -168,4 +202,8 @@ def copyMetricScript(scriptName, location, newFolder):
     return
 
 
-
+def saveSampleToTxtFile(samples, fileName):
+    with open(fileName,'w') as f:
+        for sample in samples:
+            f.write(sample.__str__() + '\n')
+ 

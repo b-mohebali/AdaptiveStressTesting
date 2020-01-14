@@ -12,7 +12,10 @@ import csv
 import platform
 import shutil
 import numpy as np
+from scipy.linalg import hadamard
 import matplotlib.pyplot as plt
+
+
 simConfig = simulationConfig('simulation.yaml')
 print(simConfig.name)
 for p in simConfig.codeBase: 
@@ -23,7 +26,7 @@ from autoRTDS import Trial
 from controls import Control, InternalControl
 import case_Setup
 from rscad import rtds
-#-------------------------- File path definitions ---------------------------------------------------------------
+-------------------------- File path definitions ---------------------------------------------------------------
 dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis2/'
 dataFolder = case_Setup.LOGGER_OUTPUT
 remoteRepo = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample1'
@@ -214,35 +217,47 @@ class PGM_control(Control):
 #------------------------------------------------------------------
 # One at a time experiment design sensitivity analysis:
 
-timeIndepVars = getTimeIndepVarsDict(variables)
-randList = OATSampleGenerator(timeIndepVars, addMiddle=True)
+# timeIndepVars = getTimeIndepVarsDict(variables)
+# randList = OATSampleGenerator(timeIndepVars, addMiddle=True)
 
 # Printing the sample into a text file:
-f = open('OATSample.txt','w')
-for sample in randList:
-    f.write(sample.__str__() + '\n')
-f.close()
+# f = open('OATSample.txt','w')
+# for sample in randList:
+#     f.write(sample.__str__() + '\n')
+# f.close()
 
-experimentCounter = 1
-for randVars in randList:
-    myControl = PGM_control('', './')   
-    # myControl.setVariablesToRandom(variables)
-    myControl.setVariables(randVars)
-    testDropLoc = Trial.init_test_drop(myControl.NAME)
-    ctrl = myControl
-    ctrl.initialize()
-    trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-    # # HACK. This checks if it has to do fm metrics. 
-    case_Setup.fm = False 
-    trial.runWithoutMetrics()
-    ### This is where the output is copied to a new location. 
-    newF = createNewDatafolder(dataRepo)
-    shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
-    copyDataToNewLocation(newF, dataFolder)
-    copyDataToremoteServer(remoteRepo2, newF)
-    removeExtraFolders(dataRepo,3)
-    print('removed the extra folders from the source repository.')
-    print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
-    experimentCounter+=1
+# experimentCounter = 1
+# for randVars in randList:
+#     myControl = PGM_control('', './')   
+#     # myControl.setVariablesToRandom(variables)
+#     myControl.setVariables(randVars)
+#     testDropLoc = Trial.init_test_drop(myControl.NAME)
+#     ctrl = myControl
+#     ctrl.initialize()
+#     trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+#     # # HACK. This checks if it has to do fm metrics. 
+#     case_Setup.fm = False 
+#     trial.runWithoutMetrics()
+#     ### This is where the output is copied to a new location. 
+#     newF = createNewDatafolder(dataRepo)
+#     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
+#     copyDataToNewLocation(newF, dataFolder)
+#     copyDataToremoteServer(remoteRepo2, newF)
+#     removeExtraFolders(dataRepo,3)
+#     print('removed the extra folders from the source repository.')
+#     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
+#     experimentCounter+=1
+
+# ----------------------------------------------------------------------
+# The Fractional Factorial Desing with Hadamard matrices:
+timeIndepVars = getTimeIndepVars(variables)
+exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+
+saveSampleToTxtFile(exper, 'FracFactEx.txt')
 
 
+
+# print(next_power_of_2(factors))
+# h = hadamard(next_power_of_2(factors), dtype = float)
+# h[h[:,1]==1,1] *= 2
+# print(h)
