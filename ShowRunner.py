@@ -254,10 +254,3 @@ timeIndepVars = getTimeIndepVars(variables)
 exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
 
 saveSampleToTxtFile(exper, 'FracFactEx.txt')
-
-
-
-# print(next_power_of_2(factors))
-# h = hadamard(next_power_of_2(factors), dtype = float)
-# h[h[:,1]==1,1] *= 2
-# print(h)
