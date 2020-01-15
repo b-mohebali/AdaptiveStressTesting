@@ -26,11 +26,12 @@ from autoRTDS import Trial
 from controls import Control, InternalControl
 import case_Setup
 from rscad import rtds
--------------------------- File path definitions ---------------------------------------------------------------
-dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis2/'
+# -------------------------- File path definitions ---------------------------------------------------------------
+dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis3/'
 dataFolder = case_Setup.LOGGER_OUTPUT
 remoteRepo = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample1'
 remoteRepo2 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample2'
+remoteRepo3 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample3'
 
 currentDir = os.getcwd()
 isRepoRemote = True
@@ -254,3 +255,26 @@ timeIndepVars = getTimeIndepVars(variables)
 exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
 
 saveSampleToTxtFile(exper, 'FracFactEx.txt')
+
+
+experimentCounter = 1
+for randVars in exper:
+    myControl = PGM_control('', './')   
+    # myControl.setVariablesToRandom(variables)
+    myControl.setVariables(randVars)
+    testDropLoc = Trial.init_test_drop(myControl.NAME)
+    ctrl = myControl
+    ctrl.initialize()
+    trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+    # # HACK. This checks if it has to do fm metrics. 
+    case_Setup.fm = False 
+    trial.runWithoutMetrics()
+    ### This is where the output is copied to a new location. 
+    newF = createNewDatafolder(dataRepo)
+    shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
+    copyDataToNewLocation(newF, dataFolder)
+    copyDataToremoteServer(remoteRepo3, newF)
+    removeExtraFolders(dataRepo,3)
+    print('removed the extra folders from the source repository.')
+    print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
+    experimentCounter+=1

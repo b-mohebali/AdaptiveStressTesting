@@ -119,23 +119,21 @@ def next_power_of_2(x):
 # To know more about the details please refer to Saltelli's Global Sensitivity
 # Analysis, a primer book, chapter 2.  
 def fractionalFactorialExperiment(timeIndepVariables,res4=False):
-    h = getFFHMatrix(timeIndepVariables)
-    if res4:
-        M = np.concatenate((h,-h),axis = 0)
-    else:
-        M = h
+    h = getFFHMatrix(timeIndepVariables, res4 = res4)
     valueList = []
-    simNumber = M.shape[0]
+    simNumber = h.shape[0]
     for simIndex in range(simNumber):
         currentSample = {}
         for varIndex,var in enumerate(timeIndepVariables):
-            currentSample[var.name] = M[simIndex, varIndex]
+            currentSample[var.name] = h[simIndex, varIndex]
         valueList.append(currentSample.copy())
     return valueList
 
-def getFFHMatrix(vars, dtype = float):
+def getFFHMatrix(vars, res4 = False, dtype = float):
     k = len(vars)
     h = hadamard(next_power_of_2(k),dtype = float)
+    if res4:
+        h = np.concatenate((h,-h),axis = 0)
     for idx,var in enumerate(vars):
         h[h[:,idx+1]==1,idx+1] = var.upperLimit
         h[h[:,idx+1]==-1,idx+1] = var.lowerLimit
