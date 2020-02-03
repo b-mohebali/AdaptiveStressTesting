@@ -119,13 +119,13 @@ mappedName: mySlider
 ---
 name: loadLimit
 type: timeIndep
-initialState: 12.5
+initialState: 15.0
 mappedName: loadLimit
 
 ---
 name: customRate
 type: timeIndep
-initialState: 3.75
+initialState: 4.5
 mappedName: customRate
 
 ...

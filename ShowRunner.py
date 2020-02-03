@@ -28,15 +28,20 @@ import case_Setup
 from rscad import rtds
 # -------------------------- File path definitions ---------------------------------------------------------------
 # Repo for the Monte-Carlo sample 
-dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis3/'
+dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis/'
 dataFolder = case_Setup.LOGGER_OUTPUT
 remoteRepo = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample1'
 # Repo for the first OAT design sample. 
 remoteRepo2 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample2'
-# Repo for res 4 fractional factorial design sample. 
+# Repo for res 4 fractional factorial design sample with 20% variations. 
 remoteRepo3 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample3'
 # repo 4 is for the second OAT sample
 remoteRepo4 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample4'
+# repo 5 is for the third OAT sample
+remoteRepo5 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample5'
+# repo 6 for Res 4 FF Design with 10% variations
+remoteRepo6 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample6'
+
 
 currentDir = os.getcwd()
 isRepoRemote = True
@@ -136,6 +141,7 @@ class PGM_control(Control):
         self.rtds_sys.save_dft(fpath = outfile)            
         print('------------------------------------------------------------')
 
+    # This function will set all the variables to their nominal values.
     def setVariablesToInitialState(self, variables):
         inits = getVariablesInitialValueDict(variables)
         self._setVariableValues(inits)
@@ -223,47 +229,17 @@ class PGM_control(Control):
 #------------------------------------------------------------------
 # One at a time experiment design sensitivity analysis:
 
-timeIndepVars = getTimeIndepVarsDict(variables)
-randList = OATSampleGenerator(timeIndepVars, addMiddle=True)
+# timeIndepVars = getTimeIndepVarsDict(variables)
+# randList = OATSampleGenerator(timeIndepVars, addMiddle=True)
 
-# Printing the sample into a text file:
-f = open('OATSample.txt','w')
-for sample in randList:
-    f.write(sample.__str__() + '\n')
-f.close()
-
-experimentCounter = 1
-for randVars in randList:
-    myControl = PGM_control('', './')   
-    # myControl.setVariablesToRandom(variables)
-    myControl.setVariables(randVars)
-    testDropLoc = Trial.init_test_drop(myControl.NAME)
-    ctrl = myControl
-    ctrl.initialize()
-    trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-    # # HACK. This checks if it has to do fm metrics. 
-    case_Setup.fm = False 
-    trial.runWithoutMetrics()
-    ### This is where the output is copied to a new location. 
-    newF = createNewDatafolder(dataRepo)
-    shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
-    copyDataToNewLocation(newF, dataFolder)
-    copyDataToremoteServer(remoteRepo4, newF)
-    removeExtraFolders(dataRepo,3)
-    print('removed the extra folders from the source repository.')
-    print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
-    experimentCounter+=1
-
-# ----------------------------------------------------------------------
-# The Fractional Factorial Desing with Hadamard matrices:
-# timeIndepVars = getTimeIndepVars(variables)
-# exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
-
-# saveSampleToTxtFile(exper, 'FracFactEx.txt')
-
+# # Printing the sample into a text file:
+# f = open('OATSample.txt','w')
+# for sample in randList:
+#     f.write(sample.__str__() + '\n')
+# f.close()
 
 # experimentCounter = 1
-# for randVars in exper:
+# for randVars in randList:
 #     myControl = PGM_control('', './')   
 #     # myControl.setVariablesToRandom(variables)
 #     myControl.setVariables(randVars)
@@ -278,8 +254,43 @@ for randVars in randList:
 #     newF = createNewDatafolder(dataRepo)
 #     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
 #     copyDataToNewLocation(newF, dataFolder)
-#     copyDataToremoteServer(remoteRepo3, newF)
+#     copyDataToremoteServer(remoteRepo5, newF)
 #     removeExtraFolders(dataRepo,3)
 #     print('removed the extra folders from the source repository.')
 #     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
 #     experimentCounter+=1
+
+# ----------------------------------------------------------------------
+# The Fractional Factorial Desing with Hadamard matrices:
+# timeIndepVars = getTimeIndepVars(variables)
+# exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+
+# saveSampleToTxtFile(exper, 'FracFactEx.txt')
+
+
+# experimentCounter = 1
+# for randVars in exper:
+#     myControl = PGM_control('', './')   
+#     myControl.setVariables(randVars)
+#     testDropLoc = Trial.init_test_drop(myControl.NAME)
+#     ctrl = myControl
+#     ctrl.initialize()
+#     trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+#     # # HACK. This checks if it has to do fm metrics. 
+#     case_Setup.fm = False 
+#     trial.runWithoutMetrics()
+#     ### This is where the output is copied to a new location. 
+#     newF = createNewDatafolder(dataRepo)
+#     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
+#     copyDataToNewLocation(newF, dataFolder)
+#     copyDataToremoteServer(remoteRepo6, newF)
+#     removeExtraFolders(dataRepo,3)
+#     print('removed the extra folders from the source repository.')
+#     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
+#     experimentCounter+=1
+
+# ----------------------------------------------------------------------
+# Returning all the variables to their standard value:
+myControl = PGM_control('', './')   
+myControl.setVariablesToInitialState(variables)
+

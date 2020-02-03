@@ -3,7 +3,7 @@ import math
 import platform
 
 
-variableSpan = 0.2
+variableSpan = 0.1
 
 
 class simulationConfig():
