@@ -41,6 +41,8 @@ remoteRepo4 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample4'
 remoteRepo5 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample5'
 # repo 6 for Res 4 FF Design with 10% variations
 remoteRepo6 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample6'
+# repo 7 for Standard OAT Samples
+remoteRepo7 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample7'
 
 
 currentDir = os.getcwd()
@@ -227,7 +229,7 @@ class PGM_control(Control):
 #     experimentCounter+=1
 
 #------------------------------------------------------------------
-# One at a time experiment design sensitivity analysis:
+# One at a time experiment design sensitivity analysis (Strict):
 
 # timeIndepVars = getTimeIndepVarsDict(variables)
 # randList = OATSampleGenerator(timeIndepVars, addMiddle=True)
@@ -237,6 +239,40 @@ class PGM_control(Control):
 # for sample in randList:
 #     f.write(sample.__str__() + '\n')
 # f.close()
+
+# experimentCounter = 1
+# for randVars in randList:
+#     myControl = PGM_control('', './')   
+#     # myControl.setVariablesToRandom(variables)
+#     myControl.setVariables(randVars)
+#     testDropLoc = Trial.init_test_drop(myControl.NAME)
+#     ctrl = myControl
+#     ctrl.initialize()
+#     trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+#     # # HACK. This checks if it has to do fm metrics. 
+#     case_Setup.fm = False 
+#     trial.runWithoutMetrics()
+#     ### This is where the output is copied to a new location. 
+#     newF = createNewDatafolder(dataRepo)
+#     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
+#     copyDataToNewLocation(newF, dataFolder)
+#     copyDataToremoteServer(remoteRepo5, newF)
+#     removeExtraFolders(dataRepo,3)
+#     print('removed the extra folders from the source repository.')
+#     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
+#     experimentCounter+=1
+
+#------------------------------------------------------------------
+# One at a time experiment design sensitivity analysis (Standard):
+
+timeIndepVars = getTimeIndepVarsDict(variables)
+randList = standardOATSampleGenerator(timeIndepVars)
+
+# Printing the sample into a text file:
+f = open('OATSampleStandard.txt','w')
+for sample in randList:
+    f.write(sample.__str__() + '\n')
+f.close()
 
 # experimentCounter = 1
 # for randVars in randList:
@@ -291,6 +327,3 @@ class PGM_control(Control):
 
 # ----------------------------------------------------------------------
 # Returning all the variables to their standard value:
-myControl = PGM_control('', './')   
-myControl.setVariablesToInitialState(variables)
-

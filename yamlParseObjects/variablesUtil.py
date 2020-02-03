@@ -108,6 +108,22 @@ def OATSampleGenerator(varDict, addMiddle = False):
         randValuesList.append(middleSample.copy())
     return randValuesList
 
+def standardOATSampleGenerator(varDict):
+    valuesList = []
+    standardSample = {}
+    for key in varDict:
+        var = varDict[key]
+        standardSample[var.name]= var.initialState
+    for key in varDict:
+        var = varDict[key]
+        nextSample = standardSample.copy()
+        nextSample[var.name] = var.upperLimit
+        valuesList.append(nextSample.copy())
+        nextSample = standardSample.copy()
+        nextSample[var.name] = var.lowerLimit
+        valuesList.append(nextSample.copy())
+    return valuesList
+
 
 def next_power_of_2(x):  
     return 1 if x == 0 else 2**(x - 1).bit_length()
