@@ -1,0 +1,28 @@
+---
+name: GaMaCf
+type: timeIndep
+initialState: 835
+
+---
+name: StatRes
+type: timeIndep
+initialState: 0.006
+
+---
+name: GaRBaUll
+type: timeIndep
+initialState: 0.1
+
+---
+name: sentinel1
+type: timeIndep
+initialState: 124
+mappedName: sentinel1
+
+---
+name: loadLimit
+type: timeIndep
+initialState: 15.0
+mappedName: loadLimit
+
+...

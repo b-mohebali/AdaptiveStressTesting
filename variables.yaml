@@ -111,10 +111,10 @@ type: timeIndep
 initialState: 0.02
 
 ---
-name: mySlider
+name: sentinel1
 type: timeIndep
 initialState: 124
-mappedName: mySlider
+mappedName: sentinel1
 
 ---
 name: loadLimit

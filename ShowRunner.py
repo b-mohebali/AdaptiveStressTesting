@@ -30,7 +30,7 @@ from rscad import rtds
 # Repo for the Monte-Carlo sample 
 dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis/'
 dataFolder = case_Setup.LOGGER_OUTPUT
-remoteRepo = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample1'
+remoteRepo  = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample1'
 # Repo for the first OAT design sample. 
 remoteRepo2 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample2'
 # Repo for res 4 fractional factorial design sample with 20% variations. 
@@ -43,6 +43,8 @@ remoteRepo5 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample5'
 remoteRepo6 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample6'
 # repo 7 for Standard OAT Samples
 remoteRepo7 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample7'
+# repo 8 for Monte-Carlo Samples with limited variable space
+remoteRepo8 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample8'
 
 
 currentDir = os.getcwd()
@@ -51,7 +53,8 @@ isRepoRemote = True
 
 #------------------------------------------------------------------------------
 
-variables = getAllVariableConfigs('variables.yaml')
+# variables = getAllVariableConfigs('variables.yaml')
+variables = getAllVariableConfigs('variables_limited.yaml')
 for v in variables: 
     print(f'Variable: {v.name}, mapped name: {v.mappedName}')
 print('---------------------------------------------------------------')
@@ -106,7 +109,7 @@ class PGM_control(Control):
     def getAllVars(self):
         print('---------------')
         for dv in self.rtds_sys.get_draftvars():
-            if dv['Name'] == 'myVar':
+            if dv['Name'] == 'myVar':  
                 print('Value before change: ', dv['Value'])
                 dv['Value'] = 2.47
                 # outfile = self.dft_file.str()
@@ -166,7 +169,7 @@ class PGM_control(Control):
         saveVariableValues(randVars, 'variableValues.yaml')
         self._setVariableValues(randVars)
         return 
-        
+          
 #--------------------------------------------------
 # This block is meant for checking the distribution of the randomly
 # generated factors.
@@ -200,33 +203,36 @@ class PGM_control(Control):
 
 # First order Sensitivity Analysis:
 
-# samplesNum = 450
-# subInters = 15
-# varDict = getTimeIndepVarsDict(variables)
-# randList = randomizeVariablesList(varDict, samplesNum, subInters, saveHists=True)
+samplesNum = 480
+subInters = 12
+varDict = getTimeIndepVarsDict(variables)
+randList = randomizeVariablesList(varDict, samplesNum, subInters, saveHists=True)
+f = open('limitedVarianceBased.txt','w')
+for sample in randList:
+    f.write(sample.__str__() + '\n')
+f.close()
 
 
-# experimentCounter = 1
-# for randVars in randList:
-#     myControl = PGM_control('', './')   
-#     # myControl.setVariablesToRandom(variables)
-#     myControl.setVariables(randVars)
-#     testDropLoc = Trial.init_test_drop(myControl.NAME)
-#     ctrl = myControl
-#     ctrl.initialize()
-#     trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-#     # # HACK. This checks if it has to do fm metrics. 
-#     case_Setup.fm = False 
-#     trial.runWithoutMetrics()
-#     ### This is where the output is copied to a new location. 
-#     newF = createNewDatafolder(dataRepo)
-#     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
-#     copyDataToNewLocation(newF, dataFolder)
-#     copyDataToremoteServer(remoteRepo, newF)
-#     removeExtraFolders(dataRepo,3)
-#     print('removed the extra folders from the source repository.')
-#     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
-#     experimentCounter+=1
+experimentCounter = 1
+for randVars in randList:
+    myControl = PGM_control('', './')   
+    myControl.setVariables(randVars)
+    testDropLoc = Trial.init_test_drop(myControl.NAME)
+    ctrl = myControl
+    ctrl.initialize()
+    trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+    # # HACK. This checks if it has to do fm metrics. 
+    case_Setup.fm = False 
+    trial.runWithoutMetrics()
+    ### This is where the output is copied to a new location. 
+    newF = createNewDatafolder(dataRepo)
+    shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
+    copyDataToNewLocation(newF, dataFolder)
+    copyDataToremoteServer(remoteRepo8, newF)
+    removeExtraFolders(dataRepo,3)
+    print('removed the extra folders from the source repository.')
+    print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
+    experimentCounter+=1
 
 #------------------------------------------------------------------
 # One at a time experiment design sensitivity analysis (Strict):
@@ -265,14 +271,14 @@ class PGM_control(Control):
 #------------------------------------------------------------------
 # One at a time experiment design sensitivity analysis (Standard):
 
-timeIndepVars = getTimeIndepVarsDict(variables)
-randList = standardOATSampleGenerator(timeIndepVars)
+# timeIndepVars = getTimeIndepVarsDict(variables)
+# randList = standardOATSampleGenerator(timeIndepVars)
 
-# Printing the sample into a text file:
-f = open('OATSampleStandard.txt','w')
-for sample in randList:
-    f.write(sample.__str__() + '\n')
-f.close()
+# # Printing the sample into a text file:
+# f = open('OATSampleStandard.txt','w')
+# for sample in randList:
+#     f.write(sample.__str__() + '\n')
+# f.close()
 
 # experimentCounter = 1
 # for randVars in randList:
@@ -290,7 +296,7 @@ f.close()
 #     newF = createNewDatafolder(dataRepo)
 #     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
 #     copyDataToNewLocation(newF, dataFolder)
-#     copyDataToremoteServer(remoteRepo5, newF)
+#     copyDataToremoteServer(remoteRepo7, newF)
 #     removeExtraFolders(dataRepo,3)
 #     print('removed the extra folders from the source repository.')
 #     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
@@ -327,3 +333,5 @@ f.close()
 
 # ----------------------------------------------------------------------
 # Returning all the variables to their standard value:
+# myControl = PGM_control('', './')   
+# myControl.setVariablesToInitialState(variables)
