@@ -1,10 +1,16 @@
 import yaml
 import math
 import platform
+from enum import Enum
+
+
+class Scale(Enum):
+    LINEAR = 1
+    LOGARITHMIC = 2
 
 
 variableSpan = 0.2
-
+variableScale = 3
 
 class simulationConfig():
     def __init__(self, yamlFileAddress):
@@ -44,7 +50,7 @@ class variableConfig():
         '''
         return descroptor.__str__()
 
-def getAllVariableConfigs(yamlFileAddress):
+def getAllVariableConfigs(yamlFileAddress, scalingScheme = Scale.LINEAR):
     with open(yamlFileAddress,'rt') as fp:
         yamlString = fp.read()
     fp.close()
@@ -53,8 +59,15 @@ def getAllVariableConfigs(yamlFileAddress):
         name = yamlVar['name']
         t = yamlVar['type']
         initialState = yamlVar['initialState']
-        lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else initialState*(1 - variableSpan) # Lower bound set to 90% of the initial state.
-        upperLimit = yamlVar['upperLimit'] if 'lowerLimit' in yamlVar else initialState*(1 + variableSpan)
+        if scalingScheme==Scale.LINEAR:
+            lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else initialState*(1 - variableSpan) # Lower bound set to 90% of the initial state.
+            upperLimit = yamlVar['upperLimit'] if 'lowerLimit' in yamlVar else initialState*(1 + variableSpan)
+        elif scalingScheme == Scale.LOGARITHMIC:
+            scales = [initialState / variableScale, initialState * variableScale]
+            lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else min(scales) # Lower bound set to 90% of the initial state.
+            upperLimit = yamlVar['upperLimit'] if 'lowerLimit' in yamlVar else max(scales)
+        
+
         mappedName = yamlVar['mappedName'] if 'mappedName' in yamlVar else name
         variableCon = variableConfig(name = name, 
                                     initial=initialState, 

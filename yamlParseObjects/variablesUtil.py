@@ -1,4 +1,5 @@
-from . import yamlObjects
+from .yamlObjects import *
+
 import numpy as np
 import yaml
 import os
@@ -6,6 +7,15 @@ import shutil
 import matplotlib.pyplot as plt
 import subprocess
 from scipy.linalg import hadamard
+
+
+def trunkatedExponential(u, a,b):
+    beta = np.e/(np.e-1.)
+    xHat = -1 * np.log(1 - u /beta)
+    x = a + xHat * (b-a)
+    return x
+
+trunkatedExponentialVec = np.vectorize(trunkatedExponential)
 
 def getTimeDepVariables(variables):
     vars = []
@@ -46,15 +56,24 @@ def randomizeVariables(variables):
 # the control to change the sampling method more conveniently.
 # Also this function uses stratified sampling technique to give a more uniform 
 # distribution.
-def randomizeVariablesList(variables, sampleNum, subIntervals, saveHists=False):
+# An addition to this function will make it able to sample from a trunkated 
+# exponential distribution instead of a uniform one. This is needed for the 
+# time when the limits of the variation range are defined as logarithmic instead 
+# of linear. 
+def randomizeVariablesList(variables, sampleNum, subIntervals,scalingScheme = Scale.LINEAR, saveHists=False):
     randomLists = {}
     # Making the random lists with stratified 
     for key in variables:
         var = variables[key]
         randomValues = np.random.rand(sampleNum)
-        interval = var.upperLimit - var.lowerLimit
-        d = interval / subIntervals
-        randomVar = [rv*d + var.lowerLimit+(idx%subIntervals)*d for idx,rv in enumerate(randomValues)] 
+        if scalingScheme == Scale.LINEAR:
+            interval = var.upperLimit - var.lowerLimit
+            d = interval / subIntervals
+            randomVar = [rv*d + var.lowerLimit+(idx%subIntervals)*d for idx,rv in enumerate(randomValues)] 
+        elif scalingScheme == Scale.LOGARITHMIC:
+            d = 1. / subIntervals
+            stratified = [rv*d + d*(idx%subIntervals) for idx, rv in enumerate(randomValues)] 
+            randomVar = trunkatedExponentialVec(stratified, var.lowerLimit, var.upperLimit)
         # Shuffling is needed for disruption of correlation between the factors.
         np.random.shuffle(randomVar)
         randomLists[var.name] = randomVar
@@ -221,3 +240,5 @@ def saveSampleToTxtFile(samples, fileName):
         for sample in samples:
             f.write(sample.__str__() + '\n')
  
+
+
