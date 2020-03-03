@@ -14,9 +14,9 @@ import shutil
 import numpy as np
 from scipy.linalg import hadamard
 import matplotlib.pyplot as plt
+from enum import Enum
 
-
-simConfig = simulationConfig('simulation.yaml')
+simConfig = simulationConfig('./yamlFiles/simulation.yaml')
 print(simConfig.name)
 for p in simConfig.codeBase: 
     sys.path.insert(0,p)
@@ -52,17 +52,18 @@ remoteRepo10 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample10'
 # repo 11 for FFD with larger limits (50%) and the new scenario (just high load with a fixed length)
 # Also the filter parameters are unified for both windings
 remoteRepo11 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample11'
-
+# This sample is mean for verification of the results for other samples.
+remoteRepo12 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample12'
 
 currentDir = os.getcwd()
 isRepoRemote = True
 
-#------------------------------------------------------------------------------
+#------------------------------- Setting up the variables -----------------------------------------------
 
-variables = getAllVariableConfigs('variables.yaml', scalingScheme=Scale.LOGARITHMIC)
+variables = getAllVariableConfigs('./yamlFiles/variables.yaml', scalingScheme=Scale.LINEAR)
 # variables = getAllVariableConfigs('variables_limited.yaml', scalingScheme=Scale.LOGARITHMIC)
 for v in variables: 
-    print(f'Variable: {v.name}, mapped name: {v.mappedName}')
+    print(f'Variable: {v.name}, mapped name: {v.mappedName}, Initial value: {v.initialState}')
 print('---------------------------------------------------------------')
 logFile = getLoggerFileAddress(fileName='MyLoggerFile')
 
@@ -72,24 +73,27 @@ logging.basicConfig(filename=logFile, filemode='w',
 
 logging.debug('This is the debug message from the CAPS machine...')
 
-buildSampleProfile(fileName='sampleProfile.csv')
+# buildSampleProfile(fileName='sampleProfile.csv')
 
-# Excluding the time independent variables from the scenario.
-scenarioVariables = [v for v in variables if v.varType.lower() != 'timeindep']
-createMappingFile(variables = scenarioVariables,fileName='mapping', profileFileName='sampleProfile')
+# # Excluding the time independent variables from the scenario.
+# scenarioVariables = [v for v in variables if v.varType.lower() != 'timeindep']
+# createMappingFile(variables = scenarioVariables,fileName='mapping', profileFileName='sampleProfile')
 
-myEvent = VariableChangeSameTime(variables = variables[:2], simConfig = simConfig, startPoint=30, length = 15)
-print(myEvent)
-myEvent.updateCsv('sampleProfile.csv')
+# myEvent = VariableChangeSameTime(variables = variables[:2], simConfig = simConfig, startPoint=30, length = 15)
+# print(myEvent)
+# myEvent.updateCsv('sampleProfile.csv')
 
-print('-----------------------------')
-with open('sampleProfile.csv', 'r', newline='') as csvFile:
-    csvReader = csv.reader(csvFile)
-    firstRow = next(csvReader)# repo 10 for FFD with larger limits (50%) and the new scenario (just high load with a fixed length)
-print(firstRow)
+# print('-----------------------------')
+# with open('sampleProfile.csv', 'r', newline='') as csvFile:
+#     csvReader = csv.reader(csvFile)
+#     firstRow = next(csvReader)# repo 10 for FFD with larger limits (50%) and the new scenario (just high load with a fixed length)
+# print(firstRow)
 
 
 # This is added from my cubicle machine.
+class SaveType(Enum):
+    SAVE_ALL = 1
+    SAVE_ONE = 2
 
 class PGM_control(Control):
     NAME = 'PGM_control'
@@ -157,7 +161,7 @@ class PGM_control(Control):
         self._setVariableValues(inits)
         return 
     
-    def setVariablesToRandom(self, variables):
+    def setVariablesToRandom(self, variables, variableFile = SaveType.SAVE_ALL):
         timeIndepVars = getTimeIndepVarsDict(variables)
         randVars = randomizeVariables(timeIndepVars)
         os.chdir(currentDir)
@@ -168,7 +172,7 @@ class PGM_control(Control):
     
     # This function gets the already randomized list of the variables
     # and their values.
-    def setVariables(self, randVars):
+    def setVariables(self, randVars, variableFile = SaveType.SAVE_ALL):
         os.chdir(currentDir)
         os.remove('variableValues.yaml')
         saveVariableValues(randVars, 'variableValues.yaml')
@@ -177,13 +181,41 @@ class PGM_control(Control):
         
 # ------------------------------------------------------------
 
+
+
+
+#-------------------------------------------------------------
+def runSample(sampleDictList, dFolder, dRepo, remoteRepo):
+    experimentCounter = 1
+    emptyFolder(dRepo)
+    for sample in sampleDictList:
+        myControl = PGM_control('', './')   
+        myControl.setVariables(sample)
+        testDropLoc = Trial.init_test_drop(myControl.NAME)
+        ctrl = myControl
+        ctrl.initialize()
+        trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+        # # HACK. This checks if it has to do fm metrics. 
+        case_Setup.fm = False 
+        trial.runWithoutMetrics()
+        ### This is where the output is copied to a new location. 
+        newF = createNewDatafolder(dRepo)
+        shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
+        copyDataToNewLocation(newF, dFolder)
+        copyDataToremoteServer(remoteRepo, newF)
+        removeExtraFolders(dRepo,3)
+        print('removed the extra folders from the source repository.')
+        print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
+        experimentCounter+=1  
+    return
+ 
 # First order Sensitivity Analysis:
 
 # samplesNum = 960
 # subInters = 16
 # varDict = getTimeIndepVarsDict(variables)
 # randList = randomizeVariablesList(varDict, samplesNum, subInters,scalingScheme=Scale.LOGARITHMIC, saveHists=True)
-# f = open('limitedVarianceBased.txt','w')
+# f = open('./experiments/limitedVarianceBased.txt','w')
 # for sample in randList:
 #     f.write(sample.__str__() + '\n')
 # f.close()
@@ -245,33 +277,52 @@ class PGM_control(Control):
 
 # ----------------------------------------------------------------------
 # The Fractional Factorial Desing with Hadamard matrices:
-timeIndepVars = getTimeIndepVars(variables)
-exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
-saveSampleToTxtFile(exper, 'FracFactEx.txt')
+# timeIndepVars = getTimeIndepVars(variables)
+# exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+# saveSampleToTxtFile(exper, './experiments/FracFactEx.txt')
 
-
-experimentCounter = 1
-for randVars in exper:
-    myControl = PGM_control('', './')   
-    myControl.setVariables(randVars)
-    testDropLoc = Trial.init_test_drop(myControl.NAME)
-    ctrl = myControl
-    ctrl.initialize()
-    trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-    # # HACK. This checks if it has to do fm metrics. 
-    case_Setup.fm = False 
-    trial.runWithoutMetrics()
-    ### This is where the output is copied to a new location. 
-    newF = createNewDatafolder(dataRepo)
-    shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
-    copyDataToNewLocation(newF, dataFolder)
-    copyDataToremoteServer(remoteRepo11, newF)
-    removeExtraFolders(dataRepo,3)
-    print('removed the extra folders from the source repository.')
-    print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
-    experimentCounter+=1
+# experimentCounter = 1
+# for randVars in exper:
+#     myControl = PGM_control('', './')   
+#     myControl.setVariables(randVars)
+#     testDropLoc = Trial.init_test_drop(myControl.NAME)
+#     ctrl = myControl
+#     ctrl.initialize()
+#     trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+#     # # HACK. This checks if it has to do fm metrics. 
+#     case_Setup.fm = False 
+#     trial.runWithoutMetrics()
+#     ### This is where the output is copied to a new location. 
+#     newF = createNewDatafolder(dataRepo)
+#     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
+#     copyDataToNewLocation(newF, dataFolder)
+#     copyDataToremoteServer(remoteRepo11, newF)
+#     removeExtraFolders(dataRepo,3)
+#     print('removed the extra folders from the source repository.')
+#     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
+#     experimentCounter+=1
 
 # ----------------------------------------------------------------------
 # Returning all the variables to their standard value:
 # myControl = PGM_control('', './')   
 # myControl.setVariablesToInitialState(variables)
+
+
+
+#---------------------------------------------------------------------
+# Verification sample:
+timeIndepVars = getTimeIndepVars(variables)
+
+# exper = generateVerifSample(timeIndepVars)
+# saveSampleToTxtFile(exper, './experiments/VerifSample.txt')
+# runSample(sampleDictList=exper,dFolder=dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo12)
+
+# Standard OAT sample:
+stanOATSample = standardOATSampleGenerator(timeIndepVars)
+saveSampleToTxtFile(stanOATSample, './experiments/OATSampleStandard.txt')
+runSample(sampleDictList=stanOATSample,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo7)
+
+# Wide range FFD sample 
+exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+saveSampleToTxtFile(exper, './experiments/FracFactEx.txt')
+runSample(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo11)

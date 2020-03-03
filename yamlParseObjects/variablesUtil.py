@@ -23,7 +23,11 @@ def getTimeDepVariables(variables):
         vars.append(var)
     return vars
 
-
+def getTimeindepVariablesDict(variables):
+    varMap = {}
+    for var in [v for v in variables if v.varType.lower() == 'timeindep']: 
+        varMap[var.name] = var
+    return varMap    
 
 def getVariablesDict(variables):
     varMap = {}
@@ -127,7 +131,8 @@ def OATSampleGenerator(varDict, addMiddle = False):
         randValuesList.append(middleSample.copy())
     return randValuesList
 
-def standardOATSampleGenerator(varDict):
+def standardOATSampleGenerator(variables):
+    varDict = getTimeindepVariablesDict(variables)
     valuesList = []
     standardSample = {}
     for key in varDict:
@@ -183,11 +188,11 @@ def getVariablesInitialValueDict(variables):
 
 # This function gets a dictionary of variables and their values and 
 # saves them in a yaml file.
-def saveVariableValues(variables, fileName):
-    print("This is the variables map: " , variables)
+def saveVariableValues(varDict, fileName):
+    print("This is the variables map: " , varDict)
     v={}
-    for key in variables:
-        v[key] = float(variables[key]) 
+    for key in varDict:
+        v[key] = float(varDict[key]) 
     with open(fileName, 'w') as outFile:
         yaml.dump(v, outFile, default_flow_style=False)
     return
@@ -227,6 +232,15 @@ def removeExtraFolders(dataFolder, maxSize):
         s = [int(f) for f in os.listdir(dataFolder) if f.isdigit()]
     return 
 
+def emptyFolder(folderName):
+    s = [int(f) for f in os.listdir(folderName) if f.isdigit()]
+    for f in s:
+        toRemove = f'{folderName.rstrip("/")}/{f}'
+        print(f'Removing {toRemove}')
+        shutil.rmtree(toRemove)
+    return 
+
+    
 def copyMetricScript(scriptName, location, newFolder):
     filePath = f'{location.rstrip("/")}/{scriptName}'
     newFilePath = f'{newFolder.rstrip("/")}/{scriptName}'
@@ -241,4 +255,29 @@ def saveSampleToTxtFile(samples, fileName):
             f.write(sample.__str__() + '\n')
  
 
+# This function will generate the samples needed for verification of the 
+# samples (FFD and OAT). The idea is to check the variation of the output
+# around the initial point with logarithmic scales. 
+def generateVerifSample(variables):
+    varInitial = getVariablesInitialValueDict(variables)
+    varDict = getTimeindepVariablesDict(variables)
+    sampleList = []
+    sampleList.append(varInitial.copy())
+    scales = [0.1,0.5,2,10]
+    for key in varInitial:
+        var = varDict[key]
+        for scale in scales:
+            currentSample = varInitial.copy()
+            currentSample[key] = currentSample[key] * scale
+            if currentSample[key] > var.upperLimit: 
+                currentSample[key] = var.upperLimit
+            if currentSample[key] < var.lowerLimit:
+                currentSample[key] = var.lowerLimit
+            sampleList.append(currentSample.copy())
+    return sampleList
 
+def findDifferentValue(baseLine, sample):
+    for key in baseLine:
+        if baseLine[key] != sample[key]:
+            return key
+    return None

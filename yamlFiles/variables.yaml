@@ -28,7 +28,6 @@ initialState: 0.0084
 name: GaRBbUll
 type: timeIndep
 initialState: 0.1
-
 ---
 name: GaRBbUlr
 type: timeIndep
@@ -43,13 +42,7 @@ mappedName: sentinel1
 ---
 name: loadLimit
 type: timeIndep
-initialState: 15.0
+initialState: 10.0
 mappedName: loadLimit
-
----
-name: customRate
-type: timeIndep
-initialState: 4.5
-mappedName: customRate
 
 ...
