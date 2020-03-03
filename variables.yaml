@@ -1,34 +1,3 @@
----
-name: var1
-type: real
-initialState: 0.1
-lowerLimit: 0.0
-upperLimit: 15.0
-mappedName: var1
-
----
-name: var2
-type: real
-initialState: 0.1
-lowerLimit: 0.0
-upperLimit: 15.0
-mappedName: var2
-
----
-name: loadArate
-type: real
-initialState: 4.5
-lowerLimit: 0.0
-upperLimit: 4.5
-mappedName: loadArate
-
----
-name: loadBrate
-type: real
-initialState: 4.5
-lowerLimit: 0.0
-upperLimit: 4.5
-mappedName: loadBrate
 
 ---
 name: GaMaRf
@@ -46,31 +15,6 @@ type: timeIndep
 initialState: 0.006
 
 ---
-name: StatReac
-type: timeIndep
-initialState: 0.08
-
----
-name: RBkp
-type: timeIndep
-initialState: 1
-
----
-name: RBkI
-type: timeIndep
-initialState: 100
-
----
-name: GOVkp
-type: timeIndep
-initialState: 10
-
----
-name: GOVkI
-type: timeIndep
-initialState: 2
-
----
 name: GaRBaUll
 type: timeIndep
 initialState: 0.1
@@ -81,34 +25,14 @@ type: timeIndep
 initialState: 0.0084
 
 ---
-name: GBkp
+name: GaRBbUll
 type: timeIndep
-initialState: 1
+initialState: 0.1
 
 ---
-name: GBkI
+name: GaRBbUlr
 type: timeIndep
-initialState: 100
-
----
-name: SpIntLimHigh
-type: timeIndep
-initialState: 1.05
-
----
-name: SpIntLimLow
-type: timeIndep
-initialState: -1
-
----
-name: GaRaLiHigh
-type: timeIndep
-initialState: 3.14
-
----
-name: GaRaLiLow
-type: timeIndep
-initialState: 0.02
+initialState: 0.0084
 
 ---
 name: sentinel1

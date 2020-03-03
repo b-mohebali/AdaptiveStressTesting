@@ -9,8 +9,8 @@ class Scale(Enum):
     LOGARITHMIC = 2
 
 
-variableSpan = 0.2
-variableScale = 3
+variableSpan = 0.5
+variableScale = 2
 
 class simulationConfig():
     def __init__(self, yamlFileAddress):
@@ -61,11 +61,11 @@ def getAllVariableConfigs(yamlFileAddress, scalingScheme = Scale.LINEAR):
         initialState = yamlVar['initialState']
         if scalingScheme==Scale.LINEAR:
             lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else initialState*(1 - variableSpan) # Lower bound set to 90% of the initial state.
-            upperLimit = yamlVar['upperLimit'] if 'lowerLimit' in yamlVar else initialState*(1 + variableSpan)
+            upperLimit = yamlVar['upperLimit'] if 'upperLimit' in yamlVar else initialState*(1 + variableSpan)
         elif scalingScheme == Scale.LOGARITHMIC:
             scales = [initialState / variableScale, initialState * variableScale]
             lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else min(scales) # Lower bound set to 90% of the initial state.
-            upperLimit = yamlVar['upperLimit'] if 'lowerLimit' in yamlVar else max(scales)
+            upperLimit = yamlVar['upperLimit'] if 'upperLimit' in yamlVar else max(scales)
         
 
         mappedName = yamlVar['mappedName'] if 'mappedName' in yamlVar else name

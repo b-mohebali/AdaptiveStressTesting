@@ -45,17 +45,21 @@ remoteRepo6 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample6'
 remoteRepo7 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample7'
 # repo 8 for Monte-Carlo Samples with limited variable space
 remoteRepo8 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample8'
-# repo 8 for Monte-Carlo Samples with limited variable space with logarithmic range.
+# repo 9 for Monte-Carlo Samples with limited variable space with logarithmic range.
 remoteRepo9 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample9'
+# repo 10 for FFD with larger limits (50%) and the new scenario (just high load with a fixed length)
+remoteRepo10 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample10'
+# repo 11 for FFD with larger limits (50%) and the new scenario (just high load with a fixed length)
+# Also the filter parameters are unified for both windings
+remoteRepo11 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample11'
 
 
 currentDir = os.getcwd()
 isRepoRemote = True
 
-
 #------------------------------------------------------------------------------
 
-variables = getAllVariableConfigs('variables.yaml')
+variables = getAllVariableConfigs('variables.yaml', scalingScheme=Scale.LOGARITHMIC)
 # variables = getAllVariableConfigs('variables_limited.yaml', scalingScheme=Scale.LOGARITHMIC)
 for v in variables: 
     print(f'Variable: {v.name}, mapped name: {v.mappedName}')
@@ -81,10 +85,9 @@ myEvent.updateCsv('sampleProfile.csv')
 print('-----------------------------')
 with open('sampleProfile.csv', 'r', newline='') as csvFile:
     csvReader = csv.reader(csvFile)
-    firstRow = next(csvReader)
+    firstRow = next(csvReader)# repo 10 for FFD with larger limits (50%) and the new scenario (just high load with a fixed length)
 print(firstRow)
 
-#---------------------------------------------------------------
 
 # This is added from my cubicle machine.
 
@@ -171,48 +174,19 @@ class PGM_control(Control):
         saveVariableValues(randVars, 'variableValues.yaml')
         self._setVariableValues(randVars)
         return 
-          
-#--------------------------------------------------
-# This block is meant for checking the distribution of the randomly
-# generated factors.
-#  
-# varName = 'RBkI'
-# randList = []
-# var = varDict[varName]
-# lower = min(var.lowerLimit, var.upperLimit)
-# upper = max(var.lowerLimit, var.upperLimit)
-# for _ in myRandList:
-#     randList.append(_[varName])
-#     plt.title(varName)
-# plt.hist(x=randList, bins = subInters, range = (lower,upper))
-# plt.show()
-# plt.plot(range(1,samplesNum+1),randList,marker='.')
-# plt.show()
-
-# lower = 100
-# upper = 300
-# myRand = np.random.rand(samplesNum)
-# interval = upper - lower
-# d = interval / subInters
-
-# randomVar = [rv*d + lower+(idx%subInters)*d for idx,rv in enumerate(myRand)] 
-# np.random.shuffle(randomVar)
-# plt.hist(x = randomVar, bins= subInters, range = (lower, upper))
-# plt.show()    
-# plt.plot(randomVar)     
-# plt.show()   
+        
 # ------------------------------------------------------------
 
 # First order Sensitivity Analysis:
 
-samplesNum = 960
-subInters = 16
-varDict = getTimeIndepVarsDict(variables)
-randList = randomizeVariablesList(varDict, samplesNum, subInters,scalingScheme=Scale.LOGARITHMIC, saveHists=True)
-f = open('limitedVarianceBased.txt','w')
-for sample in randList:
-    f.write(sample.__str__() + '\n')
-f.close()
+# samplesNum = 960
+# subInters = 16
+# varDict = getTimeIndepVarsDict(variables)
+# randList = randomizeVariablesList(varDict, samplesNum, subInters,scalingScheme=Scale.LOGARITHMIC, saveHists=True)
+# f = open('limitedVarianceBased.txt','w')
+# for sample in randList:
+#     f.write(sample.__str__() + '\n')
+# f.close()
 
 
 # experimentCounter = 1
@@ -235,41 +209,6 @@ f.close()
 #     print('removed the extra folders from the source repository.')
 #     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
 #     experimentCounter+=1
-
-#------------------------------------------------------------------
-# One at a time experiment design sensitivity analysis (Strict):
-
-# timeIndepVars = getTimeIndepVarsDict(variables)
-# randList = OATSampleGenerator(timeIndepVars, addMiddle=True)
-
-# # Printing the sample into a text file:
-# f = open('OATSample.txt','w')
-# for sample in randList:
-#     f.write(sample.__str__() + '\n')
-# f.close()
-
-# experimentCounter = 1
-# for randVars in randList:
-#     myControl = PGM_control('', './')   
-#     # myControl.setVariablesToRandom(variables)
-#     myControl.setVariables(randVars)
-#     testDropLoc = Trial.init_test_drop(myControl.NAME)
-#     ctrl = myControl
-#     ctrl.initialize()
-#     trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-#     # # HACK. This checks if it has to do fm metrics. 
-#     case_Setup.fm = False 
-#     trial.runWithoutMetrics()
-#     ### This is where the output is copied to a new location. 
-#     newF = createNewDatafolder(dataRepo)
-#     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
-#     copyDataToNewLocation(newF, dataFolder)
-#     copyDataToremoteServer(remoteRepo5, newF)
-#     removeExtraFolders(dataRepo,3)
-#     print('removed the extra folders from the source repository.')
-#     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
-#     experimentCounter+=1
-
 #------------------------------------------------------------------
 # One at a time experiment design sensitivity analysis (Standard):
 
@@ -306,34 +245,33 @@ f.close()
 
 # ----------------------------------------------------------------------
 # The Fractional Factorial Desing with Hadamard matrices:
-# timeIndepVars = getTimeIndepVars(variables)
-# exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+timeIndepVars = getTimeIndepVars(variables)
+exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+saveSampleToTxtFile(exper, 'FracFactEx.txt')
 
-# saveSampleToTxtFile(exper, 'FracFactEx.txt')
 
-
-# experimentCounter = 1
-# for randVars in exper:
-#     myControl = PGM_control('', './')   
-#     myControl.setVariables(randVars)
-#     testDropLoc = Trial.init_test_drop(myControl.NAME)
-#     ctrl = myControl
-#     ctrl.initialize()
-#     trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-#     # # HACK. This checks if it has to do fm metrics. 
-#     case_Setup.fm = False 
-#     trial.runWithoutMetrics()
-#     ### This is where the output is copied to a new location. 
-#     newF = createNewDatafolder(dataRepo)
-#     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
-#     copyDataToNewLocation(newF, dataFolder)
-#     copyDataToremoteServer(remoteRepo6, newF)
-#     removeExtraFolders(dataRepo,3)
-#     print('removed the extra folders from the source repository.')
-#     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
-#     experimentCounter+=1
+experimentCounter = 1
+for randVars in exper:
+    myControl = PGM_control('', './')   
+    myControl.setVariables(randVars)
+    testDropLoc = Trial.init_test_drop(myControl.NAME)
+    ctrl = myControl
+    ctrl.initialize()
+    trial = Trial(ctrl, ctrl.simulation, testDropLoc)
+    # # HACK. This checks if it has to do fm metrics. 
+    case_Setup.fm = False 
+    trial.runWithoutMetrics()
+    ### This is where the output is copied to a new location. 
+    newF = createNewDatafolder(dataRepo)
+    shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
+    copyDataToNewLocation(newF, dataFolder)
+    copyDataToremoteServer(remoteRepo11, newF)
+    removeExtraFolders(dataRepo,3)
+    print('removed the extra folders from the source repository.')
+    print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
+    experimentCounter+=1
 
 # ----------------------------------------------------------------------
 # Returning all the variables to their standard value:
-myControl = PGM_control('', './')   
-myControl.setVariablesToInitialState(variables)
+# myControl = PGM_control('', './')   
+# myControl.setVariablesToInitialState(variables)
