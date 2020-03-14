@@ -15,6 +15,7 @@ import numpy as np
 from scipy.linalg import hadamard
 import matplotlib.pyplot as plt
 from enum import Enum
+import time
 
 simConfig = simulationConfig('./yamlFiles/simulation.yaml')
 print(simConfig.name)
@@ -26,37 +27,9 @@ from autoRTDS import Trial
 from controls import Control, InternalControl
 import case_Setup
 from rscad import rtds
+from repositories import *
 # -------------------------- File path definitions ---------------------------------------------------------------
-# Repo for the Monte-Carlo sample 
-dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis/'
-dataFolder = case_Setup.LOGGER_OUTPUT
-remoteRepo  = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample1'
-# Repo for the first OAT design sample. 
-remoteRepo2 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample2'
-# Repo for res 4 fractional factorial design sample with 20% variations. 
-remoteRepo3 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample3'
-# repo 4 is for the second OAT sample
-remoteRepo4 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample4'
-# repo 5 is for the third OAT sample
-remoteRepo5 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample5'
-# repo 6 for Res 4 FF Design with 10% variations
-remoteRepo6 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample6'
-# repo 7 for Standard OAT Samples
-remoteRepo7 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample7'
-# repo 8 for Monte-Carlo Samples with limited variable space
-remoteRepo8 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample8'
-# repo 9 for Monte-Carlo Samples with limited variable space with logarithmic range.
-remoteRepo9 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample9'
-# repo 10 for FFD with larger limits (50%) and the new scenario (just high load with a fixed length)
-remoteRepo10 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample10'
-# repo 11 for FFD with larger limits (50%) and the new scenario (just high load with a fixed length)
-# Also the filter parameters are unified for both windings
-remoteRepo11 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample11'
-# This sample is mean for verification of the results for other samples.
-remoteRepo12 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample12'
 
-currentDir = os.getcwd()
-isRepoRemote = True
 
 #------------------------------- Setting up the variables -----------------------------------------------
 
@@ -151,8 +124,9 @@ class PGM_control(Control):
                 print(f'Slider name: {sldr["Name"]}, value before change: {sldr["Init"]}, Random value: {randValues[sldr["Name"]]}')
                 sldr['Init'] = randValues[sldr['Name']]
                 
-        outfile = f'{self.folder}/PGM_V3.dft'
-        self.rtds_sys.save_dft(fpath = outfile)            
+        outfile = f'/home/caps/.wine/drive_c/testing/fileman/PGM_V3.dft'
+        self.rtds_sys.save_dft(fpath = outfile)    
+        # Waiting for the draft file to be saved:
         print('------------------------------------------------------------')
 
     # This function will set all the variables to their nominal values.
@@ -182,13 +156,15 @@ class PGM_control(Control):
 # ------------------------------------------------------------
 
 
-
-
 #-------------------------------------------------------------
-def runSample(sampleDictList, dFolder, dRepo, remoteRepo):
+def runSample(sampleDictList, dFolder, dRepo, remoteRepo = None, sampleGroup = None):
     experimentCounter = 1
     emptyFolder(dRepo)
-    for sample in sampleDictList:
+    indexGroup = range(1, len(sampleDictList)+1)
+    if sampleGroup is not None: 
+        indexGroup = sampleGroup
+    for sampleIndex in indexGroup:
+        sample = sampleDictList[sampleIndex - 1]
         myControl = PGM_control('', './')   
         myControl.setVariables(sample)
         testDropLoc = Trial.init_test_drop(myControl.NAME)
@@ -199,16 +175,30 @@ def runSample(sampleDictList, dFolder, dRepo, remoteRepo):
         case_Setup.fm = False 
         trial.runWithoutMetrics()
         ### This is where the output is copied to a new location. 
-        newF = createNewDatafolder(dRepo)
+        # newF = createNewDatafolder(dRepo)
+        newF = createSpecificDataFolder(dRepo, sampleIndex)
         shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
         copyDataToNewLocation(newF, dFolder)
-        copyDataToremoteServer(remoteRepo, newF)
-        removeExtraFolders(dRepo,3)
+        if remoteRepo is not None:
+            copyDataToremoteServer(remoteRepo, newF)
+            removeExtraFolders(dRepo,3)
         print('removed the extra folders from the source repository.')
         print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
         experimentCounter+=1  
     return
  
+
+def runSampleFrom(sampleDictList, dFolder, dRepo, remoteRepo = None, fromSample = None):
+    N = len(sampleDictList)
+    if fromSample is not None:
+        sampleGroup = range(fromSample, N+1)
+    else:
+        sampleGroup = range(N)
+    print('Starting sample: ')
+    print(sampleDictList[fromSample-1])
+    runSample(sampleDictList, dFolder, dRepo, remoteRepo = remoteRepo, sampleGroup=sampleGroup)
+    return
+
 # First order Sensitivity Analysis:
 
 # samplesNum = 960
@@ -315,14 +305,25 @@ timeIndepVars = getTimeIndepVars(variables)
 
 # exper = generateVerifSample(timeIndepVars)
 # saveSampleToTxtFile(exper, './experiments/VerifSample.txt')
-# runSample(sampleDictList=exper,dFolder=dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo12)
+# runSample(sampleDictList=exper,dFolder=dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo14)
 
 # Standard OAT sample:
-stanOATSample = standardOATSampleGenerator(timeIndepVars)
-saveSampleToTxtFile(stanOATSample, './experiments/OATSampleStandard.txt')
-runSample(sampleDictList=stanOATSample,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo7)
+# stanOATSample = standardOATSampleGenerator(timeIndepVars)
+# saveSampleToTxtFile(stanOATSample, './experiments/OATSampleStandard.txt')
+# runSample(sampleDictList=stanOATSample,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo7)
 
-# Wide range FFD sample 
-exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
-saveSampleToTxtFile(exper, './experiments/FracFactEx.txt')
-runSample(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo11)
+# # Wide range FFD sample 
+# exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+# saveSampleToTxtFile(exper, './experiments/FracFactEx.txt')
+# runSample(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo15)
+
+# Variance based sample
+# sampleNum = 960
+# subInters = 12
+# randList = randomizeVariablesList(timeIndepVars, sampleNum, subInters,scalingScheme=Scale.LINEAR, saveHists=False)
+# saveSampleToTxtFile(randList, './experiments/limitedVarianceBased.txt')
+randList = loadSampleFromTxtFile('./experiments/limitedVarianceBased.txt')
+# runSample(sampleDictList=randList, dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo8)
+runSampleFrom(sampleDictList= randList, dFolder = dataFolder, dRepo = dataRepo, remoteRepo=testRepo, fromSample=960)
+# loadedSample = loadSampleFromTxtFile('./experiments/limitedVarianceBased.txt')
+# print(loadedSample[12])

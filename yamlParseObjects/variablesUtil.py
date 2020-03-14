@@ -7,7 +7,7 @@ import shutil
 import matplotlib.pyplot as plt
 import subprocess
 from scipy.linalg import hadamard
-
+import ast
 
 def trunkatedExponential(u, a,b):
     beta = np.e/(np.e-1.)
@@ -67,8 +67,8 @@ def randomizeVariables(variables):
 def randomizeVariablesList(variables, sampleNum, subIntervals,scalingScheme = Scale.LINEAR, saveHists=False):
     randomLists = {}
     # Making the random lists with stratified 
-    for key in variables:
-        var = variables[key]
+    for var in variables:
+        # var = variables[key]
         randomValues = np.random.rand(sampleNum)
         if scalingScheme == Scale.LINEAR:
             interval = var.upperLimit - var.lowerLimit
@@ -100,8 +100,8 @@ def randomizeVariablesList(variables, sampleNum, subIntervals,scalingScheme = Sc
     randValuesList = []
     for counter in range(sampleNum):
         randomSample = {}
-        for key in variables:
-            var = variables[key]
+        for var in variables:
+            # var = variables[key]
             randomSample[var.name] = randomLists[var.name][counter]
         randValuesList.append(randomSample)
     return randValuesList
@@ -205,6 +205,12 @@ def createNewDatafolder(parent):
     os.mkdir(newFolderPath)
     return newFolderPath
 
+def createSpecificDataFolder(parent, folderNum):
+    newFolderPath = f'{parent.rstrip("/")}/{folderNum}/'
+    shutil.rmtree(newFolderPath, ignore_errors=True)
+    os.mkdir(newFolderPath)
+    return newFolderPath
+
 
 def copyDataToNewLocation(newLocation, dataFolder):
     allFiles = [f for f in os.listdir(dataFolder) if not os.path.isdir(f'{dataFolder.rstrip("/")}/{f}') and f.endswith('.mat')]
@@ -253,7 +259,12 @@ def saveSampleToTxtFile(samples, fileName):
     with open(fileName,'w') as f:
         for sample in samples:
             f.write(sample.__str__() + '\n')
- 
+
+def loadSampleFromTxtFile(fileName):
+    output = []
+    with open(fileName, 'r') as sampleFile:
+        output = [ast.literal_eval(l) for l in sampleFile]
+    return output 
 
 # This function will generate the samples needed for verification of the 
 # samples (FFD and OAT). The idea is to check the variation of the output
@@ -263,7 +274,7 @@ def generateVerifSample(variables):
     varDict = getTimeindepVariablesDict(variables)
     sampleList = []
     sampleList.append(varInitial.copy())
-    scales = [0.1,0.5,2,10]
+    scales = [0.2,0.5,2,5]
     for key in varInitial:
         var = varDict[key]
         for scale in scales:
@@ -271,8 +282,8 @@ def generateVerifSample(variables):
             currentSample[key] = currentSample[key] * scale
             if currentSample[key] > var.upperLimit: 
                 currentSample[key] = var.upperLimit
-            if currentSample[key] < var.lowerLimit:
-                currentSample[key] = var.lowerLimit
+            # if currentSample[key] < var.lowerLimit:
+            #     currentSample[key] = var.lowerLimit
             sampleList.append(currentSample.copy())
     return sampleList
 
