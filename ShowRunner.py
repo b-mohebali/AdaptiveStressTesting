@@ -199,98 +199,30 @@ def runSampleFrom(sampleDictList, dFolder, dRepo, remoteRepo = None, fromSample 
     runSample(sampleDictList, dFolder, dRepo, remoteRepo = remoteRepo, sampleGroup=sampleGroup)
     return
 
+#----------------------------------------------------------------
 # First order Sensitivity Analysis:
 
 # samplesNum = 960
 # subInters = 16
 # varDict = getTimeIndepVarsDict(variables)
 # randList = randomizeVariablesList(varDict, samplesNum, subInters,scalingScheme=Scale.LOGARITHMIC, saveHists=True)
-# f = open('./experiments/limitedVarianceBased.txt','w')
-# for sample in randList:
-#     f.write(sample.__str__() + '\n')
-# f.close()
+# saveSampleToTxtFile(randList, './experiments/limitedVarianceBased.txt')
+# runSampleFrom(sampleDictList= randList, dFolder = dataFolder, dRepo = dataRepo, remoteRepo=testRepo, fromSample=960)
 
 
-# experimentCounter = 1
-# for randVars in randList:
-#     myControl = PGM_control('', './')   
-#     myControl.setVariables(randVars)
-#     testDropLoc = Trial.init_test_drop(myControl.NAME)
-#     ctrl = myControl
-#     ctrl.initialize()
-#     trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-#     # # HACK. This checks if it has to do fm metrics. 
-#     case_Setup.fm = False 
-#     trial.runWithoutMetrics()
-#     ### This is where the output is copied to a new location. 
-#     newF = createNewDatafolder(dataRepo)
-#     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
-#     copyDataToNewLocation(newF, dataFolder)
-#     copyDataToremoteServer(remoteRepo9, newF)
-#     removeExtraFolders(dataRepo,3)
-#     print('removed the extra folders from the source repository.')
-#     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
-#     experimentCounter+=1
 #------------------------------------------------------------------
 # One at a time experiment design sensitivity analysis (Standard):
 
 # timeIndepVars = getTimeIndepVarsDict(variables)
 # randList = standardOATSampleGenerator(timeIndepVars)
 
-# # Printing the sample into a text file:
-# f = open('OATSampleStandard.txt','w')
-# for sample in randList:
-#     f.write(sample.__str__() + '\n')
-# f.close()
-
-# experimentCounter = 1
-# for randVars in randList:
-#     myControl = PGM_control('', './')   
-#     # myControl.setVariablesToRandom(variables)
-#     myControl.setVariables(randVars)
-#     testDropLoc = Trial.init_test_drop(myControl.NAME)
-#     ctrl = myControl
-#     ctrl.initialize()
-#     trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-#     # # HACK. This checks if it has to do fm metrics. 
-#     case_Setup.fm = False 
-#     trial.runWithoutMetrics()
-#     ### This is where the output is copied to a new location. 
-#     newF = createNewDatafolder(dataRepo)
-#     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
-#     copyDataToNewLocation(newF, dataFolder)
-#     copyDataToremoteServer(remoteRepo7, newF)
-#     removeExtraFolders(dataRepo,3)
-#     print('removed the extra folders from the source repository.')
-#     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
-#     experimentCounter+=1
 
 # ----------------------------------------------------------------------
 # The Fractional Factorial Desing with Hadamard matrices:
-# timeIndepVars = getTimeIndepVars(variables)
-# exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
-# saveSampleToTxtFile(exper, './experiments/FracFactEx.txt')
-
-# experimentCounter = 1
-# for randVars in exper:
-#     myControl = PGM_control('', './')   
-#     myControl.setVariables(randVars)
-#     testDropLoc = Trial.init_test_drop(myControl.NAME)
-#     ctrl = myControl
-#     ctrl.initialize()
-#     trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-#     # # HACK. This checks if it has to do fm metrics. 
-#     case_Setup.fm = False 
-#     trial.runWithoutMetrics()
-#     ### This is where the output is copied to a new location. 
-#     newF = createNewDatafolder(dataRepo)
-#     shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
-#     copyDataToNewLocation(newF, dataFolder)
-#     copyDataToremoteServer(remoteRepo11, newF)
-#     removeExtraFolders(dataRepo,3)
-#     print('removed the extra folders from the source repository.')
-#     print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
-#     experimentCounter+=1
+timeIndepVars = getTimeIndepVars(variables)
+exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+saveSampleToTxtFile(exper, './experiments/FracFactEx.txt')
+runSample(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo1)
 
 # ----------------------------------------------------------------------
 # Returning all the variables to their standard value:
@@ -298,32 +230,11 @@ def runSampleFrom(sampleDictList, dFolder, dRepo, remoteRepo = None, fromSample 
 # myControl.setVariablesToInitialState(variables)
 
 
-
 #---------------------------------------------------------------------
 # Verification sample:
-timeIndepVars = getTimeIndepVars(variables)
 
+# timeIndepVars = getTimeIndepVars(variables)
 # exper = generateVerifSample(timeIndepVars)
 # saveSampleToTxtFile(exper, './experiments/VerifSample.txt')
 # runSample(sampleDictList=exper,dFolder=dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo14)
 
-# Standard OAT sample:
-# stanOATSample = standardOATSampleGenerator(timeIndepVars)
-# saveSampleToTxtFile(stanOATSample, './experiments/OATSampleStandard.txt')
-# runSample(sampleDictList=stanOATSample,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo7)
-
-# # Wide range FFD sample 
-# exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
-# saveSampleToTxtFile(exper, './experiments/FracFactEx.txt')
-# runSample(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo15)
-
-# Variance based sample
-# sampleNum = 960
-# subInters = 12
-# randList = randomizeVariablesList(timeIndepVars, sampleNum, subInters,scalingScheme=Scale.LINEAR, saveHists=False)
-# saveSampleToTxtFile(randList, './experiments/limitedVarianceBased.txt')
-randList = loadSampleFromTxtFile('./experiments/limitedVarianceBased.txt')
-# runSample(sampleDictList=randList, dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo8)
-runSampleFrom(sampleDictList= randList, dFolder = dataFolder, dRepo = dataRepo, remoteRepo=testRepo, fromSample=960)
-# loadedSample = loadSampleFromTxtFile('./experiments/limitedVarianceBased.txt')
-# print(loadedSample[12])

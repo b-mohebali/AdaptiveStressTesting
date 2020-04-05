@@ -4,38 +4,40 @@ import os
 # Repo for the Monte-Carlo sample 
 dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis/'
 dataFolder = case_Setup.LOGGER_OUTPUT
-remoteRepo  = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample1'
+
+repoRoot = 'caps@10.146.64.68:/home/caps/SensAnalysis/'
+
+# New FFD sample with larger variable list. 
+remoteRepo1  = repoRoot + 'sample1'
 # Repo for the first OAT design sample. 
-remoteRepo2 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample2'
+remoteRepo2 = repoRoot + 'sample2'
 # Repo for res 4 fractional factorial design sample with 20% variations. 
-remoteRepo3 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample3'
+remoteRepo3 = repoRoot + 'sample3'
 # repo 4 is for the second OAT sample
-remoteRepo4 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample4'
+remoteRepo4 = repoRoot + 'sample4'
 # repo 5 is for the third OAT sample
-remoteRepo5 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample5'
+remoteRepo5 = repoRoot + 'sample5'
 # repo 6 for Res 4 FF Design with 10% variations
-remoteRepo6 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample6'
+remoteRepo6 = repoRoot + 'sample6'
 # repo 7 for Standard OAT Samples
-remoteRepo7 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample7'
+remoteRepo7 = repoRoot + 'sample7'
 # repo 8 for Monte-Carlo Samples with limited variable space
-remoteRepo8 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample8'
+remoteRepo8 = repoRoot + 'sample8'
 # repo 9 for Monte-Carlo Samples with limited variable space with logarithmic range.
-remoteRepo9 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample9'
+remoteRepo9 = repoRoot + 'sample9'
 # repo 10 for FFD with larger limits (50%) and the new scenario (just high load with a fixed length)
-remoteRepo10 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample10'
+remoteRepo10 = repoRoot + 'sample10'
 # repo 11 for FFD with larger limits (50%) and the new scenario (just high load with a fixed length)
 # Also the filter parameters are unified for both windings
-remoteRepo11 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample11'
+remoteRepo11 = repoRoot + 'sample11'
 # This sample is mean for verification of the results for other samples.
-remoteRepo12 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample12'
+remoteRepo12 = repoRoot + 'sample12'
 # Verification sample
-remoteRepo13 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample13'
+remoteRepo13 = repoRoot + 'sample13'
 # Verification sample after 3 sec delay was added to the variable setting function.
-remoteRepo14 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample14'
+remoteRepo14 = repoRoot + 'sample14'
 # New fractional factorial design dataset
-remoteRepo15 = 'caps@10.146.64.67:/home/caps/SensAnalysis/sample15'
-# Test repo
-testRepo = 'caps@10.146.64.67:/home/caps/SensAnalysis/testRepo'
+remoteRepo15 = repoRoot + 'sample15'
 
 
 currentDir = os.getcwd()

@@ -9,7 +9,7 @@ class Scale(Enum):
     LOGARITHMIC = 2
 
 
-variableSpan = 0.5
+variableSpan = 0.3
 variableScale = 2
 
 class simulationConfig():

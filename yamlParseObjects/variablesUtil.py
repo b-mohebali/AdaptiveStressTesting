@@ -171,7 +171,7 @@ def fractionalFactorialExperiment(timeIndepVariables,res4=False):
 
 def getFFHMatrix(vars, res4 = False, dtype = float):
     k = len(vars)
-    h = hadamard(next_power_of_2(k),dtype = float)
+    h = hadamard(next_power_of_2(k+1),dtype = float)
     if res4:
         h = np.concatenate((h,-h),axis = 0)
     for idx,var in enumerate(vars):
