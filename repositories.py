@@ -19,7 +19,7 @@ remoteRepo4 = repoRoot + 'sample4'
 remoteRepo5 = repoRoot + 'sample5'
 # repo 6 for Res 4 FF Design with 10% variations
 remoteRepo6 = repoRoot + 'sample6'
-# repo 7 for Standard OAT Samples
+# repo 7 High dimension OAT sample
 remoteRepo7 = repoRoot + 'sample7'
 # repo 8 for Monte-Carlo Samples with limited variable space
 remoteRepo8 = repoRoot + 'sample8'
@@ -38,6 +38,25 @@ remoteRepo13 = repoRoot + 'sample13'
 remoteRepo14 = repoRoot + 'sample14'
 # New fractional factorial design dataset
 remoteRepo15 = repoRoot + 'sample15'
+# Verification sample with new factor list 16 + 1
+remoteRepo16 = repoRoot + 'sample16'
+# Strict OAT sample with 17 factors
+remoteRepo17 = repoRoot + 'sample17'
+
+
+## -------------- Set of samples with 26 factors:
+# FFD after adding the time constants for the machine and the exciter to the list. 
+remoteRepo18 = repoRoot + 'sample18'
+# Standard OAT after adding the time constants for the machine and the exciter to the list. 
+remoteRepo19 = repoRoot + 'sample19'
+# Strict OAT after adding the time constants for the machine and the exciter to the list. 
+remoteRepo20 = repoRoot + 'sample20'
+# Fractional factorial design sample with shuffled factor list
+remoteRepo21 = repoRoot + 'sample21'
+# Verification sample with 26 factors
+remoteRepo22 = repoRoot + 'sample22'
+# Another shuffled FFD sample because sample 18 and 21 did not match as expected. 
+remoteRepo23 = repoRoot + 'sample23'
 
 
 currentDir = os.getcwd()

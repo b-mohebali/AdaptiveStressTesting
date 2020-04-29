@@ -32,8 +32,10 @@ from repositories import *
 
 
 #------------------------------- Setting up the variables -----------------------------------------------
+variablesFile = './yamlFiles/variables_TC_added.yaml'
+descriptionFile = 'varDescription.yaml'
 
-variables = getAllVariableConfigs('./yamlFiles/variables.yaml', scalingScheme=Scale.LINEAR)
+variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
 # variables = getAllVariableConfigs('variables_limited.yaml', scalingScheme=Scale.LOGARITHMIC)
 for v in variables: 
     print(f'Variable: {v.name}, mapped name: {v.mappedName}, Initial value: {v.initialState}')
@@ -68,9 +70,11 @@ class SaveType(Enum):
     SAVE_ALL = 1
     SAVE_ONE = 2
 
+class VariableNotFoundInModel(Exception):
+    pass
+
 class PGM_control(Control):
     NAME = 'PGM_control'
-
     def __init__(self, ctrl_str, controls_dir):
         super().__init__(ctrl_str, controls_dir)
         logging.info('Instantiating the PGM control')
@@ -78,13 +82,10 @@ class PGM_control(Control):
         self.ctrl_str        = ctrl_str
         self.start_file      = None
         self.controls_dir    = controls_dir
-        print(case_Setup.CEF_BASE_DIR)
-        self.folder = f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4Backup'
+        self.folder = f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4_filterRedesign'
         self.simulation = self.pull_case(self.folder+'/')
         self.dft_file = self.simulation.dft_file
-        # self.simulation.set_run_function('start_case()')
         self.simulation.set_run_script('Start_Case.scr')
-        
         self.rtds_sys = rtds.RtdsSystem.from_dft(self.dft_file.str())
         self.simulation.set_int_control(internal_ctrl = True)
     
@@ -94,7 +95,6 @@ class PGM_control(Control):
             if dv['Name'] == 'myVar':  
                 print('Value before change: ', dv['Value'])
                 dv['Value'] = 2.47
-                # outfile = self.dft_file.str()
                 outfile = f'{self.folder}/PGM_V3.dft'
                 self.rtds_sys.save_dft(fpath = outfile)
                 print('Value after change: ', dv.attrs['Value'])
@@ -110,7 +110,22 @@ class PGM_control(Control):
         print('---------------')
         return
 
-    def _setVariableValues(self, randValues):
+    def setVars(self, randValues):
+        draftVars = self.rtds_sys.get_draftvars()
+        founds = []
+        for dftVar in draftVars:
+            if dftVar['Name'] in randValues:
+                dftVar['Value'] = randValues[dftVar['Name']]
+                founds.append(dftVar['Name'])
+        notFound = [p for p in randValues if p not in founds]
+        if len(notFound) >0:
+            message = f'These parameters are not found in the model: {notFound}'
+            raise VariableNotFoundInModel(message)
+        outfile = f'/home/caps/.wine/drive_c/testing/fileman/PGM_V3.dft'
+        self.rtds_sys.save_dft(fpath = outfile)
+        return
+
+    def _setVariableValues(self, randValues, saveOriginal = False):
         print('------------------------------------------------------------')
         print('Setting draft variables to specific values within their range')
         draftVars = self.rtds_sys.get_draftvars()
@@ -123,16 +138,17 @@ class PGM_control(Control):
             if sldr['Name'] in randValues:
                 print(f'Slider name: {sldr["Name"]}, value before change: {sldr["Init"]}, Random value: {randValues[sldr["Name"]]}')
                 sldr['Init'] = randValues[sldr['Name']]
-                
-        outfile = f'/home/caps/.wine/drive_c/testing/fileman/PGM_V3.dft'
-        self.rtds_sys.save_dft(fpath = outfile)    
+        outfile = f'/home/caps/.wine/drive_c/testing/fileman/PGM_V4_FR.dft'
+        self.rtds_sys.save_dft(fpath = outfile)
+        if saveOriginal:
+            self.rtds_sys.save_dft(fpath = f'{self.folder}/PGM_V4_FR.dft')
         # Waiting for the draft file to be saved:
         print('------------------------------------------------------------')
 
     # This function will set all the variables to their nominal values.
     def setVariablesToInitialState(self, variables):
         inits = getVariablesInitialValueDict(variables)
-        self._setVariableValues(inits)
+        self._setVariableValues(inits, saveOriginal=True)
         return 
     
     def setVariablesToRandom(self, variables, variableFile = SaveType.SAVE_ALL):
@@ -158,11 +174,11 @@ class PGM_control(Control):
 
 #-------------------------------------------------------------
 def runSample(sampleDictList, dFolder, dRepo, remoteRepo = None, sampleGroup = None):
-    experimentCounter = 1
     emptyFolder(dRepo)
     indexGroup = range(1, len(sampleDictList)+1)
     if sampleGroup is not None: 
         indexGroup = sampleGroup
+    copyDataToremoteServer(remoteRepo, variablesFile)
     for sampleIndex in indexGroup:
         sample = sampleDictList[sampleIndex - 1]
         myControl = PGM_control('', './')   
@@ -175,7 +191,6 @@ def runSample(sampleDictList, dFolder, dRepo, remoteRepo = None, sampleGroup = N
         case_Setup.fm = False 
         trial.runWithoutMetrics()
         ### This is where the output is copied to a new location. 
-        # newF = createNewDatafolder(dRepo)
         newF = createSpecificDataFolder(dRepo, sampleIndex)
         shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
         copyDataToNewLocation(newF, dFolder)
@@ -183,8 +198,8 @@ def runSample(sampleDictList, dFolder, dRepo, remoteRepo = None, sampleGroup = N
             copyDataToremoteServer(remoteRepo, newF)
             removeExtraFolders(dRepo,3)
         print('removed the extra folders from the source repository.')
-        print(f'Done with the experiment {experimentCounter} and copying files to the repository.')
-        experimentCounter+=1  
+        print(f'Done with the experiment {sampleIndex} and copying files to the repository.')
+    
     return
  
 
@@ -214,15 +229,38 @@ def runSampleFrom(sampleDictList, dFolder, dRepo, remoteRepo = None, fromSample 
 # One at a time experiment design sensitivity analysis (Standard):
 
 # timeIndepVars = getTimeIndepVarsDict(variables)
-# randList = standardOATSampleGenerator(timeIndepVars)
 
+### Standard OAT sample code:
+# experFile = './experiments/OATSampleStandard_TC_added.txt'
+# exper = standardOATSampleGenerator(timeIndepVars)
+# saveSampleToTxtFile(exper,experFile)
+
+### Strict OAT sample code:
+# experFile = './experiments/OATSampleStrict_TC_added.txt'
+# exper = strictOATSampleGenerator(timeIndepVars)
+# saveSampleToTxtFile(exper, experFile)
+
+### Load sample from pregenerated sample:
+# exper = loadSampleFromTxtFile('./experiments/OATSampleStandard.txt')
+
+# copyDataToremoteServer(remoteRepo20, experFile)
+# runSampleFrom(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo20, fromSample = 13)
+# runSample(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo20)
 
 # ----------------------------------------------------------------------
 # The Fractional Factorial Desing with Hadamard matrices:
-timeIndepVars = getTimeIndepVars(variables)
+
+experFile = './experiments/FracFactEx_TC_added_shuffled2.txt'
+simRepo = remoteRepo23
+# exper = loadSampleFromTxtFile(experFile)
+
+timeIndepVars = getTimeIndepVars(variables, shuffle = True)
+
 exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
-saveSampleToTxtFile(exper, './experiments/FracFactEx.txt')
-runSample(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo1)
+saveSampleToTxtFile(exper, fileName = experFile)
+copyDataToremoteServer(simRepo, experFile)
+runSample(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = simRepo)
+# runSampleFrom(sampleDictList = exper, dFolder = dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo18, fromSample = 64)
 
 # ----------------------------------------------------------------------
 # Returning all the variables to their standard value:
@@ -233,8 +271,16 @@ runSample(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRep
 #---------------------------------------------------------------------
 # Verification sample:
 
-# timeIndepVars = getTimeIndepVars(variables)
+# simRepo = remoteRepo22
+# experFile = './experiments/VerifSample_NoDuplicate.txt'
+# logVariables = getAllVariableConfigs(variablesFile, scalingScheme=Scale.LOGARITHMIC)
+# timeIndepVars = getTimeIndepVars(logVariables)
 # exper = generateVerifSample(timeIndepVars)
-# saveSampleToTxtFile(exper, './experiments/VerifSample.txt')
-# runSample(sampleDictList=exper,dFolder=dataFolder, dRepo = dataRepo, remoteRepo = remoteRepo14)
+# exper = loadSampleFromTxtFile(experFile)
+# saveVariableDescription(logVariables, descriptionFile)
+# copyDataToremoteServer(simRepo, experFile)
+# copyDataToremoteServer(simRepo, descriptionFile)
+# saveSampleToTxtFile(exper,fileName = experFile)
+# runSample(sampleDictList=exper,dFolder=dataFolder, dRepo = dataRepo, remoteRepo = simRepo)
+# runSampleFrom(sampleDictList=exper,dFolder=dataFolder, dRepo = dataRepo, remoteRepo = simRepo, fromSample = 80)
 

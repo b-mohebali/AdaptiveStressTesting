@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import subprocess
 from scipy.linalg import hadamard
 import ast
+import random
 
 def trunkatedExponential(u, a,b):
     beta = np.e/(np.e-1.)
@@ -41,8 +42,11 @@ def getTimeIndepVarsDict(variables):
         varMap[var.name] = var
     return varMap
 
-def getTimeIndepVars(variables):
-    return [v for v in variables if v.varType.lower() == 'timeindep']
+def getTimeIndepVars(variables, shuffle = False):
+    varList = [v for v in variables if v.varType.lower() == 'timeindep']
+    if shuffle:
+        random.shuffle(varList)
+    return varList
 
 # This function gets a list of variables config and returns a random value for each one within
 # its specified range of available values. 
@@ -106,11 +110,11 @@ def randomizeVariablesList(variables, sampleNum, subIntervals,scalingScheme = Sc
         randValuesList.append(randomSample)
     return randValuesList
 
-# This function creates the samples for One-At-A-Time sensitivity analysis
+# This function creates the samples for STRICT One-At-A-Time sensitivity analysis
 # The simulation will run the model for the factors at the extremes of their 
 # range. In the sample set, each factor has k simulation when it is at its 
-# minimum and k simulation when it is at its maximum.
-def OATSampleGenerator(varDict, addMiddle = False):
+# minimum and k simulation when it is at its maximum. 
+def strictOATSampleGenerator(varDict, addMiddle = False):
     randValuesList = []
     currentSample = {}
     middleSample = {}
@@ -131,8 +135,7 @@ def OATSampleGenerator(varDict, addMiddle = False):
         randValuesList.append(middleSample.copy())
     return randValuesList
 
-def standardOATSampleGenerator(variables):
-    varDict = getTimeindepVariablesDict(variables)
+def standardOATSampleGenerator(varDict):
     valuesList = []
     standardSample = {}
     for key in varDict:
@@ -193,6 +196,14 @@ def saveVariableValues(varDict, fileName):
     v={}
     for key in varDict:
         v[key] = float(varDict[key]) 
+    with open(fileName, 'w') as outFile:
+        yaml.dump(v, outFile, default_flow_style=False)
+    return
+
+def saveVariableDescription(variables, fileName):
+    v = {}
+    for var in variables:
+        v[var.name] = var.description
     with open(fileName, 'w') as outFile:
         yaml.dump(v, outFile, default_flow_style=False)
     return
@@ -275,6 +286,7 @@ def generateVerifSample(variables):
     sampleList = []
     sampleList.append(varInitial.copy())
     scales = [0.2,0.5,2,5]
+    lastSample = None
     for key in varInitial:
         var = varDict[key]
         for scale in scales:
@@ -282,9 +294,11 @@ def generateVerifSample(variables):
             currentSample[key] = currentSample[key] * scale
             if currentSample[key] > var.upperLimit: 
                 currentSample[key] = var.upperLimit
-            # if currentSample[key] < var.lowerLimit:
-            #     currentSample[key] = var.lowerLimit
-            sampleList.append(currentSample.copy())
+            if currentSample[key] < var.lowerLimit:
+                currentSample[key] = var.lowerLimit
+            if currentSample != lastSample:
+                sampleList.append(currentSample.copy())
+                lastSample = currentSample.copy()
     return sampleList
 
 def findDifferentValue(baseLine, sample):

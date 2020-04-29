@@ -1,0 +1,162 @@
+---
+name: GaMaRf
+type: timeIndep
+initialState: 0.075
+description: 'Filter damping res'
+
+---
+name: GaMaCf
+type: timeIndep
+initialState: 835
+description: "Filter capacitor"
+---
+name: GaRBaUll
+type: timeIndep
+initialState: 0.1
+description: "Filter inductor"
+---
+name: GaRBaUlr
+type: timeIndep
+initialState: 0.0126
+description: "Filter inductor res"
+
+---
+name: sentinel1
+type: timeIndep
+initialState: 124
+mappedName: sentinel1
+description: "Sentinel"
+
+---
+name: StatRes
+type: timeIndep
+initialState: 0.006
+description: "Stat resistance"
+
+---
+name: StatReac
+type: timeIndep
+initialState: 0.08
+upperLimit: 0.12
+description: "Stat reactance"
+
+---
+name: UnsatReac
+type: timeIndep
+initialState: 1.352
+lowerLimit: 0.96
+description: "Stat Unsat reactence"
+
+---
+name: UnsatTransReac
+type: timeIndep
+initialState: 0.296
+lowerLimit: 0.149
+upperLimit: 0.933
+description: "Stat Unsat Trans reactance"
+---
+name: loadLimit
+type: timeIndep
+initialState: 10.0
+upperLimit: 15.0
+mappedName: loadLimit
+description: "Load limit"
+---
+name: GaMargd
+type: timeIndep
+initialState: 5000
+description: "Neut-gnd resistance"
+---
+name: QunsatReac
+type: timeIndep
+initialState: 0.836
+description: "Q-axis unsat reactance"
+
+---
+name: m3h0r
+type: timeIndep
+initialState: 0.04
+description: "3rd harm 0-seq resistance"
+
+---
+name: m3h0x
+type: timeIndep
+initialState: 0.0325
+lowerLimit: 0.015
+description: "3rd harm 0-seq reactance"
+
+---
+name: m5h0r
+type: timeIndep
+initialState: 0.04
+description: "5th harm 0-seq resistance"
+
+---
+name: m5h0x
+type: timeIndep
+initialState: 0.02
+description: "5th harm 0-seq reactance"
+
+---
+name: customRate
+type: timeIndep
+initialState: 4.0
+upperLimit: 4.5
+lowerLimit: 3.0
+description: "Load change rate"
+
+---
+name: Tr
+type: timeIndep
+initialState: 0.02
+description: "Input filter TC"
+
+---
+name: Tdr
+type: timeIndep
+initialState: 0.05
+description: "deriv blk TC"
+
+---
+name: Ta
+type: timeIndep
+initialState: 0.001
+description: "Voltage regul TC"
+
+---
+name: Te
+type: timeIndep
+initialState: 1
+description: "Exciter field TC"
+
+---
+name: Tdop
+type: timeIndep
+initialState: 4.141
+description: "D-axis unsat trans TC"
+
+---
+name: Tdopp
+type: timeIndep
+initialState: 0.027
+description: "D-axis unsat subtrans TC"
+
+---
+name: Tqop
+type: timeIndep
+initialState: 0.184
+description: "Q-axis unsat trans TC"
+
+---
+name: Tconp
+type: timeIndep
+initialState: 0.05
+description: "Filter for powers TC"
+
+---
+name: InertiaConst
+type: timeIndep
+initialState: 6.0
+description: "Inertia Constant"
+
+...

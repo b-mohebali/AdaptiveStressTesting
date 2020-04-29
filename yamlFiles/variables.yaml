@@ -1,13 +1,7 @@
 ---
-name: loadLimit
-type: timeIndep
-initialState: 10.0
-mappedName: loadLimit
-
----
 name: GaMaRf
 type: timeIndep
-initialState: 0.6
+initialState: 0.075
 ---
 name: GaMaCf
 type: timeIndep
@@ -20,7 +14,7 @@ initialState: 0.1
 ---
 name: GaRBaUlr
 type: timeIndep
-initialState: 0.0084
+initialState: 0.0126
 
 ---
 name: sentinel1
@@ -37,16 +31,27 @@ initialState: 0.006
 name: StatReac
 type: timeIndep
 initialState: 0.08
+upperLimit: 0.12
 
 ---
 name: UnsatReac
 type: timeIndep
 initialState: 1.352
+lowerLimit: 0.96
 
 ---
 name: UnsatTransReac
 type: timeIndep
 initialState: 0.296
+lowerLimit: 0.149
+upperLimit: 0.933
+
+---
+name: loadLimit
+type: timeIndep
+initialState: 10.0
+upperLimit: 15.0
+mappedName: loadLimit
 
 ---
 name: GaMargd
@@ -54,7 +59,7 @@ type: timeIndep
 initialState: 5000
 
 ---
-name: GunsatReac
+name: QunsatReac
 type: timeIndep
 initialState: 0.836
 
