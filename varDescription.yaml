@@ -1,26 +1,12 @@
-GaMaCf: Filter capacitor
-GaMaRf: Filter damping res
-GaMargd: Neut-gnd resistance
-GaRBaUll: Filter inductor
-GaRBaUlr: Filter inductor res
-InertiaConst: Inertia Constant
-QunsatReac: Q-axis unsat reactance
-StatReac: Stat reactance
-StatRes: Stat resistance
-Ta: Voltage regul TC
-Tconp: Filter for powers TC
-Tdop": D-axis unsat trans TC
-Tdopp: D-axis unsat subtrans TC
-Tdr: deriv blk TC
-Te: Exciter field TC
-Tqop: Q-axis unsat trans TC
-Tr: Input filter TC
-UnsatReac: Stat Unsat reactence
-UnsatTransReac: Stat Unsat Trans reactance
+GaMaCf: Filter C
+GaMaRf: Filter Rc
+GaMargd: Neutral to GND R
+GaRBaUll: Filter L
+GaRBaUlr: Filter Rl
 customRate: Load change rate
 loadLimit: Load limit
-m3h0r: 3rd harm 0-seq resistance
-m3h0x: 3rd harm 0-seq reactance
-m5h0r: 5th harm 0-seq resistance
-m5h0x: 5th harm 0-seq reactance
+m3h0r: 3rd Harmonic 0-seq R
+m3h0x: 3rd Harmonic 0-seq X
+m5h0r: 5th Harmonic 0-seq R
+m5h0x: 5th Harmonic 0-seq X
 sentinel1: Sentinel

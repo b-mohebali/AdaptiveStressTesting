@@ -120,22 +120,27 @@ def strictOATSampleGenerator(varDict, addMiddle = False):
     middleSample = {}
     for key in varDict:
         var = varDict[key]
-        currentSample[var.name] = var.lowerLimit
-        middleSample[var.name] = var.lowerLimit + (var.upperLimit - var.lowerLimit)/2.
+        varLow = max(var.initialState * (1-variableSpan), var.lowerLimit)
+        varHigh = min(var.initialState * (1+variableSpan), var.upperLimit)
+        currentSample[var.name] = varLow
+        middleSample[var.name] = varLow + (varHigh - varLow)/2.
     for key in varDict:
         var = varDict[key]
-        currentSample[var.name] = var.upperLimit
+        varHigh = min(var.initialState * (1+variableSpan), var.upperLimit)
+        currentSample[var.name] = varHigh
         randValuesList.append(currentSample.copy())
     for key in varDict:
         var = varDict[key]
-        currentSample[var.name] = var.lowerLimit
+        varLow = max(var.initialState * (1-variableSpan), var.lowerLimit)
+        currentSample[var.name] = varLow
         randValuesList.append(currentSample.copy())
     # Adding the middle sample:
     if addMiddle:
         randValuesList.append(middleSample.copy())
     return randValuesList
 
-def standardOATSampleGenerator(varDict):
+def standardOATSampleGenerator(varDict, repeat = False):
+    copyNumber = 2 if repeat else 1
     valuesList = []
     standardSample = {}
     for key in varDict:
@@ -143,12 +148,15 @@ def standardOATSampleGenerator(varDict):
         standardSample[var.name]= var.initialState
     for key in varDict:
         var = varDict[key]
-        nextSample = standardSample.copy()
-        nextSample[var.name] = var.upperLimit
-        valuesList.append(nextSample.copy())
-        nextSample = standardSample.copy()
-        nextSample[var.name] = var.lowerLimit
-        valuesList.append(nextSample.copy())
+        varLow = max(var.initialState * (1-variableSpan), var.lowerLimit)
+        varHigh = min(var.initialState * (1+variableSpan), var.upperLimit)
+        for i in range(copyNumber):
+            nextSample = standardSample.copy()
+            nextSample[var.name] = varHigh
+            valuesList.append(nextSample.copy())
+            nextSample = standardSample.copy()
+            nextSample[var.name] = varLow
+            valuesList.append(nextSample.copy())
     return valuesList
 
 
@@ -178,8 +186,10 @@ def getFFHMatrix(vars, res4 = False, dtype = float):
     if res4:
         h = np.concatenate((h,-h),axis = 0)
     for idx,var in enumerate(vars):
-        h[h[:,idx+1]==1,idx+1] = var.upperLimit
-        h[h[:,idx+1]==-1,idx+1] = var.lowerLimit
+        varLow = max(var.initialState * (1-variableSpan), var.lowerLimit)
+        varHigh = min(var.initialState * (1+variableSpan), var.upperLimit)
+        h[h[:,idx+1]==1,idx+1] = varHigh
+        h[h[:,idx+1]==-1,idx+1] = varLow
     return h[:,1:k+1] # Only returning the part of the H matrix that is used as simulation parameters.
 
 
@@ -231,11 +241,14 @@ def copyDataToNewLocation(newLocation, dataFolder):
         shutil.copyfile(filePath, newPath)
     return
 
-def copyDataToremoteServer(dataRepo, dataFolder):
-    cmd = f'scp -r {dataFolder} {dataRepo}'
+def copyDataToremoteServer(dataRepo, dataAddress, isFolder = True):
+    cmd = f'scp {"-r" if isFolder else ""} {dataAddress} {dataRepo}' # Adds -r if the data is a folder
     print(cmd)
     os.system(cmd)
     return   
+
+
+
 
 # This function will remove the old data folders (that are already copied to the remote 
 # server) so that the number of data folders in the source repo stays 

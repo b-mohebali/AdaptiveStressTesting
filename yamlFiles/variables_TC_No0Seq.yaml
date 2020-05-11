@@ -2,7 +2,7 @@
 name: GaMaRf
 type: timeIndep
 initialState: 0.075
-description: 'Filter R_c'
+description: 'Filter Rc'
 
 ---
 name: GaMaCf
@@ -18,7 +18,7 @@ description: "Filter L"
 name: GaRBaUlr
 type: timeIndep
 initialState: 0.0126
-description: "Filter R_l"
+description: "Filter Rl"
 
 ---
 name: sentinel1
@@ -31,14 +31,14 @@ description: "No influence factor"
 name: StatRes
 type: timeIndep
 initialState: 0.006
-description: "Stat R"
+description: "Stat resistance"
 
 ---
 name: StatReac
 type: timeIndep
 initialState: 0.08
 upperLimit: 0.12
-description: "Stat X"
+description: "Stat reactance"
 
 ---
 name: UnsatReac
@@ -46,7 +46,7 @@ type: timeIndep
 initialState: 1.352
 lowerLimit: 0.96
 upperLimit: 4.0
-description: "D-axis Stat Unsaturated X"
+description: "Stat Unsat reactence"
 
 ---
 name: UnsatTransReac
@@ -54,7 +54,7 @@ type: timeIndep
 initialState: 0.296
 lowerLimit: 0.149
 upperLimit: 0.933
-description: "D-axis Stat Unsat Trans X"
+description: "Stat Unsat Trans reactance"
 ---
 name: loadLimit
 type: timeIndep
@@ -62,37 +62,16 @@ initialState: 10.0
 upperLimit: 15.0
 mappedName: loadLimit
 description: "Load limit"
-
+---
+name: GaMargd
+type: timeIndep
+initialState: 5000
+description: "Neut-gnd resistance"
 ---
 name: QunsatReac
 type: timeIndep
 initialState: 0.836
 description: "Q-axis unsat reactance"
-
----
-name: m3h0r
-type: timeIndep
-initialState: 0.04
-description: "3rd harm 0-seq resistance"
-
----
-name: m3h0x
-type: timeIndep
-initialState: 0.0325
-lowerLimit: 0.015
-description: "3rd harm 0-seq reactance"
-
----
-name: m5h0r
-type: timeIndep
-initialState: 0.04
-description: "5th harm 0-seq resistance"
-
----
-name: m5h0x
-type: timeIndep
-initialState: 0.02
-description: "5th harm 0-seq reactance"
 
 ---
 name: customRate

@@ -6,6 +6,8 @@ dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis/'
 dataFolder = case_Setup.LOGGER_OUTPUT
 
 repoRoot = 'caps@10.146.64.68:/home/caps/SensAnalysis/'
+repoRoot2 = 'caps@10.146.64.69:/home/caps/SensAnalysis/'
+localRepo = '/home/caps/SenseAnalysisTemp/'
 
 # New FFD sample with larger variable list. 
 remoteRepo1  = repoRoot + 'sample1'
@@ -43,7 +45,6 @@ remoteRepo16 = repoRoot + 'sample16'
 # Strict OAT sample with 17 factors
 remoteRepo17 = repoRoot + 'sample17'
 
-
 ## -------------- Set of samples with 26 factors:
 # FFD after adding the time constants for the machine and the exciter to the list. 
 remoteRepo18 = repoRoot + 'sample18'
@@ -58,6 +59,24 @@ remoteRepo22 = repoRoot + 'sample22'
 # Another shuffled FFD sample because sample 18 and 21 did not match as expected. 
 remoteRepo23 = repoRoot + 'sample23'
 
+# Verification sample after changing the filter values with only filter factors after Rc reduction
+remoteRepo24 = repoRoot + 'sample24'
+# FFD sample only for the filter factors after Rc reduction
+remoteRepo25 = repoRoot + 'sample25'
+# FFD sample with time constants without the 0-sequence factors. +-20%
+remoteRepo26 = repoRoot + 'sample26'
+# Standard OAT sample with repeats for verification of the FFD sample
+remoteRepo27 = repoRoot + 'sample27'
+# FFD sample similar to sample26 with shuffled factor list
+remoteRepo28 = repoRoot + 'sample28'
+# FFD sample similar to sample26 with shuffled factor list
+remoteRepo29 = repoRoot + 'sample29'
+# FFD with extended initialization period and ONLY FILTER factor list.
+remoteRepo30 = repoRoot + 'sample30'
+# FFD with extended initialization period and filter+0sequence+Neut-gnd res factor list.
+remoteRepo31 = repoRoot + 'sample31'
+# FFD with filter+ and added phase current signals for 0-sequence current metric.
+remoteRepo32 = localRepo + 'sample32'
 
 currentDir = os.getcwd()
 isRepoRemote = True

@@ -1,0 +1,45 @@
+---
+name: GaMaRf
+type: timeIndep
+initialState: 0.075
+description: 'Filter Rc'
+
+---
+name: GaMaCf
+type: timeIndep
+initialState: 835
+description: "Filter C"
+---
+name: GaRBaUll
+type: timeIndep
+initialState: 0.1
+description: "Filter L"
+---
+name: GaRBaUlr
+type: timeIndep
+initialState: 0.0126
+description: "Filter Rl"
+
+---
+name: sentinel1
+type: timeIndep
+initialState: 124
+mappedName: sentinel1
+description: "Sentinel"
+
+---
+name: loadLimit
+type: timeIndep
+initialState: 10.0
+upperLimit: 15.0
+mappedName: loadLimit
+description: "Load limit"
+---
+name: customRate
+type: timeIndep
+initialState: 4.0
+upperLimit: 4.5
+lowerLimit: 3.0
+description: "Load change rate"
+
+...
