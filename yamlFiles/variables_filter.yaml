@@ -25,7 +25,7 @@ name: sentinel1
 type: timeIndep
 initialState: 124
 mappedName: sentinel1
-description: "Sentinel"
+description: "No influence factor"
 
 ---
 name: loadLimit

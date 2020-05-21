@@ -28,6 +28,8 @@ class simulationConfig():
         self.codeBase = yamlObj[codeBaseName] if codeBaseName in yamlObj else []
         self.profileLoc = yamlObj['profileLoc'] if 'profileLoc' in yamlObj else '.'
         self.simLength = yamlObj['length'] if 'length' in yamlObj else self.eventWindowEnd
+        self.modelName = yamlObj['modelName']
+        self.modelLocation = yamlObj['modelLocation']
                 
         
 class variableConfig():

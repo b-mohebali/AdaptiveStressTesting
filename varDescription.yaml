@@ -1,12 +1,42 @@
-GaMaCf: Filter C
-GaMaRf: Filter Rc
-GaMargd: Neutral to GND R
+GaMaCfil: Filter C
+GaMaRfil: Filter R_c
 GaRBaUll: Filter L
-GaRBaUlr: Filter Rl
+GaRBaUlr: Filter R_l
+InertiaConst: Machine Inertia Constant
+Ka_gov: Governor acceleration limiter gain
+Kturb: Tuebine gain
+Maxerr_gov: Governor Max speed error
+Minerr_gov: Governor Min speed error
+QunsatReac: Q-axis unsaturated X
+R_gov: Governor permanent droop %
+Rclose: Max turbine valve closing rate
+Ropen: Max turbine valve opening rate
+StatReac: Machine Stator X
+StatRes: Machine Stator R
+Ta_exc: Exciter Voltage regulator TC
+Ta_gov: Governor acceleration limiter TC
+Tact: Governor actuator TC
+Tb_gov: Turbine lag TC
+Tc_gov: Turbine lead TC
+Tconp: Filter for powers TC
+Tdop: D-axis unsat trans TC
+Tdopp: D-axis unsat subtrans TC
+Tdr_exc: Exciter deriv blk TC
+Te_exc: Exciter field TC
+Teng_gov: Transport lag TC (diesel engine)
+Tfload: Governor Load limiter TC
+Tpelec: Elec Power transducer TC
+Tqop: Q-axis unsat trans TC
+Tr_exc: Exciter Input filter TC
+Tsa_gov: Governor Temp detection lead TC
+Tsb_gov: Governor Temp detection lag TC
+UnsatReac: D-axis Stat Unsaturated X
+UnsatTransReac: D-axis Stator Unsat Trans X
+Wfnl: No load fuel flow
 customRate: Load change rate
 loadLimit: Load limit
-m3h0r: 3rd Harmonic 0-seq R
-m3h0x: 3rd Harmonic 0-seq X
-m5h0r: 5th Harmonic 0-seq R
-m5h0x: 5th Harmonic 0-seq X
-sentinel1: Sentinel
+m3h0r: 3rd harmonic 0-seq R
+m3h0x: 3rd harmonic 0-seq X
+m5h0r: 5th harmonic 0-seq R
+m5h0x: 5th harmonic 0-seq X
+sentinel1: No influence factor

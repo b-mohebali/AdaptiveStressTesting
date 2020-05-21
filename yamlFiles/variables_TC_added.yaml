@@ -1,11 +1,11 @@
 ---
-name: GaMaRf
+name: GaMaRfil
 type: timeIndep
 initialState: 0.075
 description: 'Filter R_c'
 
 ---
-name: GaMaCf
+name: GaMaCfil
 type: timeIndep
 initialState: 835
 description: "Filter C"

@@ -1,5 +1,5 @@
-import case_Setup
 import os
+import case_Setup
 
 # Repo for the Monte-Carlo sample 
 dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis/'
@@ -77,6 +77,39 @@ remoteRepo30 = repoRoot + 'sample30'
 remoteRepo31 = repoRoot + 'sample31'
 # FFD with filter+ and added phase current signals for 0-sequence current metric.
 remoteRepo32 = localRepo + 'sample32'
+# Standard OAT with the test filter (connected to an AC source only)
+remoteRepo33 = localRepo + 'sample33'
+# Same as sample33 but taken again. The capacitor component was changed with the cap found on the search. The unit of the draft variable was set as seconds (by default)
+remoteRepo34 = localRepo + 'sample34'
+# Same as sample33 and sample34 but the draft var unit is uF.
+remoteRepo35 = localRepo + 'sample35'
+# Same as sample33 with the same draft variable but different component taken from the search. 
+remoteRepo36 = localRepo + 'sample36'
+# Same but the range of the new draft variable changed. 
+remoteRepo37 = localRepo + 'sample37'
+# FFD sample after the ranges for the cap draft variable are changed to cover the whole variation range. 
+remoteRepo38 = localRepo + 'sample38'
+# Standard OAT with L and C and the signals of the test filter.
+remoteRepo39 = localRepo + 'sample39'
+# Same as 39 but with C_filter (different draft variable) governing the capacitance for the test filter and actual filters. 
+remoteRepo40 = localRepo + 'sample40'
+# Standard OAT with C_filter moved inside the draft variable block.
+remoteRepo41 = localRepo + 'sample41'
+# Standard OAT sampel 2ith 3+1 factors. Changing C_filter name to GaMaCf
+remoteRepo42 = localRepo + 'sample42'
+# Standard OAT like 41
+remoteRepo43 = localRepo + 'sample43'
+# FFD After changing the name of the capacitor draft variable.
+remoteRepo44 = localRepo+ 'sample44'
+# Standard OAT after creating GaMaRfil for the Capacitor resistance
+remoteRepo45 = localRepo + 'sample45'
+
+# Repository for test data
+remoteRepoTest = localRepo + 'testSample'
+
+# FFD sample after adding the factors for governor
+remoteRepo46 = localRepo + 'sample46'
+
 
 currentDir = os.getcwd()
 isRepoRemote = True

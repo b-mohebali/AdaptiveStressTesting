@@ -1,0 +1,262 @@
+---
+name: GaMaRfil
+type: timeIndep
+initialState: 0.075
+description: 'Filter R_c'
+
+---
+name: GaMaCfil
+type: timeIndep
+initialState: 835
+description: "Filter C"
+---
+name: GaRBaUll
+type: timeIndep
+initialState: 0.1
+description: "Filter L"
+---
+name: GaRBaUlr
+type: timeIndep
+initialState: 0.0126
+description: "Filter R_l"
+
+---
+name: sentinel1
+type: timeIndep
+initialState: 124
+mappedName: sentinel1
+description: "No influence factor"
+
+---
+name: StatRes
+type: timeIndep
+initialState: 0.006
+description: "Machine Stator R"
+
+---
+name: StatReac
+type: timeIndep
+initialState: 0.08
+upperLimit: 0.12
+description: "Machine Stator X"
+
+---
+name: UnsatReac
+type: timeIndep
+initialState: 1.352
+lowerLimit: 0.96
+upperLimit: 4.0
+description: "D-axis Stat Unsaturated X"
+
+---
+name: UnsatTransReac
+type: timeIndep
+initialState: 0.296
+lowerLimit: 0.149
+upperLimit: 0.933
+description: "D-axis Stator Unsat Trans X"
+---
+name: loadLimit
+type: timeIndep
+initialState: 10.0
+upperLimit: 15.0
+mappedName: loadLimit
+description: "Load limit"
+
+---
+name: QunsatReac
+type: timeIndep
+initialState: 0.836
+description: "Q-axis unsaturated X"
+
+---
+name: m3h0r
+type: timeIndep
+initialState: 0.04
+description: "3rd harmonic 0-seq R"
+
+---
+name: m3h0x
+type: timeIndep
+initialState: 0.0325
+lowerLimit: 0.015
+description: "3rd harmonic 0-seq X"
+
+---
+name: m5h0r
+type: timeIndep
+initialState: 0.04
+description: "5th harmonic 0-seq R"
+
+---
+name: m5h0x
+type: timeIndep
+initialState: 0.02
+description: "5th harmonic 0-seq X"
+
+---
+name: customRate
+type: timeIndep
+initialState: 4.0
+upperLimit: 4.5
+lowerLimit: 3.0
+description: "Load change rate"
+
+---
+name: Tr_exc
+type: timeIndep
+initialState: 0.02
+description: "Exciter Input filter TC"
+
+---
+name: Tdr_exc
+type: timeIndep
+initialState: 0.05
+description: "Exciter deriv blk TC"
+
+---
+name: Ta_exc
+type: timeIndep
+initialState: 0.001
+description: "Exciter Voltage regulator TC"
+
+---
+name: Te_exc
+type: timeIndep
+initialState: 1
+description: "Exciter field TC"
+
+---
+name: Tdop
+type: timeIndep
+initialState: 4.141
+description: "D-axis unsat trans TC"
+
+---
+name: Tdopp
+type: timeIndep
+initialState: 0.027
+description: "D-axis unsat subtrans TC"
+
+---
+name: Tqop
+type: timeIndep
+initialState: 0.184
+description: "Q-axis unsat trans TC"
+
+---
+name: Tconp
+type: timeIndep
+initialState: 0.05
+description: "Filter for powers TC"
+
+---
+name: InertiaConst
+type: timeIndep
+initialState: 6.0
+lowerLimit: 3.0
+description: "Machine Inertia Constant"
+
+---
+name: R_gov
+type: timeIndep
+initialState: 0.04
+description: "Governor permanent droop %"
+
+---
+name: Tpelec
+type: timeIndep
+initialState: 0.1
+description: "Elec Power transducer TC"
+
+---
+name: Maxerr_gov
+type: timeIndep
+initialState: 0.05
+description: "Governor Max speed error"
+
+---
+name: Minerr_gov
+type: timeIndep
+initialState: -0.05
+description: "Governor Min speed error"
+
+---
+name: Tact
+type: timeIndep
+initialState: 0.15
+description: "Governor actuator TC"
+
+---
+name: Kturb
+type: timeIndep
+initialState: 1.5
+description: "Tuebine gain"
+
+---
+name: Wfnl
+type: timeIndep
+initialState: 0.2
+description: "No load fuel flow"
+
+---
+name: Tb_gov
+type: timeIndep
+initialState: 0.1
+description: "Turbine lag TC"
+
+---
+name: Tc_gov
+type: timeIndep
+initialState: 0.0
+description: "Turbine lead TC"
+
+---
+name: Teng_gov
+type: timeIndep
+initialState: 0.0
+description: "Transport lag TC (diesel engine)"
+
+---
+name: Tsa_gov
+type: timeIndep
+initialState: 4.0
+description: "Governor Temp detection lead TC"
+
+---
+name: Tsb_gov
+type: timeIndep
+initialState: 4.0
+description: "Governor Temp detection lag TC"
+
+---
+name: Tfload
+type: timeIndep
+initialState: 3.0
+description: "Governor Load limiter TC"
+
+---
+name: Ropen
+type: timeIndep
+initialState: 0.3
+description: "Max turbine valve opening rate"
+
+---
+name: Rclose
+type: timeIndep
+initialState: -0.3
+description: "Max turbine valve closing rate"
+
+---
+name: Ta_gov
+type: timeIndep
+initialState: 0.1
+description: "Governor acceleration limiter TC"
+
+---
+name: Ka_gov
+type: timeIndep
+initialState: 1000000.0
+description: "Governor acceleration limiter gain"
+
+...

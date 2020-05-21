@@ -1,0 +1,26 @@
+---
+name: GaMaCfil
+type: timeIndep
+initialState: 835
+description: "Filter C"
+
+---
+name: GaRBaUll
+type: timeIndep
+initialState: 0.1
+description: "Filter  L"
+
+---
+name: L_filter
+type: timeIndep
+initialState: 0.0007905
+description: "Test Filter  L"
+
+---
+name: GaMaRfil
+type: timeIndep
+initialState: 0.075
+mappedName: sentinel1
+description: "Filter R_c"
+
+...
