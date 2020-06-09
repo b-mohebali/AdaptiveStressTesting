@@ -9,11 +9,13 @@ name: GaMaCfil
 type: timeIndep
 initialState: 835
 description: "Filter C"
+
 ---
 name: GaRBaUll
 type: timeIndep
 initialState: 0.1
 description: "Filter L"
+
 ---
 name: GaRBaUlr
 type: timeIndep
@@ -55,6 +57,7 @@ initialState: 0.296
 lowerLimit: 0.149
 upperLimit: 0.933
 description: "D-axis Stator Unsat Trans X"
+
 ---
 name: loadLimit
 type: timeIndep
@@ -125,6 +128,30 @@ name: Te_exc
 type: timeIndep
 initialState: 1
 description: "Exciter field TC"
+
+---
+name: Vrmax_exc
+type: timeIndep
+initialState: 6.5
+description: "Exciter reg. output max limit"
+
+---
+name: Kc_exc
+type: timeIndep
+initialState: 0.55
+description: "Exciter rectifier loading factor"
+
+---
+name: Kd_exc
+type: timeIndep
+initialState: 1.1
+description: "Exciter regulation factor"
+
+---
+name: VFEmax_exc
+type: timeIndep
+initialState: 6.0
+description: "Exciter field current limit"
 
 ---
 name: Tdop
@@ -226,7 +253,7 @@ description: "Governor Temp detection lead TC"
 ---
 name: Tsb_gov
 type: timeIndep
-initialState: 4.0
+initialState: 5.0
 description: "Governor Temp detection lag TC"
 
 ---
@@ -258,5 +285,11 @@ name: Ka_gov
 type: timeIndep
 initialState: 1000000.0
 description: "Governor acceleration limiter gain"
+
+---
+name: GaMargd
+type: timeIndep
+initialState: 5000
+description: "Neutral to GND R"
 
 ...

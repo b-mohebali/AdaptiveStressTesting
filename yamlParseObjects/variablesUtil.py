@@ -36,14 +36,19 @@ def getVariablesDict(variables):
         varMap[var.name] = var
     return varMap    
 
-def getTimeIndepVarsDict(variables):
+def getTimeIndepVarsDict(variables, omitZero = True):
     varMap = {}
-    for var in [v for v in variables if v.varType.lower() == 'timeindep']:
+    for var in getTimeIndepVars(variables, omitZero=omitZero):
         varMap[var.name] = var
     return varMap
 
-def getTimeIndepVars(variables, shuffle = False):
+
+# this function returns a list of all the variables in the yaml file. It can shuffle the list or omit the ones 
+# that have a initial value of zero. 
+def getTimeIndepVars(variables, shuffle = False, omitZero = True):
     varList = [v for v in variables if v.varType.lower() == 'timeindep']
+    if omitZero:
+        varList = [v for v in varList if v.initialState != 0.0]
     if shuffle:
         random.shuffle(varList)
     return varList

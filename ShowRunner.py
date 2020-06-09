@@ -76,9 +76,8 @@ class OATSampleMetod(Enum):
 
 class StorageInfo():
 
-    def __init__(self, dFolder, dRepo, rRepo):
+    def __init__(self, dFolder, rRepo):
         self.dFolder = dFolder
-        self.dRepo = dRepo
         self.rRepo = rRepo
 
 class VariableNotFoundInModel(Exception):
@@ -173,8 +172,7 @@ class PGM_control(Control):
 
 
 #-------------------------------------------------------------
-def runSample(sampleDictList, dFolder, dRepo, remoteRepo = None, sampleGroup = None):
-    emptyFolder(dRepo)
+def runSample(sampleDictList, dFolder, remoteRepo, sampleGroup = None):
     indexGroup = range(1, len(sampleDictList)+1)
     if sampleGroup is not None: 
         indexGroup = sampleGroup
@@ -191,19 +189,16 @@ def runSample(sampleDictList, dFolder, dRepo, remoteRepo = None, sampleGroup = N
         case_Setup.fm = False 
         trial.runWithoutMetrics()
         ### This is where the output is copied to a new location. 
-        newF = createSpecificDataFolder(dRepo, sampleIndex)
+        newF = createSpecificDataFolder(remoteRepo, sampleIndex)
         shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
         copyDataToNewLocation(newF, dFolder)
-        copyDataToremoteServer(newF, outfile)
-        if remoteRepo is not None:
-            copyDataToremoteServer(remoteRepo, newF)
-            removeExtraFolders(dRepo,3)
+        copyDataToremoteServer(newF, outfile, isFolder = False)
         print('removed the extra folders from the source repository.')
         print(f'Done with the experiment {sampleIndex} and copying files to the repository.')
     return
  
 
-def runSampleFrom(sampleDictList, dFolder, dRepo, remoteRepo = None, fromSample = None):
+def runSampleFrom(sampleDictList, dFolder, remoteRepo = None, fromSample = None):
     N = len(sampleDictList)
     if fromSample is not None:
         sampleGroup = range(fromSample, N+1)
@@ -211,7 +206,7 @@ def runSampleFrom(sampleDictList, dFolder, dRepo, remoteRepo = None, fromSample 
         sampleGroup = range(N)
     print('Starting sample: ')
     print(sampleDictList[fromSample-1])
-    runSample(sampleDictList, dFolder, dRepo, remoteRepo = remoteRepo, sampleGroup=sampleGroup)
+    runSample(sampleDictList, dFolder, remoteRepo = remoteRepo, sampleGroup=sampleGroup)
     return
 
 #----------------------------------------------------------------
@@ -222,54 +217,54 @@ def runSampleFrom(sampleDictList, dFolder, dRepo, remoteRepo = None, fromSample 
 # varDict = getTimeIndepVarsDict(variables)
 # randList = randomizeVariablesList(varDict, samplesNum, subInters,scalingScheme=Scale.LOGARITHMIC, saveHists=True)
 # saveSampleToTxtFile(randList, './experiments/limitedVarianceBased.txt')
-# runSampleFrom(sampleDictList= randList, dFolder = dataFolder, dRepo = dataRepo, remoteRepo=testRepo, fromSample=960)
+# runSampleFrom(sampleDictList= randList, dFolder = dataFolder, remoteRepo=testRepo, fromSample=960)
 
 
 #------------------------------------------------------------------
 # One at a time experiment design sensitivity analysis (Standard):
 
 # sample config
-# experFile = './experiments/OATSampleStandard_TestFilter.txt'
-# simRepo = remoteRepo45
+# experFile = './experiments/OATSampleStandard_Complete.txt'
+# simRepo = remoteRepo55
 # timeIndepVars = getTimeIndepVarsDict(variables)
 
 ### Standard OAT sample code:
 # exper = standardOATSampleGenerator(timeIndepVars, repeat = False)
 
 ### Strict OAT sample code:
-# experFile = './experiments/OATSampleStrict_TC_added.txt'
+# experFile = './experiments/OATSampleStrict_Complete.txt'
 # exper = strictOATSampleGenerator(timeIndepVars)
-# saveSampleToTxtFile(exper, experFile)
-
-### Load sample from pregenerated sample:
-# exper = loadSampleFromTxtFile(experFile)
-
 
 # saveSampleToTxtFile(exper,experFile)
 # saveVariableDescription(variables, descriptionFile)
 # copyDataToremoteServer(simRepo, experFile)
 # copyDataToremoteServer(simRepo, descriptionFile)
-# runSample(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = simRepo)
-# runSampleFrom(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = simRepo, fromSample = 4)
+
+### Load sample from pregenerated sample:
+# exper = loadSampleFromTxtFile(experFile)
+
+# runSample(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo)
+# runSampleFrom(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo, fromSample = 7)
 
 # ----------------------------------------------------------------------
 # The Fractional Factorial Desing with Hadamard matrices:
 
-experFile = './experiments/FracFactEx_TC_complete.txt'
-simRepo = remoteRepo46
+experFile = './experiments/FracFactEx_TC_complete_shuffled.txt'
+simRepo = remoteRepo58
 
-# timeIndepVars = getTimeIndepVars(variables, shuffle = False)
-# exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+# Taking the variables with non-zero initialState value
+timeIndepVars = getTimeIndepVars(variables, shuffle = True, omitZero = True)
 
-exper = loadSampleFromTxtFile(experFile)
+exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
 saveSampleToTxtFile(exper, fileName = experFile)
-saveVariableDescription(variables, descriptionFile)
-
+saveVariableDescription(timeIndepVars, descriptionFile)
 copyDataToremoteServer(simRepo, experFile)
 copyDataToremoteServer(simRepo, descriptionFile)
-# runSample(sampleDictList=exper,dFolder = dataFolder, dRepo = dataRepo, remoteRepo = simRepo)
 
-runSampleFrom(sampleDictList = exper, dFolder = dataFolder, dRepo = dataRepo, remoteRepo = simRepo, fromSample = 38)
+# exper = loadSampleFromTxtFile(experFile)
+
+runSample(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo)
+# runSampleFrom(sampleDictList = exper, dFolder = dataFolder, remoteRepo = simRepo, fromSample = 119)
 
 # ----------------------------------------------------------------------
 # Returning all the variables to their standard value:
@@ -293,6 +288,6 @@ runSampleFrom(sampleDictList = exper, dFolder = dataFolder, dRepo = dataRepo, re
 
 # sGroup = [31]
 
-# runSample(sampleDictList=exper,dFolder=dataFolder, dRepo = dataRepo, remoteRepo = simRepo, sampleGroup=sGroup)
-# runSampleFrom(sampleDictList=exper,dFolder=dataFolder, dRepo = dataRepo, remoteRepo = simRepo, fromSample = 80)
+# runSample(sampleDictList=exper,dFolder=dataFolder, remoteRepo = simRepo, sampleGroup=sGroup)
+# runSampleFrom(sampleDictList=exper,dFolder=dataFolder, remoteRepo = simRepo, fromSample = 80)
 

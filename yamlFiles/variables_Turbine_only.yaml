@@ -1,0 +1,109 @@
+---
+name: sentinel1
+type: timeIndep
+initialState: 124
+mappedName: sentinel1
+description: "No influence factor"
+---
+name: R_gov
+type: timeIndep
+initialState: 0.04
+description: "Governor permanent droop %"
+
+---
+name: Tpelec
+type: timeIndep
+initialState: 0.1
+description: "Elec Power transducer TC"
+
+---
+name: Maxerr_gov
+type: timeIndep
+initialState: 0.05
+description: "Governor Max speed error"
+
+---
+name: Minerr_gov
+type: timeIndep
+initialState: -0.05
+description: "Governor Min speed error"
+
+---
+name: Tact
+type: timeIndep
+initialState: 0.15
+description: "Governor actuator TC"
+
+---
+name: Kturb
+type: timeIndep
+initialState: 1.5
+description: "Tuebine gain"
+
+---
+name: Wfnl
+type: timeIndep
+initialState: 0.2
+description: "No load fuel flow"
+
+---
+name: Tb_gov
+type: timeIndep
+initialState: 0.1
+description: "Turbine lag TC"
+
+---
+name: Tc_gov
+type: timeIndep
+initialState: 0.0
+description: "Turbine lead TC"
+
+---
+name: Teng_gov
+type: timeIndep
+initialState: 0.0
+description: "Transport lag TC (diesel engine)"
+
+---
+name: Tsa_gov
+type: timeIndep
+initialState: 4.0
+description: "Governor Temp detection lead TC"
+
+---
+name: Tsb_gov
+type: timeIndep
+initialState: 5.0
+description: "Governor Temp detection lag TC"
+
+---
+name: Tfload
+type: timeIndep
+initialState: 3.0
+description: "Governor Load limiter TC"
+
+---
+name: Ropen
+type: timeIndep
+initialState: 0.3
+description: "Max turbine valve opening rate"
+
+---
+name: Rclose
+type: timeIndep
+initialState: -0.3
+description: "Max turbine valve closing rate"
+
+---
+name: Ta_gov
+type: timeIndep
+initialState: 0.1
+description: "Governor acceleration limiter TC"
+
+---
+name: Ka_gov
+type: timeIndep
+initialState: 1000000.0
+description: "Governor acceleration limiter gain"
+
+...

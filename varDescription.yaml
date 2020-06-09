@@ -1,9 +1,12 @@
 GaMaCfil: Filter C
 GaMaRfil: Filter R_c
+GaMargd: Neutral to GND R
 GaRBaUll: Filter L
 GaRBaUlr: Filter R_l
 InertiaConst: Machine Inertia Constant
 Ka_gov: Governor acceleration limiter gain
+Kc_exc: Exciter rectifier loading factor
+Kd_exc: Exciter regulation factor
 Kturb: Tuebine gain
 Maxerr_gov: Governor Max speed error
 Minerr_gov: Governor Min speed error
@@ -17,13 +20,11 @@ Ta_exc: Exciter Voltage regulator TC
 Ta_gov: Governor acceleration limiter TC
 Tact: Governor actuator TC
 Tb_gov: Turbine lag TC
-Tc_gov: Turbine lead TC
 Tconp: Filter for powers TC
 Tdop: D-axis unsat trans TC
 Tdopp: D-axis unsat subtrans TC
 Tdr_exc: Exciter deriv blk TC
 Te_exc: Exciter field TC
-Teng_gov: Transport lag TC (diesel engine)
 Tfload: Governor Load limiter TC
 Tpelec: Elec Power transducer TC
 Tqop: Q-axis unsat trans TC
@@ -32,6 +33,8 @@ Tsa_gov: Governor Temp detection lead TC
 Tsb_gov: Governor Temp detection lag TC
 UnsatReac: D-axis Stat Unsaturated X
 UnsatTransReac: D-axis Stator Unsat Trans X
+VFEmax_exc: Exciter field current limit
+Vrmax_exc: Exciter reg. output max limit
 Wfnl: No load fuel flow
 customRate: Load change rate
 loadLimit: Load limit

@@ -10,7 +10,7 @@ repoRoot2 = 'caps@10.146.64.69:/home/caps/SensAnalysis/'
 localRepo = '/home/caps/SenseAnalysisTemp/'
 
 # New FFD sample with larger variable list. 
-remoteRepo1  = repoRoot + 'sample1'
+remoteRepo1 = repoRoot + 'sample1'
 # Repo for the first OAT design sample. 
 remoteRepo2 = repoRoot + 'sample2'
 # Repo for res 4 fractional factorial design sample with 20% variations. 
@@ -109,7 +109,32 @@ remoteRepoTest = localRepo + 'testSample'
 
 # FFD sample after adding the factors for governor
 remoteRepo46 = localRepo + 'sample46'
+# FFD sample after Tc and Tb values were corercted
+remoteRepo47 = localRepo + 'sample47'
+# Standard OAT sample with 40 factors
+remoteRepo48 = localRepo + 'sample48'
+# Strict OAT sample with 40 samples
+remoteRepo49 = localRepo + 'sample49'
 
+# FFD sample with smaller variation to see if the instability seen in sample 40 can be avoided while the sensitivity of the model can be analyzed. 
+remoteRepo50 = localRepo + 'sample50'
+# FFD sample with Turbine factors and 15% variation range (a mistake. We needed 20% but I did not delete the sample. I got another one)
+remoteRepo51 = localRepo + 'sample51'
+# FFD sample with turbine factors and 20% variation range for all the factors. 
+remoteRepo52 = localRepo + 'sample52'
+
+# FFD sample with some added factors for Exciter, variable span was the same as the last sample at 20%
+remoteRepo53 = localRepo + 'sample53'
+# Standard OAT sample with the same factor list as 53
+remoteRepo54 = localRepo + 'sample54'
+# Strict OAT sample with the same factor list as 53
+remoteRepo55 = localRepo + 'sample55'
+# FFD sample with complete factor list (44 + 1) and 15% variable span.
+remoteRepo56 = localRepo + 'sample56'
+# FFD sample with complete factor list (44 + 1) and 15% variable span and shuffled factor list. 15% variation
+remoteRepo57 = localRepo + 'sample57'
+# FFD sample with complete factor list (44 + 1) and 15% variable span and shuffled factor list. 20% variation
+remoteRepo58 = localRepo + 'sample58'
 
 currentDir = os.getcwd()
 isRepoRemote = True
