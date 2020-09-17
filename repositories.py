@@ -136,5 +136,8 @@ remoteRepo57 = localRepo + 'sample57'
 # FFD sample with complete factor list (44 + 1) and 15% variable span and shuffled factor list. 20% variation
 remoteRepo58 = localRepo + 'sample58'
 
+# Testing the SA module after a long time!
+remoteRepo59 = localRepo + 'sample59'
+
 currentDir = os.getcwd()
 isRepoRemote = True

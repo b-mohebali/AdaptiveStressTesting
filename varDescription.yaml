@@ -7,7 +7,7 @@ InertiaConst: Machine Inertia Constant
 Ka_gov: Governor acceleration limiter gain
 Kc_exc: Exciter rectifier loading factor
 Kd_exc: Exciter regulation factor
-Kturb: Tuebine gain
+Kturb: Turbine gain
 Maxerr_gov: Governor Max speed error
 Minerr_gov: Governor Min speed error
 QunsatReac: Q-axis unsaturated X

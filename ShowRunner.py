@@ -102,27 +102,6 @@ class PGM_control(Control):
         self.rtds_sys = rtds.RtdsSystem.from_dft(self.dft_file.str())
         self.simulation.set_int_control(internal_ctrl = True)
     
-    # def getAllVars(self):
-    #     print('---------------')
-    #     for dv in self.rtds_sys.get_draftvars():
-    #         if dv['Name'] == 'myVar':  
-    #             print('Value before change: ', dv['Value'])
-    #             dv['Value'] = 2.47
-    #             outfile = f'{self.folder}/PGM_V4_FR.dft'
-    #             self.rtds_sys.save_dft(fpath = outfile)
-    #             print('Value after change: ', dv.attrs['Value'])
-    #             dv.modified=True
-    #     for sv in self.rtds_sys.get_sliders():
-    #         if sv['Name']=='mySlider':
-    #             print('Value before change: ', sv['Init'])
-    #             sv['Init'] = 124
-    #             outfile = f'{self.folder}/PGM_V4_FR.dft'
-    #             self.rtds_sys.save_dft(fpath = outfile)
-    #             print('Value after change: ', sv.attrs['Init'])
-    #             sv.modified=True
-    #     print('---------------')
-    #     return
-
     def _setVariableValues(self, randValues, saveOriginal = False):
         print('------------------------------------------------------------')
         print('Setting draft variables to specific values within their range')
@@ -168,8 +147,6 @@ class PGM_control(Control):
         outfile = self._setVariableValues(randVars)
         return outfile
         
-# ------------------------------------------------------------
-
 
 #-------------------------------------------------------------
 def runSample(sampleDictList, dFolder, remoteRepo, sampleGroup = None):
@@ -250,7 +227,7 @@ def runSampleFrom(sampleDictList, dFolder, remoteRepo = None, fromSample = None)
 # The Fractional Factorial Desing with Hadamard matrices:
 
 experFile = './experiments/FracFactEx_TC_complete_shuffled.txt'
-simRepo = remoteRepo58
+simRepo = remoteRepo59
 
 # Taking the variables with non-zero initialState value
 timeIndepVars = getTimeIndepVars(variables, shuffle = True, omitZero = True)
