@@ -109,7 +109,7 @@ remoteRepoTest = localRepo + 'testSample'
 
 # FFD sample after adding the factors for governor
 remoteRepo46 = localRepo + 'sample46'
-# FFD sample after Tc and Tb values were corercted
+# FFD sample after Tc and Tb values were corrercted
 remoteRepo47 = localRepo + 'sample47'
 # Standard OAT sample with 40 factors
 remoteRepo48 = localRepo + 'sample48'

@@ -218,7 +218,7 @@ description: "Governor actuator TC"
 name: Kturb
 type: timeIndep
 initialState: 1.5
-description: "Tuebine gain"
+description: "Turbine gain"
 
 ---
 name: Wfnl

@@ -19,8 +19,8 @@ class simulationConfig():
         fp.close()
         yamlObj= yaml.load(yamlString, Loader = yaml.SafeLoader)
         self.name = yamlObj['name']
-        self.eventWindowStart = yamlObj['eventWindowStart']
-        self.eventWindowEnd = yamlObj['eventWindowEnd']
+        self.eventWindowStart = yamlObj['eventWindowStart'] if 'eventWindowStart' in yamlObj else 0
+        self.eventWindowEnd = yamlObj['eventWindowEnd'] if 'eventWindowEnd' in yamlObj else 0
         self.description = yamlObj['description'] if 'description' in yamlObj else None
         self.timeStep = yamlObj['timeStep'] if 'timeStep' in yamlObj else 0.05
         # This way we can have different settings for different OS platforms.
