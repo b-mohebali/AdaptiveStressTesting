@@ -75,7 +75,6 @@ class OATSampleMetod(Enum):
     STRICT = 2
 
 class StorageInfo():
-
     def __init__(self, dFolder, rRepo):
         self.dFolder = dFolder
         self.rRepo = rRepo
