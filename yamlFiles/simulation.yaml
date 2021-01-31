@@ -1,0 +1,15 @@
+---
+name: "Adaptive Stress Testing"
+eventWindowStart: 200
+length : 300
+eventWindowEnd: 240
+timeStep: 0.05
+codeBase_Windows:
+  - "C:\\Users\\bm12m\\Google Drive\\codes\\Codes"
+  - "C:\\Users\\bm12m\\Google Drive\\codes\\testing"
+codeBase_Linux:
+  - "/home/caps/Auto_RTDS_Deployment/ver13d"
+profileLoc: "./profileExample"
+modelLocation: "MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V5_NewFactors"
+modelName: "PGM_V5_NF"
+...
