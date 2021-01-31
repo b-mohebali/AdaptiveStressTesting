@@ -6,7 +6,6 @@ __pycache__/
 .vs/
 *.pyc
 variableValues.yaml
-simulation.yaml
 */*.pyc
 *.csv
 */*.csv
