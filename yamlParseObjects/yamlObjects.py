@@ -25,13 +25,22 @@ class simulationConfig():
         self.timeStep = yamlObj['timeStep'] if 'timeStep' in yamlObj else 0.05
         # This way we can have different settings for different OS platforms.
         codeBaseName = 'codeBase_' + platform.system()
+        self.platform = platform.system()
         self.codeBase = yamlObj[codeBaseName] if codeBaseName in yamlObj else []
         self.profileLoc = yamlObj['profileLoc'] if 'profileLoc' in yamlObj else '.'
         self.simLength = yamlObj['length'] if 'length' in yamlObj else self.eventWindowEnd
         self.modelName = yamlObj['modelName']
         self.modelLocation = yamlObj['modelLocation']
                 
-        
+    def __str__(self):
+        nl = '\n \t\t\t\t\t'
+        descriptor = f'''Simulation name: {self.name}
+            Model location: {self.modelLocation}
+            Model name: {self.modelName} 
+            code base location: {nl}{nl.join(self.codeBase)}
+            Platfor: {self.platform}'''
+        return descriptor.__str__()
+
 class variableConfig():
 
     def __init__(self, name, initial, varType, lowerLimit, upperLimit, mappedName, description, risingRateLimit = float('inf'), fallingRateLimit = float('inf')):
@@ -46,12 +55,12 @@ class variableConfig():
         self.description = description
 
     def __str__(self):
-        descroptor = f'''Variable name: {self.name}
+        descriptor = f'''Variable name: {self.name}
         type: {self.varType}
         Value: {self.initialState}
         Value range: [{self.lowerLimit:0.6f}, {self.upperLimit:0.6f}]
         '''
-        return descroptor.__str__()
+        return descriptor.__str__()
 
 def getAllVariableConfigs(yamlFileAddress, scalingScheme = Scale.LINEAR):
     with open(yamlFileAddress,'rt') as fp:
