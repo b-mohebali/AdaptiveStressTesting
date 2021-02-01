@@ -2,6 +2,7 @@ from yamlParseObjects.yamlObjects import *
 from typing import List
 from samply.hypercube import cvt
 
+# This class represents a single 
 class Dimension():
     def __init__(self, varConfig: variableConfig):
         self.name = varConfig.name
