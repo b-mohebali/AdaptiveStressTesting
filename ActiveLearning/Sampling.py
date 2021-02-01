@@ -8,7 +8,10 @@ class Dimension():
         self.bounds = [varConfig.lowerLimit, varConfig.upperLimit]
         self.range = self.bounds[1] - self.bounds[0]
 
-
+# This class represents the sample space (or design space). The functionality 
+# is meant to store the information about the samples already taken and evaluated,
+# as well as the dimension information like the name of the dimensions and their 
+# bounds. Other functionalities facilitate the sampling process.
 class Space():
     def __init__(self, variableList: List[variableConfig], initialSampleCount = 20):
         self.initialSampleCount = initialSampleCount
