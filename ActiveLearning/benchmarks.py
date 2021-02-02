@@ -2,6 +2,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 from math import *
 from enum import Enum
+import math
 
 class NotEnoughArguments(Exception):
     pass
@@ -58,6 +59,11 @@ class Benchmark(ABC):
             self._checkInputDimensions(args)
         return self._function(args)
 
+    def scoreVec(self,*args, checkDim = True):
+        if checkDim:
+            self._checkInputVecDimensions(*args)
+        return self._functionVec(*args)
+
     @abstractmethod
     def _function(self, args):
         pass
@@ -83,4 +89,14 @@ class Hosaki(Benchmark):
         x1,x2 = args[0], args[1]
         return  (1 - 8*x1 + 7*x1**2 - 7*x1**3 / 3 + x1**4 / 4) * x2**2 * exp(-x2)
     
-
+class DistanceFromOrigin(Benchmark):
+    def __init__(self, threshold = 1, inputDim = 3, root = False):
+        Benchmark.__init__(self, threshold = threshold)
+        self.direction = ComparisonDirectionPositive.LESS_THAN_TH
+        self.root = root
+        self.inputDim = inputDim
+        
+    def _function(self, *args):
+        s = sum([arg**2 for arg in args])
+        return math.sqrt(s)
+        
