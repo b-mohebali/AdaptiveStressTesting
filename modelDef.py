@@ -1,4 +1,6 @@
 import logging
+import sys, os
+from yamlParseObjects.
 
 simConfig = simulationConfig('./yamlFiles/simulation.yaml')
 print(simConfig.name)
