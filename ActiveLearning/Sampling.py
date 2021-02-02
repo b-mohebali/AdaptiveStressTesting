@@ -65,5 +65,5 @@ class Space():
     def getBenchmarkLabels(self, benchmark:Benchmark = None):
         if benchmark is not None:
             self.benchmark = benchmark
-        self.eval_labels = self.benchmark.getLabelVec(*self.samples.T)
+        self.eval_labels = self.benchmark.getLabelVec(self.samples)
         return self.eval_labels

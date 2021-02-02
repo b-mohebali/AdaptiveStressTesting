@@ -25,27 +25,35 @@ variables = getAllVariableConfigs(yamlFileAddress=variablesFiles, scalingScheme=
 
 # Setting up the design space or the sampling space:
 
-# mySpace = Space(variableList = variables,initialSampleCount = 30)
-# # myBench = Hosaki(-1)
-# myBench = Branin(12)
-# x1 = [1,2,4,4,3]
-# x2 = [2,4,1,3,4]
-# l = myBench.getLabelVec(x1,x2)
-# print(l)
-# s = myBench.scoreVec(x1,x2)
-# print(s)
-# mySpace.generateInitialSample()
-# mySpace.getBenchmarkLabels(myBench)
+mySpace = Space(variableList = variables,initialSampleCount = 1000)
+myBench = Hosaki(-1)
+myBench = Branin(12)
+x1 = [1,2,4,4,3]
+x2 = [2,4,1,3,4]
+x = np.array([[1,2],[2,4],[4,1],[4,3],[3,4]])
+l = myBench.getLabelVec(x)
+print(l)
+s = myBench.getScoreVec(x)
+print(s)
+mySpace.generateInitialSample()
+mySpace.getBenchmarkLabels(myBench)
 
-# print(mySpace.eval_labels)
+print(mySpace.eval_labels)
 
-# # plotSpace2D(mySpace, legend = True)
+# plotSpace2D(mySpace, legend = True)
 
-# clf = svm.SVC(kernel = 'rbf', C =1000)
-# clf.fit(mySpace.samples, mySpace.eval_labels)
+clf = svm.SVC(kernel = 'rbf', C =1000)
+clf.fit(mySpace.samples, mySpace.eval_labels)
 
-# plotSpace(mySpace,classifier = clf, legend = True)
+plotSpace(mySpace,classifier = clf,figsize = (8,6), legend = True)
 
-a = np.array([[5,5,0,2],[1,1,1,4]])
-myBench = DistanceFromOrigin(threshold = 5, inputDim = 4, root = False)
-print(myBench.scoreVec(*a.T))
+
+# a = np.array([[5,5,0,2],[1,1,1,1]])
+# b = np.array([[1,2],[2,3],[3,4],[4,5],[5,5]])
+# myBench = DistanceFromOrigin(threshold = 5, inputDim = 4, root = False)
+# myBench = Hosaki(-1)
+# myBench._checkInputVecDimensions(b)
+
+
+# [print(datum) for datum in a]
+# print(myBench.getLabelVec(b))

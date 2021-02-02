@@ -72,7 +72,7 @@ def plotSpace2D(space: Space, classifier = None, figsize = None, meshRes=100, le
         # Transposed to make the dimensions match the convention. 
         xy = np.vstack([XX.ravel(),YY.ravel()]).T 
     if space.benchmark is not None:
-        scores = space.benchmark.scoreVec(*xy.T).reshape(XX.shape)
+        scores = space.benchmark.getScoreVec(xy).reshape(XX.shape)
         cs = ax.contour(XX,YY,scores, colors='g', levels = [space.benchmark.threshold], 
                 alpha = 1, linestyles = ['dashed']) 
         cslabels = ['Actual Boundary']
