@@ -85,11 +85,15 @@ class Hosaki(Benchmark):
         return  (1 - 8*x1 + 7*x1**2 - 7*x1**3 / 3 + x1**4 / 4) * x2**2 * exp(-x2)
     
 class DistanceFromOrigin(Benchmark):
-    def __init__(self, threshold = 1, inputDim = 3):
+    def __init__(self, threshold = 1, inputDim = 3, center = None):
         Benchmark.__init__(self, threshold = threshold)
         self.direction = ComparisonDirectionPositive.LESS_THAN_TH
+        if center is None: 
+            self.center = np.zeros((inputDim,))
+        else:
+            self.center = np.array(center)
         self.inputDim = inputDim
         
     def _function(self, datum):
-        return math.sqrt(sum(datum**2))
+        return math.sqrt(sum((datum-self.center)**2))
         

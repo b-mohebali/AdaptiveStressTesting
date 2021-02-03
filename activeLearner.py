@@ -25,9 +25,10 @@ variables = getAllVariableConfigs(yamlFileAddress=variablesFiles, scalingScheme=
 
 # Setting up the design space or the sampling space:
 
-mySpace = Space(variableList = variables,initialSampleCount = 1000)
-myBench = Hosaki(-1)
-myBench = Branin(12)
+mySpace = Space(variableList = variables,initialSampleCount = 20)
+# myBench = Hosaki(-1)
+# myBench = Branin(12)
+myBench = DistanceFromOrigin(threshold = 7, inputDim = 2, center = [5,5])
 x1 = [1,2,4,4,3]
 x2 = [2,4,1,3,4]
 x = np.array([[1,2],[2,4],[4,1],[4,3],[3,4]])
@@ -45,15 +46,5 @@ print(mySpace.eval_labels)
 clf = svm.SVC(kernel = 'rbf', C =1000)
 clf.fit(mySpace.samples, mySpace.eval_labels)
 
-plotSpace(mySpace,classifier = clf,figsize = (8,6), legend = True)
+plotSpace(mySpace,classifier = clf,figsize = (8,6), legend = True, newPoint=[[6,15],[1,1],[2,2],[3,3]])
 
-
-# a = np.array([[5,5,0,2],[1,1,1,1]])
-# b = np.array([[1,2],[2,3],[3,4],[4,5],[5,5]])
-# myBench = DistanceFromOrigin(threshold = 5, inputDim = 4, root = False)
-# myBench = Hosaki(-1)
-# myBench._checkInputVecDimensions(b)
-
-
-# [print(datum) for datum in a]
-# print(myBench.getLabelVec(b))

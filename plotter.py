@@ -11,7 +11,8 @@ def plotSpace(space: Space,
               classifier = None, 
               forth_dimension:str = None, 
               fDim_values: List[int] = None,
-              legend = True) -> None:
+              legend = True,
+              newPoint = None) -> None:
     """This function plots the samples in a Space object.
     - Options: 3D and 2D spaces.
     - TO-DO: Higher dimensions implementation by generating a set 
@@ -23,30 +24,40 @@ def plotSpace(space: Space,
         - classifier: The trained classifier for the decision boundary 
             plotting
         - forth_dimension: The dimension that is not shown in the plots 
-            but is fixed in each plot.
+            but is fixed in each plot. Only for spaces with d>3.
         - fDim_values: The set of values at which the forth dimension factor 
-            is fixed in each plot. 
+            is fixed in each plot. Only for spaces with d>3.
     """
     if space.dNum ==2:
         plotSpace2D(space = space, 
                     figsize = figsize, 
                     classifier = classifier,
                     meshRes = meshRes, 
-                    legend = legend)
+                    legend = legend,
+                    newPoint = newPoint)
     elif space.dNum == 3: 
         plotSpace3D(space, classifier)
     
     
     return 
 
-def plotSpace3D(space: Space, classifier = None, figsize = (6,6), meshRes = 100):
+def plotSpace3D(space: Space, 
+                classifier = None, 
+                figsize = (6,6), 
+                meshRes = 100,
+                newPoint = None):
     plt.figure(figsize=figsize)
     if space.labels:
         pass
     return 
 
 
-def plotSpace2D(space: Space, classifier = None, figsize = None, meshRes=100, legend=True):
+def plotSpace2D(space: Space, 
+                classifier = None, 
+                figsize = None, 
+                meshRes=100, 
+                legend=True,
+                newPoint = None):
     points = space.samples
     labels = space.eval_labels
     fig,ax = plt.subplots(figsize = figsize)  
@@ -55,8 +66,8 @@ def plotSpace2D(space: Space, classifier = None, figsize = None, meshRes=100, le
     x1range = ranges[0]
     x2range = ranges[1]
     if len(labels) > 0: 
-        ax.scatter(points[labels==0,0], points[labels==0,1], s=10, c = 'r', label= '- Data points')
-        ax.scatter(points[labels==1,0], points[labels==1,1], s=10, c = 'b', label= '+ Data points')
+        ax.scatter(points[labels==0,0], points[labels==0,1], s=12, c = 'r', label= '- Data points')
+        ax.scatter(points[labels==1,0], points[labels==1,1], s=12, c = 'b', label= '+ Data points')
         
     else:
         ax.scatter(points[:,0], points[:,1], s = 10, c = 'black', label = 'samples')
@@ -91,6 +102,14 @@ def plotSpace2D(space: Space, classifier = None, figsize = None, meshRes=100, le
         # ax.clabel(cs2, inline=1, fontsize=10)
         for i in range(len(csLabels2)):
             cs2.collections[i].set_label(csLabels2[i])                 
+    
+    # If the new point(s) is (are) passed to the function it will be shown differently than the evaluated points:
+    if newPoint is not None:
+        newPoint = np.array(newPoint)
+        newPoint = newPoint.reshape(1,len(newPoint)) if len(newPoint.shape) <2 else newPoint
+        legendLabel = 'Next point' + ('s' if newPoint.shape[0]>1 else '')
+        print('label: ' + legendLabel)
+        ax.scatter(newPoint[:,0], newPoint[:,1], marker = 's',s = 20, label = legendLabel, color = 'm' )
     if legend:
         # ax.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left', prop={'size':12})
         plt.legend(loc = 'upper left',bbox_to_anchor=(1.05, 1.0))
