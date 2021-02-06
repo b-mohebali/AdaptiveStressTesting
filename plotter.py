@@ -4,6 +4,15 @@ import matplotlib.pyplot as plt
 from ActiveLearning.Sampling import Space
 from typing import List
 import numpy as np 
+from collections import namedtuple
+
+class SaveInformation():
+    def __init__(self, fileName, savePDF = False, savePNG = False):
+        self.fileName = fileName
+        self.savePDF = savePDF
+        self.savePNG = savePNG
+
+
 
 def plotSpace(space: Space, 
               figsize=(6,6),
@@ -12,7 +21,9 @@ def plotSpace(space: Space,
               forth_dimension:str = None, 
               fDim_values: List[int] = None,
               legend = True,
-              newPoint = None) -> None:
+              newPoint = None,
+              saveInfo: SaveInformation = None,
+              showPlot = True) -> None:
     """This function plots the samples in a Space object.
     - Options: 3D and 2D spaces.
     - TO-DO: Higher dimensions implementation by generating a set 
@@ -34,14 +45,15 @@ def plotSpace(space: Space,
                     classifier = classifier,
                     meshRes = meshRes, 
                     legend = legend,
-                    newPoint = newPoint)
+                    newPoint = newPoint,
+                    saveInfo = saveInfo,
+                    showPlot = showPlot)
     elif space.dNum == 3: 
         plotSpace3D(space, classifier)
-    
-    
     return 
 
 def plotSpace3D(space: Space, 
+                showPlot = True,
                 classifier = None, 
                 figsize = (6,6), 
                 meshRes = 100,
@@ -57,7 +69,9 @@ def plotSpace2D(space: Space,
                 figsize = None, 
                 meshRes=100, 
                 legend=True,
-                newPoint = None):
+                newPoint = None,
+                saveInfo:SaveInformation = None,
+                showPlot = True):
     points = space.samples
     labels = space.eval_labels
     fig,ax = plt.subplots(figsize = figsize)  
@@ -114,5 +128,13 @@ def plotSpace2D(space: Space,
         # ax.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left', prop={'size':12})
         plt.legend(loc = 'upper left',bbox_to_anchor=(1.05, 1.0))
     plt.tight_layout()
-    plt.show()
+    if saveInfo is not None:
+        if saveInfo.savePDF:
+            plt.savefig(fname = f'{saveInfo.fileName}.pdf',
+                        facecolor='w', edgecolor = 'w', transparent = False, bbox_inches='tight')
+        if saveInfo.savePNG:
+            plt.savefig(fname = f'{saveInfo.fileName}.png',
+                        facecolor='w', edgecolor = 'w', transparent = False, bbox_inches='tight')
+    if showPlot:
+        plt.show()
     return 

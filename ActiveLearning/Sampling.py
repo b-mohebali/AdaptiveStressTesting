@@ -30,10 +30,12 @@ class Space():
         for varConfig in variableList:
             self.dimensions.append(Dimension(varConfig = varConfig))
         self.dNum = len(self.dimensions)
+        self.convPointsNum = 100 * 5 ** self.dNum
         self.samples = []
         self.eval_labels = []
         self.benchmark = benchmark
-        
+        self.clf = None    
+        self.convPoints = None
 
     def setBenchmark(self, benchmark: Benchmark):
         self._benchmark = benchmark
@@ -41,6 +43,30 @@ class Space():
         return self._benchmark 
     benchmark = property(getBenchmark, setBenchmark)   
 
+    def setClassifier(self, classifier):
+        self._clf = classifier
+    def getClassifier(self):
+        return self._clf
+    clf = property(getClassifier, setClassifier)
+
+    # Number of conversion points must rise exponentially by the dimension of the space
+    def sampleConvPoints(self):
+        if self.convPoints is None:
+            # Sampling the convergence points using LHS to save some time. 
+            # Note that the sample is very dense so we do not need the CVT to ensure spread
+            convPoints = lhs(count = self.convPointsNum, dimensionality=self.dNum)
+            # Scaling each of the dimensions according to the dimension ranges of the space. 
+            for dimIndex, dimension in enumerate(self.dimensions):
+                convPoints[:,dimIndex] *= dimension.range 
+                convPoints[:,dimIndex] += dimension.bounds[0] 
+        else:
+            return
+
+    def labelConvPoints(self):
+        # First we need the sample. IF the sample is already taken it will not change until the end of the process.
+        if self.convPoints is None:
+            self.sampleConvPoints()
+        
 
     def getAllDimensionNames(self):
         return [dim.name for dim in self.dimensions]
@@ -62,8 +88,17 @@ class Space():
         self.samples = samples
         return
 
-    def getBenchmarkLabels(self, benchmark:Benchmark = None):
+    
+    def getBenchmarkLabels(self, benchmark:Benchmark = None, updateClassifier = False):
         if benchmark is not None:
             self.benchmark = benchmark
         self.eval_labels = self.benchmark.getLabelVec(self.samples)
+        # TODO updating the classifier and effectively the decision boundary in case the labels are updated.
+        if updateClassifier:
+            pass
         return self.eval_labels
+
+    # Nearest point from the dataset:
+    def nearestPointDistance(self, X):
+        return np.min(np.linalg.norm(self.samples - X, axis=1))
+        

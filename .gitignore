@@ -1,6 +1,6 @@
 .vscode/
 /log/
-figures/
+Figures/
 __pycache__/
 */__pycache__/
 .vs/

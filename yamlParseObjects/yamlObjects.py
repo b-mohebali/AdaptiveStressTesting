@@ -31,6 +31,7 @@ class simulationConfig():
         self.simLength = yamlObj['length'] if 'length' in yamlObj else self.eventWindowEnd
         self.modelName = yamlObj['modelName']
         self.modelLocation = yamlObj['modelLocation']
+        self.figFolder = yamlObj['figureFolder'] if 'figureFolder' in yamlObj else None
                 
     def __str__(self):
         nl = '\n \t\t\t\t\t'
