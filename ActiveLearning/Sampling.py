@@ -3,6 +3,11 @@ from typing import List
 from samply.hypercube import cvt, lhs
 from enum import Enum
 from ActiveLearning.benchmarks import *
+from sklearn import svm
+
+class InsufficientInformation(Exception):
+    pass
+
 
 # This class represents a single 
 class Dimension():
@@ -49,6 +54,11 @@ class Space():
         return self._clf
     clf = property(getClassifier, setClassifier)
 
+
+
+    def clf_decision_function(self,point):
+        return self.clf.decision_function(point)
+
     # Number of conversion points must rise exponentially by the dimension of the space
     def sampleConvPoints(self):
         if self.convPoints is None:
@@ -66,13 +76,15 @@ class Space():
         # First we need the sample. IF the sample is already taken it will not change until the end of the process.
         if self.convPoints is None:
             self.sampleConvPoints()
-        
+
+    def addPointToSampleList(self, point):
+        self.samples = np.append(self.samples, point.reshape(1,len(point)),axis=0)    
 
     def getAllDimensionNames(self):
         return [dim.name for dim in self.dimensions]
     
     def getAllDimensionBounds(self):
-        return [dim.bounds for dim in self.dimensions]
+        return np.array([dim.bounds for dim in self.dimensions])
 
     def generateInitialSample(self, method = InitialSampleMethod.CVT):
         # First set of samples. All the dimensions are between 0 and 1
@@ -88,7 +100,6 @@ class Space():
         self.samples = samples
         return
 
-    
     def getBenchmarkLabels(self, benchmark:Benchmark = None, updateClassifier = False):
         if benchmark is not None:
             self.benchmark = benchmark
@@ -101,4 +112,14 @@ class Space():
     # Nearest point from the dataset:
     def nearestPointDistance(self, X):
         return np.min(np.linalg.norm(self.samples - X, axis=1))
-        
+    
+    def fit_classifier(self):
+        if len(self.samples)==0:
+            raise InsufficientInformation('No data points present in the space.')
+        if len(self.eval_labels)==0:
+            raise InsufficientInformation('The data is not labeled yet.')
+        if len(self.eval_labels) != len(self.samples):
+            raise ValueError('Number of data points and labels do not match.')
+        self.clf = svm.SVC(kernel = 'rbf', C = 1000)
+        self.clf.fit(self.samples, self.eval_labels)
+        return

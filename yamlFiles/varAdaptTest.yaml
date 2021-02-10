@@ -2,16 +2,16 @@
 name: x1
 type: timeIndep
 initialState: 1
-upperLimit: 12
 lowerLimit: -5
+upperLimit: 12
 description: "x1"
 
 ---
 name: x2
 type: timeIndep
 initialState: 1
-upperLimit: 20
 lowerLimit: -5
+upperLimit: 20
 description: "x2"
 
 ...

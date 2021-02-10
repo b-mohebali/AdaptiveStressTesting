@@ -14,6 +14,7 @@ variableScale = 6
 
 class simulationConfig():
     def __init__(self, yamlFileAddress):
+        self.fileLocation = yamlFileAddress
         with open(yamlFileAddress,'rt') as fp:
             yamlString = fp.read()
         fp.close()
@@ -32,7 +33,18 @@ class simulationConfig():
         self.modelName = yamlObj['modelName']
         self.modelLocation = yamlObj['modelLocation']
         self.figFolder = yamlObj['figureFolder'] if 'figureFolder' in yamlObj else None
-                
+        self.batchSize = yamlObj['batchSize'] if 'batchSize' in yamlObj else 1
+        self.sampleBudget = self._getNecessaryProperty('sampleBudget', yamlObj)
+        self.initialSampleSize = self._getNecessaryProperty('initialSampleSize', yamlObj)
+        self.batchSize = self._getNecessaryProperty('batchSize', yamlObj)
+
+
+    def _getNecessaryProperty(self,propName, yamlObj):
+        if propName not in yamlObj:
+            raise ValueError(f'The {propName} is not specified for the process.')
+        return yamlObj[propName]
+        
+
     def __str__(self):
         nl = '\n \t\t\t\t\t'
         descriptor = f'''Simulation name: {self.name}
@@ -92,7 +104,6 @@ def getAllVariableConfigs(yamlFileAddress, scalingScheme = Scale.LINEAR):
                                     description= desc)
         varList.append(variableCon)
     return varList
-
     
 
 

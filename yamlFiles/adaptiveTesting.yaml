@@ -7,5 +7,8 @@ codeBase_Linux:
   - "/home/caps/Auto_RTDS_Deployment/ver13d"
 modelLocation: "MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V5_NewFactors"
 modelName: "PGM_V5_NF"
-figureFolder: "./Figures"
+figureFolder: "./Figures/8"
+sampleBudget: 100
+initialSampleSize: 20
+batchSize: 5
 ...

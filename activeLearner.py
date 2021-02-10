@@ -45,8 +45,9 @@ mySpace.getBenchmarkLabels(myBench)
 
 print(mySpace.eval_labels)
 
-clf = svm.SVC(kernel = 'rbf', C =1000)
-clf.fit(mySpace.samples, mySpace.eval_labels)
+# clf = svm.SVC(kernel = 'rbf', C =1000)
+# clf.fit(mySpace.samples, mySpace.eval_labels)
+mySpace.fit_classifier()
 
 figFolder = simConfig.figFolder
 
@@ -55,7 +56,7 @@ sInfo = SaveInformation(fileName=f'{figFolder}/thisPLot', savePDF=True, savePNG=
 
 print(mySpace.getAllDimensionBounds())
 
-# plotSpace(mySpace,classifier = clf,figsize = (8,6), legend = True, newPoint=[[6,15],[1,1],[2,2],[3,3]], saveInfo=sInfo, showPlot=True)
+plotSpace(mySpace,classifier = None,figsize = (8,6), legend = True, newPoint=[[6,15],[1,1],[2,2],[3,3]], saveInfo=sInfo, showPlot=True)
 
 
 

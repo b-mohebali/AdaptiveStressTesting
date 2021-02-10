@@ -65,25 +65,27 @@ def plotSpace3D(space: Space,
 
 
 def plotSpace2D(space: Space, 
-                classifier = None, 
+                classifier, 
                 figsize = None, 
                 meshRes=100, 
                 legend=True,
                 newPoint = None,
                 saveInfo:SaveInformation = None,
                 showPlot = True):
-    points = space.samples
+    clf = classifier if classifier is not None else space.clf
     labels = space.eval_labels
-    fig,ax = plt.subplots(figsize = figsize)  
+    
+    _,ax = plt.subplots(figsize = figsize)  
     ranges = space.getAllDimensionBounds()
     dimensionNames = space.getAllDimensionNames()
     x1range = ranges[0]
     x2range = ranges[1]
     if len(labels) > 0: 
+        points = space.samples[:len(labels),:]
         ax.scatter(points[labels==0,0], points[labels==0,1], s=12, c = 'r', label= '- Data points')
         ax.scatter(points[labels==1,0], points[labels==1,1], s=12, c = 'b', label= '+ Data points')
-        
     else:
+        points = space.samples
         ax.scatter(points[:,0], points[:,1], s = 10, c = 'black', label = 'samples')
     # TODO: This part only works with SVM classifiers because only those have support vectors
     ax.set_xlim(x1range)
@@ -107,13 +109,12 @@ def plotSpace2D(space: Space,
     """ Plotting the contours of the decision function indicating the
         decision boundary and the margin. 
     """
-    if classifier is not None:
-        ax.scatter(classifier.support_vectors_[:,0], classifier.support_vectors_[:,1], s=80, 
+    if clf is not None:
+        ax.scatter(clf.support_vectors_[:,0], clf.support_vectors_[:,1], s=80, 
                     linewidth = 1, facecolors = 'none', edgecolors = 'orange', label='Support vectors')
-        decisionFunction = classifier.decision_function(xy).reshape(XX.shape)
+        decisionFunction = clf.decision_function(xy).reshape(XX.shape)
         cs2 = ax.contour(XX, YY, decisionFunction, colors='k', levels=[-1,0,1], alpha=1,linestyles=['dashed','solid','dotted'])
         csLabels2 = ['DF=-1','DF=0 (hypothesis)','DF=+1']
-        # ax.clabel(cs2, inline=1, fontsize=10)
         for i in range(len(csLabels2)):
             cs2.collections[i].set_label(csLabels2[i])                 
     
@@ -125,7 +126,6 @@ def plotSpace2D(space: Space,
         print('label: ' + legendLabel)
         ax.scatter(newPoint[:,0], newPoint[:,1], marker = 's',s = 20, label = legendLabel, color = 'm' )
     if legend:
-        # ax.legend(bbox_to_anchor=(1.05, 1.0), loc='upper left', prop={'size':12})
         plt.legend(loc = 'upper left',bbox_to_anchor=(1.05, 1.0))
     plt.tight_layout()
     if saveInfo is not None:
