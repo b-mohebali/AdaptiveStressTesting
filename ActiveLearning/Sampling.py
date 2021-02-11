@@ -77,7 +77,7 @@ class Space():
         else:
             return
 
-    def labelConvPoints(self):
+    def _labelConvPoints(self):
         # First we need the sample. IF the sample is already taken it will not change until the end of the process.
         if self.convPoints is None:
             self.sampleConvPoints()
@@ -123,6 +123,7 @@ class Space():
             return np.min(np.linalg.norm(self.samples - X, axis=1))
         return np.min(np.linalg.norm(samplesList - X, axis=1))
 
+    # TODO This method has to be able to return the accuracy measure and the measure of change in hypothesis.
     def fit_classifier(self):
         if len(self.samples)==0:
             raise InsufficientInformation('No data points present in the space.')
