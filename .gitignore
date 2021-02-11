@@ -11,4 +11,3 @@ variableValues.yaml
 */*.csv
 *.txt
 .ipynb_checkpoints
-*.ipynb

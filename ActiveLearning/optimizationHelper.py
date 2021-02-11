@@ -1,5 +1,11 @@
 from geneticalgorithm import geneticalgorithm as ga
-from Sampling import Space
+from .Sampling import Space
+import numpy as np
+from abc import ABC, abstractmethod
+
+class Optimizer(ABC):
+    pass
+
 
 # The wrapper class for the genetic algorithm that solves the exploitation problem:
 class GeneticAlgorithmSolver():
@@ -20,6 +26,7 @@ class GeneticAlgorithmSolver():
                         algorithm_parameters=algoParam)
         self.epsilon = epsilon
         self.batchSize = batchSize
+        self.currentSpaceSamples = None
     
     # Batch size getter and setter:
     def setBatchSize(self,batchSize):
@@ -29,7 +36,7 @@ class GeneticAlgorithmSolver():
     batchSize = property(getBatchSize, setBatchSize)
 
     def objFunction(self, X):
-        dist = self.space.nearestPointDistance(X)
+        dist = self.space.nearestPointDistance(X, self.currentSpaceSamples)
         pen = 0
         df = self.space.clf.decision_function(X.reshape(1,len(X)))
         if abs(df) > self.epsilon:
@@ -54,11 +61,16 @@ class GeneticAlgorithmSolver():
 
     def findNextPoints(self,pointNum):
         newPointsFound = []
+        self.currentSpaceSamples = self.space.getSamplesCopy()
         for _ in range(pointNum):
             gaModel = self.getModel()
             gaModel.run()
             newPoint = gaModel.output_dict['variable']
             newPointsFound.append(newPoint)
-            self.space.addPointToSampleList(newPoint)
-        return newPointsFound
-        
+            self.addPointToSampleList(newPoint)
+        return np.array(newPointsFound)
+    
+    def addPointToSampleList(self, point):
+        self.currentSpaceSamples = np.append(self.currentSpaceSamples, point.reshape(1,len(point)),axis=0)    
+
+

@@ -11,6 +11,13 @@ class SaveInformation():
         self.fileName = fileName
         self.savePDF = savePDF
         self.savePNG = savePNG
+    
+    def __str__(self):
+        descriptor = f'''File Name: {self.fileName}
+            Saves PDF: {'Yes' if self.savePDF else 'No'}
+            Saves PNG: {'Yes' if self.savePNG else 'No'}
+        '''
+        return descriptor.__str__()
 
 
 

@@ -41,6 +41,8 @@ class Space():
         self.benchmark = benchmark
         self.clf = None    
         self.convPoints = None
+        self.pastConvLabels = None
+        self.currentConvLabels = None
 
     def setBenchmark(self, benchmark: Benchmark):
         self._benchmark = benchmark
@@ -54,6 +56,8 @@ class Space():
         return self._clf
     clf = property(getClassifier, setClassifier)
 
+    def getSamplesCopy(self):
+        return np.copy(self.samples)
 
 
     def clf_decision_function(self,point):
@@ -69,6 +73,7 @@ class Space():
             for dimIndex, dimension in enumerate(self.dimensions):
                 convPoints[:,dimIndex] *= dimension.range 
                 convPoints[:,dimIndex] += dimension.bounds[0] 
+            self.convPoints = convPoints
         else:
             return
 
@@ -77,8 +82,8 @@ class Space():
         if self.convPoints is None:
             self.sampleConvPoints()
 
-    def addPointToSampleList(self, point):
-        self.samples = np.append(self.samples, point.reshape(1,len(point)),axis=0)    
+    # def addPointToSampleList(self, point):
+    #     self.samples = np.append(self.samples, point.reshape(1,len(point)),axis=0)    
 
     def getAllDimensionNames(self):
         return [dim.name for dim in self.dimensions]
@@ -109,10 +114,15 @@ class Space():
             pass
         return self.eval_labels
 
+    def addPointsToSampleList(self, points):
+        self.samples = np.append(self.samples, points, axis=0)
+
     # Nearest point from the dataset:
-    def nearestPointDistance(self, X):
-        return np.min(np.linalg.norm(self.samples - X, axis=1))
-    
+    def nearestPointDistance(self, X, samplesList = None):
+        if samplesList is None:
+            return np.min(np.linalg.norm(self.samples - X, axis=1))
+        return np.min(np.linalg.norm(samplesList - X, axis=1))
+
     def fit_classifier(self):
         if len(self.samples)==0:
             raise InsufficientInformation('No data points present in the space.')
@@ -123,3 +133,5 @@ class Space():
         self.clf = svm.SVC(kernel = 'rbf', C = 1000)
         self.clf.fit(self.samples, self.eval_labels)
         return
+
+    

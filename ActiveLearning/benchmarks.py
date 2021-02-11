@@ -88,10 +88,7 @@ class DistanceFromOrigin(Benchmark):
     def __init__(self, threshold = 1, inputDim = 3, center = None):
         Benchmark.__init__(self, threshold = threshold)
         self.direction = ComparisonDirectionPositive.LESS_THAN_TH
-        if center is None: 
-            self.center = np.zeros((inputDim,))
-        else:
-            self.center = np.array(center)
+        self.center = np.zeros((inputDim,)) if center is None else np.array(center)
         self.inputDim = inputDim
         
     def _function(self, datum):
