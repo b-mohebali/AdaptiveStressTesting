@@ -16,6 +16,7 @@ from scipy.linalg import hadamard
 import matplotlib.pyplot as plt
 from enum import Enum
 import time
+import simulation
 
 simConfig = simulationConfig('./yamlFiles/simulation.yaml')
 print(simConfig.name)
@@ -185,6 +186,10 @@ def runSampleFrom(sampleDictList, dFolder, remoteRepo = None, fromSample = None)
     runSample(sampleDictList, dFolder, remoteRepo = remoteRepo, sampleGroup=sampleGroup)
     return
 
+#### Test running the AC PGM case with superimposed steady state and pulse loads model:
+mySim = simulation()
+
+
 #----------------------------------------------------------------
 # First order Sensitivity Analysis:
 
@@ -225,21 +230,21 @@ def runSampleFrom(sampleDictList, dFolder, remoteRepo = None, fromSample = None)
 # ----------------------------------------------------------------------
 # The Fractional Factorial Desing with Hadamard matrices:
 
-experFile = './experiments/FracFactEx_TC_complete_shuffled.txt'
-simRepo = remoteRepo59
+# experFile = './experiments/FracFactEx_TC_complete_shuffled.txt'
+# simRepo = remoteRepo59
 
 # Taking the variables with non-zero initialState value
-timeIndepVars = getTimeIndepVars(variables, shuffle = True, omitZero = True)
+# timeIndepVars = getTimeIndepVars(variables, shuffle = True, omitZero = True)
 
-exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
-saveSampleToTxtFile(exper, fileName = experFile)
-saveVariableDescription(timeIndepVars, descriptionFile)
-copyDataToremoteServer(simRepo, experFile)
-copyDataToremoteServer(simRepo, descriptionFile)
+# exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+# saveSampleToTxtFile(exper, fileName = experFile)
+# saveVariableDescription(timeIndepVars, descriptionFile)
+# copyDataToremoteServer(simRepo, experFile)
+# copyDataToremoteServer(simRepo, descriptionFile)
 
 # exper = loadSampleFromTxtFile(experFile)
 
-runSample(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo)
+# runSample(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo)
 # runSampleFrom(sampleDictList = exper, dFolder = dataFolder, remoteRepo = simRepo, fromSample = 119)
 
 # ----------------------------------------------------------------------

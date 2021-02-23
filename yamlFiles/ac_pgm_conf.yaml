@@ -1,0 +1,18 @@
+---
+name: "AC PGM model"
+eventWindowStart: 200
+length : 300
+eventWindowEnd: 240
+timeStep: 0.05
+codeBase_Windows:
+  - "C:\\Users\\bm12m\\Google Drive\\codes\\Codes"
+  - "C:\\Users\\bm12m\\Google Drive\\codes\\testing"
+codeBase_Linux:
+  - "/home/caps/Auto_RTDS_Deployment/ver13d"
+profileLoc: "./profileExample"
+modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM" 
+modelName: "Test"
+sampleBudget: 0
+initialSampleSize: 0
+batchSize: 0
+...
