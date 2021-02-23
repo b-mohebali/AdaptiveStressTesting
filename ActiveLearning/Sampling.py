@@ -5,6 +5,7 @@ from enum import Enum
 from ActiveLearning.benchmarks import *
 from sklearn import svm
 
+
 class InsufficientInformation(Exception):
     pass
 
@@ -27,6 +28,7 @@ class Dimension():
 class InitialSampleMethod(Enum):
     CVT = 0
     LHS = 1
+    Sobol = 2
 
 class Space():
     def __init__(self, variableList: List[variableConfig], initialSampleCount = 20, benchmark: Benchmark = None):
@@ -41,7 +43,8 @@ class Space():
         self.benchmark = benchmark
         self.clf = None    
         self.convPoints = None
-        self.pastConvLabels = None
+        self.sampleConvPoints()
+        self.pastConvLabels = np.zeros(shape = (self.convPointsNum,),dtype = float)
         self.currentConvLabels = None
 
     def setBenchmark(self, benchmark: Benchmark):
@@ -59,23 +62,49 @@ class Space():
     def getSamplesCopy(self):
         return np.copy(self.samples)
 
+    """
+    This funnction returns a measure of how much the hypothesis has moved since the last time 
+    that this measure was calculated. 
+    """
+    def getChangeMeasure(self, updateConvLabels = False, percent = False):
+        self.currentConvLabels = self.clf.predict(self.convPoints)
+        diff = np.sum(np.abs(self.currentConvLabels - self.pastConvLabels)) / self.convPointsNum
+        if updateConvLabels:
+            self.pastConvLabels = self.currentConvLabels
+        return diff*100.0 if percent else diff
+        
+    """
+    The accuracy is calculated as the percentage of the convergence points that are 
+    correctly classified by the classifier that is trained on the data. 
+    It compares the labels coming from the classifier and the benchmark object.
+    """
+    def getAccuracyMeasure(self, benchmark = None, percent = False):
+        if self.convPoints is None:
+            raise InsufficientInformation("The convergence points are not sampled yet.")
+        if benchmark is not None:
+            self.benchmark = benchmark
+        pred_labels = self.clf.predict(self.convPoints)
+        real_labels = self.benchmark.getLabelVec(self.convPoints)
+        diff = 1 - np.sum(np.abs(pred_labels - real_labels)) / self.convPointsNum
+        return diff * 100.0 if percent else diff
+
 
     def clf_decision_function(self,point):
         return self.clf.decision_function(point)
 
     # Number of conversion points must rise exponentially by the dimension of the space
     def sampleConvPoints(self):
-        if self.convPoints is None:
-            # Sampling the convergence points using LHS to save some time. 
-            # Note that the sample is very dense so we do not need the CVT to ensure spread
-            convPoints = lhs(count = self.convPointsNum, dimensionality=self.dNum)
-            # Scaling each of the dimensions according to the dimension ranges of the space. 
-            for dimIndex, dimension in enumerate(self.dimensions):
-                convPoints[:,dimIndex] *= dimension.range 
-                convPoints[:,dimIndex] += dimension.bounds[0] 
-            self.convPoints = convPoints
-        else:
+        if self.convPoints is not None:
             return
+        # Sampling the convergence points using LHS to save some time. 
+        # Note that the sample is very dense so we do not need the CVT to ensure spread
+        convPoints = lhs(count = self.convPointsNum, dimensionality=self.dNum)
+        # Scaling each of the dimensions according to the dimension ranges of the space. 
+        for dimIndex, dimension in enumerate(self.dimensions):
+            convPoints[:,dimIndex] *= dimension.range 
+            convPoints[:,dimIndex] += dimension.bounds[0] 
+        self.convPoints = convPoints
+       
 
     def _labelConvPoints(self):
         # First we need the sample. IF the sample is already taken it will not change until the end of the process.
@@ -106,6 +135,7 @@ class Space():
         return
 
     def getBenchmarkLabels(self, benchmark:Benchmark = None, updateClassifier = False):
+        
         if benchmark is not None:
             self.benchmark = benchmark
         self.eval_labels = self.benchmark.getLabelVec(self.samples)

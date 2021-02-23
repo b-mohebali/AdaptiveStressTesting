@@ -32,8 +32,10 @@ class Benchmark(ABC):
         pass
 
     def _checkInputDimensions(self, datum):
+        notEnough = NotEnoughArguments(f'Not enough arguments for Branin Function. Please pass only {self.inputDim} arguments.')
+        tooMany = TooManyArguments(f'Too many arguments for Branin function. Please pass only {self.inputDim} arguments.')
         if len(datum) != self.inputDim:
-            exept = NotEnoughArguments(f'Not enough arguments for Branin Function. Please pass only {self.inputDim} arguments.') if len(datum) < self.inputDim else TooManyArguments(f'Too many arguments for Branin function. Please pass only {self.inputDim} arguments.')
+            exept = notEnough if len(datum) < self.inputDim else tooMany 
             raise exept 
         return 
 

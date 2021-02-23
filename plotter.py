@@ -130,7 +130,6 @@ def plotSpace2D(space: Space,
         newPoint = np.array(newPoint)
         newPoint = newPoint.reshape(1,len(newPoint)) if len(newPoint.shape) <2 else newPoint
         legendLabel = 'Next point' + ('s' if newPoint.shape[0]>1 else '')
-        print('label: ' + legendLabel)
         ax.scatter(newPoint[:,0], newPoint[:,1], marker = 's',s = 20, label = legendLabel, color = 'm' )
     if legend:
         plt.legend(loc = 'upper left',bbox_to_anchor=(1.05, 1.0))
