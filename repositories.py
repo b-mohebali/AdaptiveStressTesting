@@ -139,5 +139,9 @@ remoteRepo58 = localRepo + 'sample58'
 # Testing the SA module after a long time!
 remoteRepo59 = localRepo + 'sample59'
 
+
+# First repo for AC PGM:
+remoteRepo60 = localRepo + 'sample60'
+
 currentDir = os.getcwd()
 isRepoRemote = True

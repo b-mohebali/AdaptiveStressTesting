@@ -1,0 +1,45 @@
+name: sentinel
+type: timeIndep
+initialState: 124
+mappedName: sentinel
+description: "No influence factor"
+
+---
+name: QXUfro
+type: timeIndep
+initialState: 0.1
+description: "Pulse load frequency"
+
+---
+name: QXUPro
+type: timeIndep
+initialState: 0.25
+description: "Pulse load P"
+
+---
+name: QXUfrr
+type: timeIndep
+initialState: 0.1
+description: "Pulse load ramp rate"
+
+---
+name: QXUPrb
+type: timeIndep
+initialState: 0.5
+description: "Steady State load P"
+
+---
+name: QXUQrb
+type: timeIndep
+initialState: 0.0
+description: "Steady State load Q"
+
+---
+
+name: QXUPrr
+type: timeIndep
+initialState: 200.0 
+description: "Steady State load ramp rate"
+
+...
+

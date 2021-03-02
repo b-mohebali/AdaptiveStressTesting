@@ -288,6 +288,8 @@ def copyMetricScript(scriptName, location, newFolder):
 
 
 def saveSampleToTxtFile(samples, fileName):
+    if not os.path.isfile(fileName):
+        pass
     with open(fileName,'w') as f:
         for sample in samples:
             f.write(sample.__str__() + '\n')
@@ -327,3 +329,4 @@ def findDifferentValue(baseLine, sample):
         if baseLine[key] != sample[key]:
             return key
     return None
+

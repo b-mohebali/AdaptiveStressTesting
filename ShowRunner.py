@@ -16,38 +16,17 @@ from scipy.linalg import hadamard
 import matplotlib.pyplot as plt
 from enum import Enum
 import time
-import simulation
-
-simConfig = simulationConfig('./yamlFiles/simulation.yaml')
+simConfig = simulationConfig('./yamlFiles/ac_pgm_conf.yaml')
 print(simConfig.name)
 for p in simConfig.codeBase: 
     sys.path.insert(0,p)
     print(p + ' is added to the path')
-
 from autoRTDS import Trial
 from controls import Control, InternalControl
 import case_Setup
 from rscad import rtds
 from repositories import *
-# -------------------------- File path definitions ---------------------------------------------------------------
-
-
-#------------------------------- Setting up the variables -----------------------------------------------
-variablesFile = './yamlFiles/variables_TC_complete.yaml'
-descriptionFile = 'varDescription.yaml'
-
-variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
-# variables = getAllVariableConfigs('variables_limited.yaml', scalingScheme=Scale.LOGARITHMIC)
-for v in variables: 
-    print(f'Variable: {v.name}, mapped name: {v.mappedName}, Initial value: {v.initialState}')
-print('---------------------------------------------------------------')
-logFile = getLoggerFileAddress(fileName='MyLoggerFile')
-
-logging.basicConfig(filename=logFile, filemode='w', 
-                    level = logging.DEBUG,
-                    format='%(asctime)s - %(process)d - %(levelname)s - %(message)s')
-
-logging.debug('This is the debug message from the CAPS machine...')
+import simulation
 
 # buildSampleProfile(fileName='sampleProfile.csv')
 
@@ -186,8 +165,27 @@ def runSampleFrom(sampleDictList, dFolder, remoteRepo = None, fromSample = None)
     runSample(sampleDictList, dFolder, remoteRepo = remoteRepo, sampleGroup=sampleGroup)
     return
 
-#### Test running the AC PGM case with superimposed steady state and pulse loads model:
-mySim = simulation()
+
+
+# -------------------------- File path definitions ---------------------------------------------------------------
+
+
+#------------------------------- Setting up the variables -----------------------------------------------
+variablesFile = './yamlFiles/variables_ac_pgm.yaml'
+descriptionFile = 'varDescription.yaml'
+
+variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
+# variables = getAllVariableConfigs('variables_limited.yaml', scalingScheme=Scale.LOGARITHMIC)
+for v in variables: 
+    print(f'Variable: {v.name}, mapped name: {v.mappedName}, Initial value: {v.initialState}')
+print('---------------------------------------------------------------')
+logFile = getLoggerFileAddress(fileName='MyLoggerFile')
+
+logging.basicConfig(filename=logFile, filemode='w', 
+                    level = logging.DEBUG,
+                    format='%(asctime)s - %(process)d - %(levelname)s - %(message)s')
+
+logging.debug('This is the debug message from the CAPS machine...')
 
 
 #----------------------------------------------------------------
@@ -230,21 +228,21 @@ mySim = simulation()
 # ----------------------------------------------------------------------
 # The Fractional Factorial Desing with Hadamard matrices:
 
-# experFile = './experiments/FracFactEx_TC_complete_shuffled.txt'
-# simRepo = remoteRepo59
+experFile = './experiments/FFD_AC_PGM.txt'
+simRepo = remoteRepo60
 
 # Taking the variables with non-zero initialState value
-# timeIndepVars = getTimeIndepVars(variables, shuffle = True, omitZero = True)
+timeIndepVars = getTimeIndepVars(variables, shuffle = True, omitZero = True)
 
-# exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
-# saveSampleToTxtFile(exper, fileName = experFile)
-# saveVariableDescription(timeIndepVars, descriptionFile)
-# copyDataToremoteServer(simRepo, experFile)
-# copyDataToremoteServer(simRepo, descriptionFile)
+exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+saveSampleToTxtFile(exper, fileName = experFile)
+saveVariableDescription(timeIndepVars, descriptionFile)
+copyDataToremoteServer(simRepo, experFile)
+copyDataToremoteServer(simRepo, descriptionFile)
 
 # exper = loadSampleFromTxtFile(experFile)
 
-# runSample(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo)
+runSample(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo)
 # runSampleFrom(sampleDictList = exper, dFolder = dataFolder, remoteRepo = simRepo, fromSample = 119)
 
 # ----------------------------------------------------------------------

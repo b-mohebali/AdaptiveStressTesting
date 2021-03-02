@@ -8,11 +8,11 @@ codeBase_Windows:
   - "C:\\Users\\bm12m\\Google Drive\\codes\\Codes"
   - "C:\\Users\\bm12m\\Google Drive\\codes\\testing"
 codeBase_Linux:
-  - "/home/caps/Auto_RTDS_Deployment/ver13d"
+  - "/home/caps/Auto_RTDS_Deployment/ver13"
 profileLoc: "./profileExample"
-modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM" 
+modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM_draft_vars" 
 modelName: "Test"
-sampleBudget: 0
-initialSampleSize: 0
-batchSize: 0
+sampleBudget: 100
+initialSampleSize: 25
+batchSize: 5
 ...
