@@ -16,11 +16,13 @@ from scipy.linalg import hadamard
 import matplotlib.pyplot as plt
 from enum import Enum
 import time
+
 simConfig = simulationConfig('./yamlFiles/ac_pgm_conf.yaml')
 print(simConfig.name)
 for p in simConfig.codeBase: 
     sys.path.insert(0,p)
     print(p + ' is added to the path')
+
 from autoRTDS import Trial
 from controls import Control, InternalControl
 import case_Setup

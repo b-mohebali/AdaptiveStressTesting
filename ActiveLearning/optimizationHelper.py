@@ -3,6 +3,8 @@ from .Sampling import Space
 import numpy as np
 from abc import ABC, abstractmethod
 
+# TODO: This is going to be the parent class for all the optimizers used for selecting a point in a 
+#   design space. 
 class Optimizer(ABC):
     pass
 
