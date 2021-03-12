@@ -13,7 +13,7 @@ description: "Pulse load frequency"
 ---
 name: QXUPro
 type: timeIndep
-initialState: 0.25
+initialState: 0.6
 description: "Pulse load P"
 
 ---
@@ -25,7 +25,9 @@ description: "Pulse load ramp rate"
 ---
 name: QXUPrb
 type: timeIndep
-initialState: 0.5
+initialState: 0.6
+lowerLimit: 0.5
+upperLimit: 0.9
 description: "Steady State load P"
 
 ---
@@ -35,7 +37,6 @@ initialState: 0.0
 description: "Steady State load Q"
 
 ---
-
 name: QXUPrr
 type: timeIndep
 initialState: 200.0 

@@ -142,6 +142,26 @@ remoteRepo59 = localRepo + 'sample59'
 
 # First repo for AC PGM:
 remoteRepo60 = localRepo + 'sample60'
+# AC PGM with GB load excluded:
+remoteRepo61 = localRepo + 'sample61'
+# AC PGM changed the limits of the variables
+remoteRepo62 = localRepo + 'sample62'
+
+# 10 Samples with the same settings to check the effect of noise on the process:
+remoteRepo63 = localRepo + 'sample63'
+remoteRepo64 = localRepo + 'sample64'
+remoteRepo65 = localRepo + 'sample65'
+remoteRepo66 = localRepo + 'sample66'
+remoteRepo67 = localRepo + 'sample67'
+remoteRepo68 = localRepo + 'sample68'
+remoteRepo69 = localRepo + 'sample69'
+remoteRepo70 = localRepo + 'sample70'
+remoteRepo71 = localRepo + 'sample71'
+remoteRepo72 = localRepo + 'sample72'
+
+# Pushing the Pulse load init to .6 pu and steady state power UL to .9 pu
+remoteRepo73 = localRepo + 'sample73'
+remoteRepo74 = localRepo + 'sample74'
 
 currentDir = os.getcwd()
 isRepoRemote = True

@@ -132,12 +132,12 @@ class PGM_control(Control):
 #-------------------------------------------------------------
 def runSample(sampleDictList, dFolder, remoteRepo, sampleGroup = None):
     indexGroup = range(1, len(sampleDictList)+1)
+    myControl = PGM_control('', './', configFile=simConfig)   
     if sampleGroup is not None: 
         indexGroup = sampleGroup
     copyDataToremoteServer(remoteRepo, variablesFile)
     for sampleIndex in indexGroup:
         sample = sampleDictList[sampleIndex - 1]
-        myControl = PGM_control('', './', configFile=simConfig)   
         outfile = myControl.setVariables(sample)
         testDropLoc = Trial.init_test_drop(myControl.NAME)
         ctrl = myControl
@@ -231,21 +231,21 @@ logging.debug('This is the debug message from the CAPS machine...')
 # The Fractional Factorial Desing with Hadamard matrices:
 
 experFile = './experiments/FFD_AC_PGM.txt'
-simRepo = remoteRepo60
-
+simRepo = remoteRepo73
 # Taking the variables with non-zero initialState value
+
 timeIndepVars = getTimeIndepVars(variables, shuffle = True, omitZero = True)
+
 
 exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
 saveSampleToTxtFile(exper, fileName = experFile)
 saveVariableDescription(timeIndepVars, descriptionFile)
 copyDataToremoteServer(simRepo, experFile)
 copyDataToremoteServer(simRepo, descriptionFile)
-
 # exper = loadSampleFromTxtFile(experFile)
 
 runSample(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo)
-# runSampleFrom(sampleDictList = exper, dFolder = dataFolder, remoteRepo = simRepo, fromSample = 119)
+# runSampleFrom(sampleDictList = exper, dFolder = dataFolder, remoteRepo = simRepo, fromSample = 12)
 
 # ----------------------------------------------------------------------
 # Returning all the variables to their standard value:
