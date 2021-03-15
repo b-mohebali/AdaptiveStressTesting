@@ -163,5 +163,21 @@ remoteRepo72 = localRepo + 'sample72'
 remoteRepo73 = localRepo + 'sample73'
 remoteRepo74 = localRepo + 'sample74'
 
+# Pushing the sum of the powers to 4 MW at their maximum
+    # Ps = 2, Pp = 0.7
+remoteRepo75 = localRepo + 'sample75'
+    # Ps = 1, Pp = 1.7
+remoteRepo76 = localRepo + 'sample76'
+
+# Pusing the sum of the powers to 5 MW:
+    # Ps = 2, Pp = 1.4
+remoteRepo77 = localRepo + 'sample77'
+    # Ps = 1.5, Pp = 1.9
+remoteRepo78 = localRepo + 'sample78'
+
+# Same as 77 but with the stabilization period extended from 10s to 25s. 
+remoteRepo79 = localRepo + 'sample79'
+
+
 currentDir = os.getcwd()
 isRepoRemote = True

@@ -231,7 +231,7 @@ logging.debug('This is the debug message from the CAPS machine...')
 # The Fractional Factorial Desing with Hadamard matrices:
 
 experFile = './experiments/FFD_AC_PGM.txt'
-simRepo = remoteRepo73
+simRepo = remoteRepo79
 # Taking the variables with non-zero initialState value
 
 timeIndepVars = getTimeIndepVars(variables, shuffle = True, omitZero = True)
