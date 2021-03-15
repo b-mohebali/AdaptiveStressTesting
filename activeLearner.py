@@ -26,13 +26,13 @@ variables = getAllVariableConfigs(yamlFileAddress=variablesFiles, scalingScheme=
 
 # Setting up the design space or the sampling space:
 budget = 60 # Number of sampels:
-initialSampleSize = 20
+initialSampleSize = 200
 
 mySpace = Space(variableList = variables,initialSampleCount = initialSampleSize)
 currentBudget = budget - initialSampleSize
 
 
-myBench = DistanceFromOrigin(threshold = 7, inputDim = 2, center = [5,5])
+myBench = DistanceFromOrigin(threshold = 4, inputDim = 3, center = [0,0,0])
 # x1 = [1,2,4,4,3]
 # x2 = [2,4,1,3,4]
 # x = np.array([[1,2],[2,4],[4,1],[4,3],[3,4]])
@@ -56,8 +56,7 @@ sInfo = SaveInformation(fileName=f'{figFolder}/thisPLot', savePDF=True, savePNG=
 
 print(mySpace.getAllDimensionBounds())
 
-plotSpace(mySpace,classifier = None,figsize = (8,6), legend = True, newPoint=[[6,15],[1,1],[2,2],[3,3]], saveInfo=sInfo, showPlot=True)
-
+plotSpace(mySpace,classifier = None,figsize = (8,6), legend = True, saveInfo=sInfo, showPlot=True, meshRes=50)
 
 
 # Iterations of the exploitation:

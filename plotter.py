@@ -5,6 +5,10 @@ from ActiveLearning.Sampling import Space
 from typing import List
 import numpy as np 
 from collections import namedtuple
+from skimage import measure
+from matplotlib import cm
+from mpl_toolkits.mplot3d import axes3d
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 class SaveInformation():
     def __init__(self, fileName, savePDF = False, savePNG = False):
@@ -56,7 +60,12 @@ def plotSpace(space: Space,
                     saveInfo = saveInfo,
                     showPlot = showPlot)
     elif space.dNum == 3: 
-        plotSpace3D(space, classifier)
+        plotSpace3D(space = space,
+                    showPlot= showPlot,
+                    classifier = classifier,
+                    figsize = figsize,
+                    meshRes = meshRes,
+                    newPoint = newPoint)
     return 
 
 def plotSpace3D(space: Space, 
@@ -65,9 +74,62 @@ def plotSpace3D(space: Space,
                 figsize = (6,6), 
                 meshRes = 100,
                 newPoint = None):
-    plt.figure(figsize=figsize)
-    if space.labels:
-        pass
+    
+    clf = classifier if classifier is not None else space.clf
+    labels = space.eval_labels
+    ranges = space.getAllDimensionBounds()
+    x1range = ranges[0]
+    x2range = ranges[1]
+    x3range = ranges[2]
+    fig = plt.figure(figsize = figsize)
+    ax = plt.gca(projection = '3d')
+    dimensionNames = space.getAllDimensionDescriptions()
+
+    # Scattering the sample points colored based on their labels: 
+    if len(labels) > 0: 
+        points = space.samples[:len(labels),:]
+        ax.scatter(points[labels==0,0], points[labels==0,1], points[labels==0,2], s=10, c = 'r', label= '- Data points')
+        ax.scatter(points[labels==1,0], points[labels==1,1], points[labels==1,2], s=10, c = 'b', label= '+ Data points')
+    else:
+        points = space.samples
+        ax.scatter(points[:,0], points[:,1], s = 10, c = 'black', label = 'samples')
+    ax.set_xlim(x1range)
+    ax.set_ylim(x2range)
+    ax.set_zlim(x3range)
+    ax.set_xlabel(dimensionNames[0])
+    ax.set_ylabel(dimensionNames[1])   
+    ax.set_zlabel(dimensionNames[2])   
+    if space.benchmark is not None or clf is not None:
+        xx = np.linspace(start = x1range[0],stop = x1range[1], num = meshRes)
+        yy = np.linspace(start = x2range[0],stop = x2range[1], num = meshRes)
+        zz = np.linspace(start = x3range[0],stop = x3range[1], num = meshRes)
+        XX,YY,ZZ = np.meshgrid(xx,yy,zz, indexing = 'ij')
+        XYZ = np.vstack([XX.ravel(), YY.ravel(), ZZ.ravel()]).T
+    r1= x1range[1] - x1range[0]
+    r2= x2range[1] - x2range[0]
+    r3= x3range[1] - x3range[0]
+        
+    if space.benchmark is not None:
+        scores = space.benchmark.getScoreVec(XYZ).reshape(XX.shape)
+        out = measure.marching_cubes(scores,level = space.benchmark.threshold)
+        verts = out[0]
+        faces = out[1]
+        verts = verts * [r1,r2,r3] / meshRes
+        verts = verts + [x1range[0], x2range[0],x3range[0]]  
+        mesh = Poly3DCollection(verts[faces], facecolor = 'green', edgecolor = 'blue', alpha = 0.5)
+        ax.add_collection3d(mesh)
+
+    t = clf.decision_function(XYZ).reshape(XX.shape)
+    out = measure.marching_cubes(t,level = 0)
+    verts = out[0]
+    faces = out[1]
+    verts = verts * [r1,r2,r3] / meshRes
+    verts = verts + [x1range[0], x2range[0],x3range[0]]  
+    mesh = Poly3DCollection(verts[faces], facecolor = 'orange', edgecolor = 'gray', alpha = 0.5)
+    ax.add_collection3d(mesh)
+    
+    if showPlot:
+        plt.show()
     return 
 
 
@@ -84,7 +146,7 @@ def plotSpace2D(space: Space,
     
     _,ax = plt.subplots(figsize = figsize)  
     ranges = space.getAllDimensionBounds()
-    dimensionNames = space.getAllDimensionNames()
+    dimensionNames = space.getAllDimensionDescriptions()
     x1range = ranges[0]
     x2range = ranges[1]
     if len(labels) > 0: 

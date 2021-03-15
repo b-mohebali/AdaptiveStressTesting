@@ -16,6 +16,7 @@ class Dimension():
         self.name = varConfig.name
         self.bounds = [varConfig.lowerLimit, varConfig.upperLimit]
         self.range = self.bounds[1] - self.bounds[0]
+        self.description = varConfig.description
 
 
 
@@ -116,6 +117,9 @@ class Space():
 
     def getAllDimensionNames(self):
         return [dim.name for dim in self.dimensions]
+    
+    def getAllDimensionDescriptions(self):
+        return [dim.description for dim in self.dimensions]
     
     def getAllDimensionBounds(self):
         return np.array([dim.bounds for dim in self.dimensions])

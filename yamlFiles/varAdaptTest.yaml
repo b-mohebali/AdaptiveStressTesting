@@ -14,4 +14,12 @@ lowerLimit: 0
 upperLimit: 5
 description: "x2"
 
+---
+name: x3
+type: timeIndep
+initialState: 1
+lowerLimit: 0
+upperLimit: 5
+description: "x3"
+
 ...
