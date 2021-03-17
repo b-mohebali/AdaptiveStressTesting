@@ -177,6 +177,11 @@ remoteRepo78 = localRepo + 'sample78'
 
 # Same as 77 but with the stabilization period extended from 10s to 25s. 
 remoteRepo79 = localRepo + 'sample79'
+# Same as 79 (for testing the effect of noise)
+remoteRepo80 = localRepo + 'sample80'
+
+# Same as 77 but on Rack 17:
+remoteRepo81 = localRepo + 'sample81'
 
 
 currentDir = os.getcwd()
