@@ -9,6 +9,7 @@ from skimage import measure
 from matplotlib import cm
 from mpl_toolkits.mplot3d import axes3d
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+import pickle
 
 class SaveInformation():
     def __init__(self, fileName, savePDF = False, savePNG = False):
@@ -23,7 +24,8 @@ class SaveInformation():
         '''
         return descriptor.__str__()
 
-
+def saveFigurePickle(saveInfo: SaveInformation):
+    pass
 
 def plotSpace(space: Space, 
               figsize=(6,6),
@@ -65,14 +67,17 @@ def plotSpace(space: Space,
                     classifier = classifier,
                     figsize = figsize,
                     meshRes = meshRes,
-                    newPoint = newPoint)
+                    newPoint = newPoint,
+                    saveInfo=saveInfo)
     return 
 
 def plotSpace3D(space: Space, 
                 showPlot = True,
                 classifier = None, 
-                figsize = (6,6), 
+                figsize = (6,6),
+                legend = True, 
                 meshRes = 100,
+                saveInfo:SaveInformation = None,
                 newPoint = None):
     
     clf = classifier if classifier is not None else space.clf
@@ -127,11 +132,22 @@ def plotSpace3D(space: Space,
     verts = verts + [x1range[0], x2range[0],x3range[0]]  
     mesh = Poly3DCollection(verts[faces], facecolor = 'orange', edgecolor = 'gray', alpha = 0.5)
     ax.add_collection3d(mesh)
-    
+    if legend:
+        plt.legend(loc = 'upper left',bbox_to_anchor=(1.05, 1.0))
+    plt.tight_layout()
+
+    if newPoint is not None:
+        newPoint = np.array(newPoint)
+        newPoint = newPoint.reshape(1,len(newPoint)) if len(newPoint.shape) <2 else newPoint
+        legendLabel = 'Next point' + ('s' if newPoint.shape[0]>1 else '')
+        ax.scatter(newPoint[:,0], newPoint[:,1], newPoint[:,2], marker = 's',s = 20, label = legendLabel, color = 'green' )
+    if saveInfo is not None:
+        saveFigures(saveInfo=saveInfo)
     if showPlot:
         plt.show()
+        return 
+    plt.close()
     return 
-
 
 def plotSpace2D(space: Space, 
                 classifier, 
@@ -197,12 +213,16 @@ def plotSpace2D(space: Space,
         plt.legend(loc = 'upper left',bbox_to_anchor=(1.05, 1.0))
     plt.tight_layout()
     if saveInfo is not None:
-        if saveInfo.savePDF:
-            plt.savefig(fname = f'{saveInfo.fileName}.pdf',
-                        facecolor='w', edgecolor = 'w', transparent = False, bbox_inches='tight')
-        if saveInfo.savePNG:
-            plt.savefig(fname = f'{saveInfo.fileName}.png',
-                        facecolor='w', edgecolor = 'w', transparent = False, bbox_inches='tight')
+        saveFigures(saveInfo=saveInfo)
     if showPlot:
         plt.show()
     return 
+
+
+def saveFigures(saveInfo):
+    if saveInfo.savePDF:
+        plt.savefig(fname = f'{saveInfo.fileName}.pdf',
+                    facecolor='w', edgecolor = 'w', transparent = False, bbox_inches='tight')
+    if saveInfo.savePNG:
+        plt.savefig(fname = f'{saveInfo.fileName}.png',
+                    facecolor='w', edgecolor = 'w', transparent = False, bbox_inches='tight')

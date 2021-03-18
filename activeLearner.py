@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from enum import Enum
 from sklearn import svm
 from geneticalgorithm import geneticalgorithm as ga
+from ActiveLearning.optimizationHelper import GeneticAlgorithmSolver as gaSolver
 
 from plotter import *
 
@@ -25,43 +26,51 @@ variables = getAllVariableConfigs(yamlFileAddress=variablesFiles, scalingScheme=
 
 
 # Setting up the design space or the sampling space:
-budget = 60 # Number of sampels:
-initialSampleSize = 200
+budget = simConfig.sampleBudget # Number of sampels:
+batchSize = simConfig.batchSize
+initialSampleSize = simConfig.initialSampleSize
 
 mySpace = Space(variableList = variables,initialSampleCount = initialSampleSize)
 currentBudget = budget - initialSampleSize
 
+myBench = DistanceFromOrigin(threshold = 1.5, inputDim = len(variables), center = [2,2])
 
-myBench = DistanceFromOrigin(threshold = 4, inputDim = 3, center = [0,0,0])
-# x1 = [1,2,4,4,3]
-# x2 = [2,4,1,3,4]
-# x = np.array([[1,2],[2,4],[4,1],[4,3],[3,4]])
-# l = myBench.getLabelVec(x)
-# print(l)
-# s = myBench.getScoreVec(x)
-# print(s)
 mySpace.generateInitialSample()
 mySpace.getBenchmarkLabels(myBench)
-
 print(mySpace.eval_labels)
 
-# clf = svm.SVC(kernel = 'rbf', C =1000)
-# clf.fit(mySpace.samples, mySpace.eval_labels)
 mySpace.fit_classifier()
-
 figFolder = simConfig.figFolder
-
 sInfo = SaveInformation(fileName=f'{figFolder}/thisPLot', savePDF=True, savePNG=True)
-
 
 print(mySpace.getAllDimensionBounds())
 
-plotSpace(mySpace,classifier = None,figsize = (8,6), legend = True, saveInfo=sInfo, showPlot=True, meshRes=50)
-
-
+plotSpace(mySpace,classifier = None,figsize = (10,8), legend = True, saveInfo=sInfo, showPlot=False, meshRes=50)
+plt.close()
+optimizer = gaSolver(space = mySpace, epsilon = 0.05, batchSize= 5, convergence_curve=False, progress_bar = False)
+changeMeasure = [mySpace.getChangeMeasure(percent = True, updateConvLabels = True)]
 # Iterations of the exploitation:
-# while currentBudget > 0:
+sampleNumbers = [len(mySpace.samples)]
+currentBudget = budget - initialSampleSize
+acc = [mySpace.getAccuracyMeasure(percent = True)]
+print('Accuracy: ', acc)
 
-
-
-
+while currentBudget > 0:
+    print('Current budget = ', currentBudget)
+    newPointsFound = optimizer.findNextPoints(min(currentBudget, batchSize))
+    currentBudget -= min(currentBudget, batchSize)
+    sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_NotLabeled'
+    plotSpace(mySpace,figsize = (10,8), legend = True, newPoint = newPointsFound, saveInfo=sInfo, showPlot=False, meshRes=25)
+    plt.close()
+    mySpace.addPointsToSampleList(newPointsFound)
+    mySpace.getBenchmarkLabels()
+    mySpace.fit_classifier()
+    changeMeasure.append(mySpace.getChangeMeasure(percent = True, updateConvLabels=True))
+    acc.append(mySpace.getAccuracyMeasure(percent = True))
+    print('Hypothesis change estimate: ', changeMeasure[-1:], '%')
+    print('Current Accuracy estimate: ',acc[-1:],'%')
+    sampleNumbers.append(len(mySpace.samples))
+    sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_Labeled'
+    plotSpace(mySpace,figsize = (10,8), legend = True, newPoint = None, saveInfo=sInfo, showPlot=False, meshRes=25)
+    plt.close()
+plotSpace(mySpace,figsize = (10,8), legend = True, newPoint = None, saveInfo=sInfo, showPlot=True)

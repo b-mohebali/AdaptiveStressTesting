@@ -11,21 +11,28 @@ class Optimizer(ABC):
 
 # The wrapper class for the genetic algorithm that solves the exploitation problem:
 class GeneticAlgorithmSolver():
-    def __init__(self, space: Space, epsilon: float, batchSize: int = 1):
+    def __init__(self, 
+                space: Space, 
+                epsilon: float, 
+                batchSize: int = 1, 
+                convergence_curve = True, 
+                progress_bar = True):
         self.space = space
-        algoParam = {'max_num_iteration': 100,
-                   'population_size':1000,
-                   'mutation_probability':0.1,
-                   'elit_ratio': 0,
-                   'crossover_probability': 0.5,
-                   'parents_portion': 0.3,
-                   'crossover_type':'uniform',
-                   'max_iteration_without_improv':None}
-        self.gaModel=ga(function = self.objFunction, 
-                        dimension = space.dNum, 
-                        variable_type = 'real', 
-                        variable_boundaries= space.getAllDimensionBounds(),
-                        algorithm_parameters=algoParam)
+        # algoParam = {'max_num_iteration': 100,
+        #            'population_size':1000,
+        #            'mutation_probability':0.1,
+        #            'elit_ratio': 0,
+        #            'crossover_probability': 0.5,
+        #            'parents_portion': 0.3,
+        #            'crossover_type':'uniform',
+        #            'max_iteration_without_improv':None}
+        # self.gaModel=ga(function = self.objFunction, 
+        #                 dimension = space.dNum, 
+        #                 variable_type = 'real', 
+        #                 variable_boundaries= space.getAllDimensionBounds(),
+        #                 algorithm_parameters=algoParam)
+        self.convergence_curve = convergence_curve
+        self.progress_bar = progress_bar
         self.epsilon = epsilon
         self.batchSize = batchSize
         self.currentSpaceSamples = None
@@ -58,7 +65,9 @@ class GeneticAlgorithmSolver():
                         dimension = self.space.dNum, 
                         variable_type = 'real', 
                         variable_boundaries= self.space.getAllDimensionBounds(),
-                        algorithm_parameters=algoParam)
+                        convergence_curve=self.convergence_curve,
+                        algorithm_parameters=algoParam,
+                        progress_bar=self.progress_bar)
         return gaModel
 
     def findNextPoints(self,pointNum):

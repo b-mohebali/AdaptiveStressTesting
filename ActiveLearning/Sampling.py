@@ -4,11 +4,13 @@ from samply.hypercube import cvt, lhs
 from enum import Enum
 from ActiveLearning.benchmarks import *
 from sklearn import svm
-
+from sklearn.metrics import accuracy_score,precision_score, recall_score
 
 class InsufficientInformation(Exception):
     pass
 
+class SampleNotEmpty(Exception):
+    pass
 
 # This class represents a single 
 class Dimension():
@@ -31,8 +33,23 @@ class InitialSampleMethod(Enum):
     LHS = 1
     Sobol = 2
 
+
+'''
+    This class determines the type of the performance metric for the current iteration
+    of hypothesis.
+'''
+class PerformanceMeasure(Enum):
+    ACCURACY = 0
+    PRECISION = 1
+    RECALL = 2
+
+
+
+
 class Space():
-    def __init__(self, variableList: List[variableConfig], initialSampleCount = 20, benchmark: Benchmark = None):
+    def __init__(self, variableList: List[variableConfig], 
+                initialSampleCount = 20, 
+                benchmark: Benchmark = None):
         self.initialSampleCount = initialSampleCount
         self.dimensions = []
         for varConfig in variableList:
@@ -169,4 +186,101 @@ class Space():
         self.clf.fit(self.samples, self.eval_labels)
         return
 
+
+def generateInitialSample(space: Space, 
+                        sampleSize: int, 
+                        method: InitialSampleMethod = InitialSampleMethod.CVT,
+                        checkForEmptiness = False):
+    ''' This function samples from the entire space. 
+        Can be used for the convergence samples as well without the check for 
+        the emptiness of the space.
+
+        space:  Contains information about the number of dimensions and their range 
+                of variations.
+
+        method: CVT (Centroid Voronoi Tesselation)
+                LHS (Latin Hypercube)
+
+        CheckForEmptiness: (True/False) 
+                Raises error if the sample list of the space is not empty, meaning 
+                that the initial sample is most likely taken. 
+    '''
+    if checkForEmptiness and len(space.samples) > 0:
+        raise SampleNotEmpty('The space already contains samples.')
+    if method == InitialSampleMethod.CVT:
+        samples = cvt(count = sampleSize, dimensionality= space.dNum)
+    elif method == InitialSampleMethod.LHS:
+        samples = lhs(count = sampleSize, dimensionality=space.dNum)
+    for dimIndex, dimension in enumerate(space.dimensions):
+        samples[:,dimIndex] *= dimension.range
+        samples[:,dimIndex] += dimension.bounds[0]
+    return samples
+
+
+
+
+# TODO: This class holds the sample used for convergence check at each iteration:
+class ConvergenceSample():
+    '''
+    This class contains the convergence sample used for checking the amount of 
+    change in the hypothesis. It also provides some functionality for measuring 
+    the mentioned change.
+
+    NOTE:   The approximation of the accuracy of the current iteration of the 
+            hypothesis is only possible if the actual function is a low-cost 
+            benchmark and not an expensive computational model.  
+    '''
+    def __init__(self, 
+                space: Space):
+        self.size = 100 * 5**space.dNum
+        self.samples = generateInitialSample(space, 
+                                            sampleSize=self.size, 
+                                            method=InitialSampleMethod.LHS)
+        self.pastLabels = np.zeros(shape=(self.size,), dtype = float)
+        self.currentLabels = None
+
+    def getChangeMeasure(self, 
+                        classifier,
+                        updateLabels = False, 
+                        percent = False):
+        self.currentLabels = classifier.predict(self.samples)
+        diff = np.sum(np.abs(self.currentLabels - self.pastLabels))/ self.size
+        if updateLabels:
+            self.pastLabels = self.currentLabels
+        return diff * 100.0 if percent else diff 
+
+def getAccuracyMeasure( convSample:ConvergenceSample,
+                        measure: PerformanceMeasure,
+                        classifier, 
+                        benchmark: Benchmark, 
+                        percent = False):
+    '''
+        Calculates the performance measure of the current iteration of the 
+        hypothesis that is stored in the classifier argument.
+    '''
+    predLabels = classifier.predict(convSample.samples)
+    realLabels = benchmark.getLabelVec(convSample.samples)
+    if measure == PerformanceMeasure.ACCURACY:
+        return accuracy_score(realLabels, predLabels) * 100 if percent else 1
+    # TODO: Other types of performance measures (scores) 
+
+class Space2():
+    def __init__(self, 
+                variableList: List[variableConfig]):
+        self.dimensions = []
+        for varConfig in variableList:
+            self.dimensions.append(Dimension(varConfig=varConfig))
+            self.dNum = len(self.dimensions)
+            self.convPointsNum = 100 * 5 ** self.dNum 
+            self.samples = []
+            self.eval_labels = []
     
+    def getAllDimensionNames(self):
+        return [dim.name for dim in self.dimensions]
+    
+    def getAllDimensionDescriptions(self):
+        return [dim.description for dim in self.dimensions]
+    
+    def getAllDimensionBounds(self):
+        return np.array([dim.bounds for dim in self.dimensions])
+        
