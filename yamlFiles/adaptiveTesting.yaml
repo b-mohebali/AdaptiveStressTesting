@@ -8,6 +8,7 @@ codeBase_Linux:
 modelLocation: "MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V5_NewFactors"
 modelName: "PGM_V5_NF"
 figureFolder: "./Figures/15"
+sampleRepo: "D:/Data/Sample80/data"
 sampleBudget: 51
 initialSampleSize: 15
 batchSize: 3

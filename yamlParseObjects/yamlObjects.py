@@ -31,6 +31,7 @@ class simulationConfig():
         self.profileLoc = yamlObj['profileLoc'] if 'profileLoc' in yamlObj else '.'
         self.simLength = yamlObj['length'] if 'length' in yamlObj else self.eventWindowEnd
         self.modelName = yamlObj['modelName']
+        self.sampleRepo = yamlObj['sampleRepo'] if 'sampleRepo' in yamlObj else None
         self.modelLocation = yamlObj['modelLocation']
         self.figFolder = yamlObj['figureFolder'] if 'figureFolder' in yamlObj else None
         self.batchSize = yamlObj['batchSize'] if 'batchSize' in yamlObj else 1

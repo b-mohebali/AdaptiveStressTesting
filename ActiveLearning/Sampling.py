@@ -247,7 +247,7 @@ class ConvergenceSample():
         diff = np.sum(np.abs(self.currentLabels - self.pastLabels))/ self.size
         if updateLabels:
             self.pastLabels = self.currentLabels
-        return diff * 100.0 if percent else diff 
+        return (diff * 100.0) if percent else diff 
 
 def getAccuracyMeasure( convSample:ConvergenceSample,
                         measure: PerformanceMeasure,
