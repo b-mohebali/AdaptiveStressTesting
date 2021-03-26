@@ -1,35 +1,54 @@
-from yamlParseObjects.yamlObjects import * 
-from yamlParseObjects.variablesUtil import *
-import logging
 import os,sys
-import subprocess
-from ActiveLearning.benchmarks import Branin
-from ActiveLearning.Sampling import *
-import platform
-import shutil
-import numpy as np 
-import matplotlib.pyplot as plt 
-from enum import Enum
-from sklearn import svm
-from geneticalgorithm import geneticalgorithm as ga
-from ActiveLearning.optimizationHelper import GeneticAlgorithmSolver as gaSolver
-
-from plotter import *
-
+import string
+from yamlParseObjects.yamlObjects import * 
 import time
-import numpy as np 
-
 import matlab.engine
 
 simConfig = simulationConfig('./yamlFiles/adaptiveTesting.yaml')
+matlabPath = './Matlab'
 
 figFolder = 'C:/Users/Behshad/Google Drive/codes/ScenarioGenerator/Figures/MATLAB_figures'
 
 print(simConfig.sampleRepo)
 eng = matlab.engine.start_matlab()
-for sampleNum in range(5,11):
-    z1,z2,z3,z4 = eng.runMetrics(simConfig.sampleRepo,
-                                figFolder, 
-                                sampleNum, 
-                                nargout = 4)
-    print(z1,z2,z3,z4)
+eng.addpath(matlabPath)
+sampleNum = 12
+dataLocation = simConfig.sampleRepo
+
+# Testing the function that runs the metrics and saves the label.
+def getMetricsResults(dataLocation: string,sampleNumber, figFolderLoc: string):
+    if isinstance(sampleNumber, list):
+        labels = []
+        for sampleNum in sampleNumber:
+            l = getMetricsResults(dataLocation, sampleNum, figFolderLoc)
+            labels.append(l)
+        return labels 
+    
+    # TODO: check to see if the dataLocation is a valid path
+    assert os.path.exists(dataLocation)
+    # TODO: Make sure that MATLAB engine is already started.
+    # Running the metrics
+    startTime = time.time()
+    output = eng.runMetrics(dataLocation, sampleNumber, figFolderLoc, nargout = 4)
+    endTime = time.time()
+    print(output)
+    elapsed = endTime - startTime
+    print('Time taken to calculate the metrics: ', elapsed)
+    # capturing the label as an integer. 
+    label = int(output[0])
+    # TODO: Capturing the rest of the metric values that may be useful for the factor screening in case we do it on the python side.
+
+    # saving the results to a report file.
+    sampleLoc = f'{dataLocation}/{sampleNumber}'
+    reportDict = {}
+    reportDict['elapsed_time_sec'] = float('{:.5f}'.format(elapsed))
+    with open(f'{sampleLoc}/variableValues.yaml') as varValues:
+        values = yaml.load(varValues, Loader= yaml.FullLoader)
+    reportDict['variables'] = values
+    reportDict['result_label'] = label 
+    with open(f'{sampleLoc}/finalReport.yaml','w') as reportYaml:
+        yaml.dump(reportDict, reportYaml)
+    
+    return label
+
+getMetricsResults(dataLocation,sampleNum, figFolder)
