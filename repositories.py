@@ -8,6 +8,7 @@ dataFolder = case_Setup.LOGGER_OUTPUT
 repoRoot = 'caps@10.146.64.68:/home/caps/SensAnalysis/'
 repoRoot2 = 'caps@10.146.64.69:/home/caps/SensAnalysis/'
 localRepo = '/home/caps/SenseAnalysisTemp/'
+adaptiveSamplingLoc = '/home/caps/AdaptiveSamplingRepo/'
 
 # New FFD sample with larger variable list. 
 remoteRepo1 = repoRoot + 'sample1'
@@ -182,6 +183,12 @@ remoteRepo80 = localRepo + 'sample80'
 
 # Same as 77 but on Rack 17:
 remoteRepo81 = localRepo + 'sample81'
+
+# First adaptive sampling repo. Test: initial sample + metrics evaluation + initial classifier training and visualization.
+adaptRepo1 = adaptiveSamplingLoc + 'adaptiveRepo1'
+
+# test repo:
+remoteRepo83 = localRepo + 'sample83'
 
 
 currentDir = os.getcwd()

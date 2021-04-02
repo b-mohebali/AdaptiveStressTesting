@@ -4,16 +4,6 @@ from yamlParseObjects.yamlObjects import *
 import time
 import matlab.engine
 
-simConfig = simulationConfig('./yamlFiles/adaptiveTesting.yaml')
-matlabPath = './Matlab'
-
-figFolder = 'C:/Users/Behshad/Google Drive/codes/ScenarioGenerator/Figures/MATLAB_figures'
-
-print(simConfig.sampleRepo)
-eng = matlab.engine.start_matlab()
-eng.addpath(matlabPath)
-sampleNum = 12
-dataLocation = simConfig.sampleRepo
 
 # Testing the function that runs the metrics and saves the label.
 def getMetricsResults(dataLocation: string,sampleNumber, figFolderLoc: string):
@@ -51,4 +41,22 @@ def getMetricsResults(dataLocation: string,sampleNumber, figFolderLoc: string):
     
     return label
 
-getMetricsResults(dataLocation,sampleNum, figFolder)
+# This function is made to test the functionality of the features in this file.
+def main():
+    simConfig = simulationConfig('./yamlFiles/adaptiveTesting.yaml')
+    matlabPath = './Matlab'
+
+    figFolder = 'C:/Users/Behshad/Google Drive/codes/ScenarioGenerator/Figures/MATLAB_figures'
+
+    print(simConfig.sampleRepo)
+    eng = matlab.engine.start_matlab()
+    eng.addpath(matlabPath)
+    sampleNum = 12
+    dataLocation = simConfig.sampleRepo
+
+    getMetricsResults(dataLocation,sampleNum, figFolder)
+
+
+if __name__=='__main__':
+    main()
+

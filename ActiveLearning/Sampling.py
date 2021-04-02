@@ -12,7 +12,7 @@ class InsufficientInformation(Exception):
 class SampleNotEmpty(Exception):
     pass
 
-# This class represents a single 
+# This class represents a single dimension in the design space:
 class Dimension():
     def __init__(self, varConfig: variableConfig):
         self.name = varConfig.name
@@ -154,6 +154,33 @@ class Space():
             samples[:,dimIndex] += dimension.bounds[0] # Samples shifted by the lower bound.
         self.samples = samples
         return
+
+    """
+        This function returns a list of dictionaries containing the values of the 
+        design variables for each experiment (one dict per experiment)
+    """
+    def getSamplePointsAsDict(self):
+        output = []
+        for sample in self.samples:
+            sampleDict = {}
+            for idx, dim in enumerate(self.dimensions):
+                sampleDict[dim.name] = sample[idx]
+            output.append(sampleDict)
+        return output
+
+    """
+        This function gets a samples dictionary and loads it into the samples
+        list of the space. This is for the times when we want to load an already
+        sampled list into the space without sampling from scratch. 
+    """
+    def loadSamples(self,samplesDictList):
+        for sampleDict in samplesDictList:
+            sample = []
+            for dim in self.dimensions:
+                sample.append(sampleDict[dim.name])
+            self.samples.append(sample)
+    
+
 
     def getBenchmarkLabels(self, benchmark:Benchmark = None, updateClassifier = False):
         

@@ -135,7 +135,6 @@ def runSample(sampleDictList, dFolder, remoteRepo, sampleGroup = None):
     myControl = PGM_control('', './', configFile=simConfig)   
     if sampleGroup is not None: 
         indexGroup = sampleGroup
-    copyDataToremoteServer(remoteRepo, variablesFile)
     for sampleIndex in indexGroup:
         sample = sampleDictList[sampleIndex - 1]
         outfile = myControl.setVariables(sample)
@@ -168,107 +167,110 @@ def runSampleFrom(sampleDictList, dFolder, remoteRepo = None, fromSample = None)
     return
 
 
-
-# -------------------------- File path definitions ---------------------------------------------------------------
-
-
-#------------------------------- Setting up the variables -----------------------------------------------
-variablesFile = './yamlFiles/variables_ac_pgm.yaml'
-descriptionFile = 'varDescription.yaml'
-
-variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
-# variables = getAllVariableConfigs('variables_limited.yaml', scalingScheme=Scale.LOGARITHMIC)
-for v in variables: 
-    print(f'Variable: {v.name}, mapped name: {v.mappedName}, Initial value: {v.initialState}')
-print('---------------------------------------------------------------')
-logFile = getLoggerFileAddress(fileName='MyLoggerFile')
-
-logging.basicConfig(filename=logFile, filemode='w', 
-                    level = logging.DEBUG,
-                    format='%(asctime)s - %(process)d - %(levelname)s - %(message)s')
-
-logging.debug('This is the debug message from the CAPS machine...')
+def main():
+    # -------------------------- File path definitions ---------------------------------------------------------------
 
 
-#----------------------------------------------------------------
-# First order Sensitivity Analysis:
+    #------------------------------- Setting up the variables -----------------------------------------------
+    variablesFile = './yamlFiles/variables_ac_pgm.yaml'
+    descriptionFile = 'varDescription.yaml'
 
-# samplesNum = 960
-# subInters = 16
-# varDict = getTimeIndepVarsDict(variables)
-# randList = randomizeVariablesList(varDict, samplesNum, subInters,scalingScheme=Scale.LOGARITHMIC, saveHists=True)
-# saveSampleToTxtFile(randList, './experiments/limitedVarianceBased.txt')
-# runSampleFrom(sampleDictList= randList, dFolder = dataFolder, remoteRepo=testRepo, fromSample=960)
+    variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
+    # variables = getAllVariableConfigs('variables_limited.yaml', scalingScheme=Scale.LOGARITHMIC)
+    for v in variables: 
+        print(f'Variable: {v.name}, mapped name: {v.mappedName}, Initial value: {v.initialState}')
+    print('---------------------------------------------------------------')
+    logFile = getLoggerFileAddress(fileName='MyLoggerFile')
 
+    logging.basicConfig(filename=logFile, filemode='w', 
+                        level = logging.DEBUG,
+                        format='%(asctime)s - %(process)d - %(levelname)s - %(message)s')
 
-#------------------------------------------------------------------
-# One at a time experiment design sensitivity analysis (Standard):
-
-# sample config
-# experFile = './experiments/OATSampleStandard_Complete.txt'
-# simRepo = remoteRepo55
-# timeIndepVars = getTimeIndepVarsDict(variables)
-
-### Standard OAT sample code:
-# exper = standardOATSampleGenerator(timeIndepVars, repeat = False)
-
-### Strict OAT sample code:
-# experFile = './experiments/OATSampleStrict_Complete.txt'
-# exper = strictOATSampleGenerator(timeIndepVars)
-
-# saveSampleToTxtFile(exper,experFile)
-# saveVariableDescription(variables, descriptionFile)
-# copyDataToremoteServer(simRepo, experFile)
-# copyDataToremoteServer(simRepo, descriptionFile)
-
-### Load sample from pregenerated sample:
-# exper = loadSampleFromTxtFile(experFile)
-
-# runSample(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo)
-# runSampleFrom(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo, fromSample = 7)
-
-# ----------------------------------------------------------------------
-# The Fractional Factorial Desing with Hadamard matrices:
-
-experFile = './experiments/FFD_AC_PGM.txt'
-simRepo = remoteRepo81
-# Taking the variables with non-zero initialState value
-
-timeIndepVars = getTimeIndepVars(variables, shuffle = True, omitZero = True)
+    logging.debug('This is the debug message from the CAPS machine...')
 
 
-exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
-saveSampleToTxtFile(exper, fileName = experFile)
-saveVariableDescription(timeIndepVars, descriptionFile)
-copyDataToremoteServer(simRepo, experFile)
-copyDataToremoteServer(simRepo, descriptionFile)
-# exper = loadSampleFromTxtFile(experFile)
+    #----------------------------------------------------------------
+    # First order Sensitivity Analysis:
 
-runSample(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo)
-# runSampleFrom(sampleDictList = exper, dFolder = dataFolder, remoteRepo = simRepo, fromSample = 12)
-
-# ----------------------------------------------------------------------
-# Returning all the variables to their standard value:
-# myControl = PGM_control('', './')   
-# myControl.setVariablesToInitialState(variables)
+    # samplesNum = 960
+    # subInters = 16
+    # varDict = getTimeIndepVarsDict(variables)
+    # randList = randomizeVariablesList(varDict, samplesNum, subInters,scalingScheme=Scale.LOGARITHMIC, saveHists=True)
+    # saveSampleToTxtFile(randList, './experiments/limitedVarianceBased.txt')
+    # runSampleFrom(sampleDictList= randList, dFolder = dataFolder, remoteRepo=testRepo, fromSample=960)
 
 
-#---------------------------------------------------------------------
-# Verification sample:
+    #------------------------------------------------------------------
+    # One at a time experiment design sensitivity analysis (Standard):
 
-# simRepo = remoteRepo22
-# experFile = './experiments/VerifSample_TC_Added.txt'
-# logVariables = getAllVariableConfigs(variablesFile, scalingScheme=Scale.LOGARITHMIC)
-# timeIndepVars = getTimeIndepVars(logVariables)
-# exper = generateVerifSample(timeIndepVars)
-# saveSampleToTxtFile(exper, experFile)
-# saveVariableDescription(logVariables, descriptionFile)
-# copyDataToremoteServer(simRepo, experFile)
-# copyDataToremoteServer(simRepo, descriptionFile)
-# saveSampleToTxtFile(exper,fileName = experFile)
+    # sample config
+    # experFile = './experiments/OATSampleStandard_Complete.txt'
+    # simRepo = remoteRepo55
+    # timeIndepVars = getTimeIndepVarsDict(variables)
 
-# sGroup = [31]
+    ### Standard OAT sample code:
+    # exper = standardOATSampleGenerator(timeIndepVars, repeat = False)
 
-# runSample(sampleDictList=exper,dFolder=dataFolder, remoteRepo = simRepo, sampleGroup=sGroup)
-# runSampleFrom(sampleDictList=exper,dFolder=dataFolder, remoteRepo = simRepo, fromSample = 80)
+    ### Strict OAT sample code:
+    # experFile = './experiments/OATSampleStrict_Complete.txt'
+    # exper = strictOATSampleGenerator(timeIndepVars)
+
+    # saveSampleToTxtFile(exper,experFile)
+    # saveVariableDescription(variables, descriptionFile)
+    # copyDataToremoteServer(simRepo, experFile)
+    # copyDataToremoteServer(simRepo, descriptionFile)
+
+    ### Load sample from pregenerated sample:
+    # exper = loadSampleFromTxtFile(experFile)
+
+    # runSample(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo)
+    # runSampleFrom(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo, fromSample = 7)
+
+    # ----------------------------------------------------------------------
+    # The Fractional Factorial Desing with Hadamard matrices:
+
+    experFile = './experiments/FFD_AC_PGM.txt'
+    simRepo = remoteRepo81
+    # Taking the variables with non-zero initialState value
+
+    timeIndepVars = getTimeIndepVars(variables, shuffle = True, omitZero = True)
+
+
+    exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+    saveSampleToTxtFile(exper, fileName = experFile)
+    saveVariableDescription(timeIndepVars, descriptionFile)
+    copyDataToremoteServer(simRepo, experFile)
+    copyDataToremoteServer(simRepo, descriptionFile)
+    # exper = loadSampleFromTxtFile(experFile)
+
+    runSample(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo)
+    # runSampleFrom(sampleDictList = exper, dFolder = dataFolder, remoteRepo = simRepo, fromSample = 12)
+
+    # ----------------------------------------------------------------------
+    # Returning all the variables to their standard value:
+    # myControl = PGM_control('', './')   
+    # myControl.setVariablesToInitialState(variables)
+
+
+    #---------------------------------------------------------------------
+    # Verification sample:
+
+    # simRepo = remoteRepo22
+    # experFile = './experiments/VerifSample_TC_Added.txt'
+    # logVariables = getAllVariableConfigs(variablesFile, scalingScheme=Scale.LOGARITHMIC)
+    # timeIndepVars = getTimeIndepVars(logVariables)
+    # exper = generateVerifSample(timeIndepVars)
+    # saveSampleToTxtFile(exper, experFile)
+    # saveVariableDescription(logVariables, descriptionFile)
+    # copyDataToremoteServer(simRepo, experFile)
+    # copyDataToremoteServer(simRepo, descriptionFile)
+    # saveSampleToTxtFile(exper,fileName = experFile)
+
+    # sGroup = [31]
+
+    # runSample(sampleDictList=exper,dFolder=dataFolder, remoteRepo = simRepo, sampleGroup=sGroup)
+    # runSampleFrom(sampleDictList=exper,dFolder=dataFolder, remoteRepo = simRepo, fromSample = 80)
+
+if __name__=='__main__':
+    main()
 

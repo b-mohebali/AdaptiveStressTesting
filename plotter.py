@@ -98,12 +98,15 @@ def plotSpace3D(space: Space,
     else:
         points = space.samples
         ax.scatter(points[:,0], points[:,1], s = 10, c = 'black', label = 'samples')
+    # Setting the limits of the dimensions:
     ax.set_xlim(x1range)
     ax.set_ylim(x2range)
     ax.set_zlim(x3range)
+    # Labeling the dimensions of the plot:
     ax.set_xlabel(dimensionNames[0])
     ax.set_ylabel(dimensionNames[1])   
     ax.set_zlabel(dimensionNames[2])   
+    # Creating the mesh for the benchmark evaluation:
     if space.benchmark is not None or clf is not None:
         xx = np.linspace(start = x1range[0],stop = x1range[1], num = meshRes)
         yy = np.linspace(start = x2range[0],stop = x2range[1], num = meshRes)
@@ -113,7 +116,8 @@ def plotSpace3D(space: Space,
     r1= x1range[1] - x1range[0]
     r2= x2range[1] - x2range[0]
     r3= x3range[1] - x3range[0]
-        
+    
+    # Evaluating the benchmark and adding it to the plot:
     if space.benchmark is not None:
         scores = space.benchmark.getScoreVec(XYZ).reshape(XX.shape)
         out = measure.marching_cubes(scores,level = space.benchmark.threshold)
@@ -124,6 +128,7 @@ def plotSpace3D(space: Space,
         mesh = Poly3DCollection(verts[faces], facecolor = 'green', edgecolor = 'blue', alpha = 0.5)
         ax.add_collection3d(mesh)
 
+    # Evaluating the decision function and adding it to the plot: 
     t = clf.decision_function(XYZ).reshape(XX.shape)
     out = measure.marching_cubes(t,level = 0)
     verts = out[0]
