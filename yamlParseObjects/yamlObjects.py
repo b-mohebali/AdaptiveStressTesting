@@ -108,5 +108,9 @@ def getAllVariableConfigs(yamlFileAddress, scalingScheme = Scale.LINEAR):
     
 
 class FinalReport():
-    def __init__(self, yaml):
-        pass
+    def __init__(self, yamlFile):
+        with open(yamlFile, 'rt') as yf:
+            report = yaml.load(yf, Loader = yaml.FullLoader)
+        self.elapsed_time = report['elapsed_time_sec']
+        self.label = report['result_label']
+        self.variables = report['variables']

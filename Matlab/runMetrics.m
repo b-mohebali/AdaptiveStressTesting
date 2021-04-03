@@ -1,7 +1,7 @@
 function [label,fdevMax, VLLUnbalanceMax,VdevMax] = runMetrics(dataLocation, sampleNum, figLocation)
     fprintf('Evaluating sample at %s\n',dataLocation);
     
-%% The preparation of the data for the metrics run:
+    %% The preparation of the data for the metrics run:
     if exist('y','var')==1
         clear y;
     end
@@ -31,7 +31,7 @@ function [label,fdevMax, VLLUnbalanceMax,VdevMax] = runMetrics(dataLocation, sam
     [status,vv,f,A,theta,r,vals]=adherence1399_680_source(timeVec, Vab, Vbc,Vca,...
         'Vbase',Vbase,'Fbase',Fbase,'plot',1,'Nfig',1);
      
-%% Saving the figures for observation:
+    %% Saving the figures for observation:
     figure(1)
     figName = sprintf('%s/VoltageMagnitude.png',figFolder);
     saveas(gcf, figName);
@@ -42,7 +42,7 @@ function [label,fdevMax, VLLUnbalanceMax,VdevMax] = runMetrics(dataLocation, sam
     figName = sprintf('%s/VoltageUnbalance.png',figFolder);
     saveas(gcf, figName); 
 
-%% Preparation of the output:
+    %% Preparation of the output:
     label = status;
     fdevMax = vals.fdevMax;
     VLLUnbalanceMax = vals.VLLUnbalanceMax;
