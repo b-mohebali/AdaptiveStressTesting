@@ -107,4 +107,5 @@ def getAllVariableConfigs(yamlFileAddress, scalingScheme = Scale.LINEAR):
     return varList
     
 
-
+class FinalReport():
+    def __init__(self, yaml)
