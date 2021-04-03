@@ -191,5 +191,8 @@ adaptRepo1 = adaptiveSamplingLoc + 'adaptiveRepo1'
 remoteRepo83 = localRepo + 'sample83'
 
 
+# A large sample that will act as the benchmark for the algorithm:
+motherSample = adaptiveSamplingLoc + 'motherSample'
+
 currentDir = os.getcwd()
 isRepoRemote = True

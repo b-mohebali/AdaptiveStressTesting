@@ -108,4 +108,5 @@ def getAllVariableConfigs(yamlFileAddress, scalingScheme = Scale.LINEAR):
     
 
 class FinalReport():
-    def __init__(self, yaml)
+    def __init__(self, yaml):
+        pass

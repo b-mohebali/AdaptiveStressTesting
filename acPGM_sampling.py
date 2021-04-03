@@ -1,4 +1,4 @@
-## #! /usr/bin/python3
+#! /usr/bin/python3
 
 from yamlParseObjects.yamlObjects import *
 from yamlParseObjects.variablesUtil import *
@@ -23,15 +23,15 @@ for p in simConfig.codeBase:
     sys.path.insert(0,p)
     print(p + ' is added to the path')
 
-# from autoRTDS import Trial
-# import case_Setup
-# from rscad import rtds
-# from repositories import *
-# import simulation
-# from ShowRunner import *
+from autoRTDS import Trial
+import case_Setup
+from rscad import rtds
+from repositories import *
+import simulation
+from ShowRunner import *
 
-from ActiveLearning.Sampling import Space
-from metricsRunTest import getMetricsResults
+from ActiveLearning.Sampling import *
+# from metricsRunTest import getMetricsResults
 
 print('This is the AC PGM sampling test file. ')
 
@@ -52,10 +52,10 @@ for var in variables:
 
 # Setting the main files and locations:
 descriptionFile = 'varDescription.yaml'
-sampleSaveFile = './experiments/adaptive_initial.txt'
-# repoLoc = adaptRepo1
+sampleSaveFile = './experiments/mother_sample.txt'
+repoLoc = motherSample
 
-repoLoc = 'D:/Data/adaptiveRepo1'
+# repoLoc = 'D:/Data/adaptiveRepo1'
 # Figure folder for the metrics outputs:
 figFolder = repoLoc + '/figures'
 
@@ -75,9 +75,15 @@ currentBudget = budget - initialSampleSize
 # runSample(sampleDictList=formattedSample, dFolder = dataFolder, remoteRepo=repoLoc)
 
 # Running the metrics on the initial sample:
-for sampleIndex in range(1,initialSampleSize+1):
-    getMetricsResults(dataLocation=repoLoc, 
-                      sampleNumber=sampleIndex, 
-                      figFolderLoc=figFolder)
+# for sampleIndex in range(1,initialSampleSize+1):
+#     getMetricsResults(dataLocation=repoLoc, 
+#                       sampleNumber=sampleIndex, 
+#                       figFolderLoc=figFolder)
+# initSample = generateInitialSample(space = designSpace, 
+#                                     sampleSize = 2500)
+# formattedSample = getSamplePointsAsDict(designSpace, initSample)
+# saveSampleToTxtFile(formattedSample, fileName = sampleSaveFile)
 
+formattedSample = loadSampleFromTxtFile(sampleSaveFile)
+runSample(sampleDictList=formattedSample, dFolder = dataFolder, remoteRepo=repoLoc)
     

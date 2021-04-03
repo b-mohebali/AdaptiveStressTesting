@@ -276,6 +276,29 @@ class ConvergenceSample():
             self.pastLabels = self.currentLabels
         return (diff * 100.0) if percent else diff 
 
+"""
+    This function returns a list of dictionaries containing the values of the 
+    design variables for each experiment (one dict per experiment)
+    Inputs:
+        - Space: The space object comtaining information about 
+            the dimensinos and their name
+        - sampleList: A List of lists containing the values for all the 
+            sample points. The order is the same as the dimensions of the
+            space passed to the function
+        
+    Outputs:
+        - Samples dictionary: A list of dictionaries each haveing the name 
+            and the value of the dimensions for each of the sample points.    
+"""
+def getSamplePointsAsDict(space: Space, sampleList):
+    output = []
+    for sample in sampleList:
+        sampleDict = {}
+        for idx, dim in enumerate(space.dimensions):
+            sampleDict[dim.name] = sample[idx]
+        output.append(sampleDict)
+    return output 
+
 def getAccuracyMeasure( convSample:ConvergenceSample,
                         measure: PerformanceMeasure,
                         classifier, 
