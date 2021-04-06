@@ -3,7 +3,7 @@ from yamlParseObjects.variablesUtil import *
 import logging
 import os,sys
 import subprocess
-from ActiveLearning.benchmarks import Branin
+from ActiveLearning.benchmarks import DistanceFromOrigin, Branin
 from ActiveLearning.Sampling import *
 import platform
 import shutil
@@ -20,8 +20,8 @@ import time
 import numpy as np 
 
 
-simConfig = simulationConfig('./yamlFiles/adaptiveTesting.yaml')
-variablesFiles = './yamlFiles/varAdaptTest.yaml'
+simConfig = simulationConfig('./assets/yamlFiles/adaptiveTesting.yaml')
+variablesFiles = './assets/yamlFiles/varAdaptTest.yaml'
 variables = getAllVariableConfigs(yamlFileAddress=variablesFiles, scalingScheme=Scale.LINEAR)
 
 

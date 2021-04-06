@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from math import *
 from enum import Enum
 import math
+ 
 
 class NotEnoughArguments(Exception):
     pass
@@ -95,4 +96,19 @@ class DistanceFromOrigin(Benchmark):
         
     def _function(self, datum):
         return math.sqrt(sum((datum-self.center)**2))
-        
+
+class TrainedSvmClassifier(Benchmark):
+    """
+    This class takes an already trained classifier and uses it as the benchmark for 
+    the process. The purpose is for the cases when the actual solution is not available but 
+    a classifier can be trained with a high number of samples.
+    """
+    def __init__(self, classifier, inputDim, threshold = 0.5):
+        Benchmark.__init__(self, threshold)
+        self.classifier = classifier
+        self.inputDim = inputDim
+
+    # NOTE: Needs testing once the mother sample is done.
+    def _function(self, datum):
+        return self.classifier.decision_function(datum.reshape(1,self.inputDim))
+    

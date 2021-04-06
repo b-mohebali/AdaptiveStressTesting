@@ -22,6 +22,7 @@ def getMetricsResults(dataLocation: string,sampleNumber, figFolderLoc: string = 
     # evaluation.
     if figFolderLoc is None:
         figFolderLoc = dataLocation + '/figures'
+    # Checking to see if the samples are a list or a single 
     if isinstance(sampleNumber, list):
         labels = []
         for sampleNum in sampleNumber:
@@ -62,8 +63,8 @@ def getMetricsResults(dataLocation: string,sampleNumber, figFolderLoc: string = 
 def main():
     dataLocation = 'E:/Data/motherSample'
     figFolder = dataLocation + '/figures'
-    startingSample = 201    
-    finalSample = 400
+    startingSample = 2201      
+    finalSample = 2300
     sampleNumbers = list(range(startingSample,finalSample+1))
     getMetricsResults(dataLocation,sampleNumbers, figFolder)
 

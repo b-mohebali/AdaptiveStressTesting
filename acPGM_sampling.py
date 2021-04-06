@@ -36,8 +36,7 @@ from ActiveLearning.dataHandling import *
 
 print('This is the AC PGM sampling test file. ')
 
-variablesFile = './yamlFiles/ac_pgm_adaptive.yaml'
-descriptionFile = 'varDescription.yaml'
+variablesFile = './assets/yamlFiles/ac_pgm_adaptive.yaml'
 
 # Extracting the hyperparameters of the analysis:
 budget = simConfig.sampleBudget
@@ -52,8 +51,8 @@ for var in variables:
     print(var.name, var.description)
 
 # Setting the main files and locations:
-descriptionFile = 'varDescription.yaml'
-sampleSaveFile = './experiments/mother_sample.txt'
+descriptionFile = './assets/yamlFiles/varDescription.yaml'
+sampleSaveFile = './assets/experiments/mother_sample.txt'
 # repoLoc = motherSample
 
 repoLoc = 'D:/Data/adaptiveRepo1'

@@ -18,6 +18,7 @@ def readDataset(repoLoc, variables:List[variableConfig]):
         Output:
             - Dataset in the form of data points as a list of lists
             - Label of each sample in the same order as the samples in the dataset
+            - The time each sample took to be evaluated.
 
 
         Note: Assumes that the samples are in folders with numerical names. Ignores
@@ -27,11 +28,13 @@ def readDataset(repoLoc, variables:List[variableConfig]):
     sampleFolders = [name for name in os.listdir(repoLoc) if name.isdigit()]
     labels = []
     dataset = []
+    elapsed_times = []
     for sampleFolder in sampleFolders: 
-        d,l = readSingleSample(repoLoc, variables, sampleFolder)
+        d,l,t = readSingleSample(repoLoc, variables, sampleFolder)
         labels.append(l)
         dataset.append(d)
-    return dataset, labels
+        elapsed_times.append(t)
+    return dataset, labels, elapsed_times
 
 
 def readSingleSample(repoLoc,variables: List[variableConfig], sampleNumber):
@@ -46,6 +49,7 @@ def readSingleSample(repoLoc,variables: List[variableConfig], sampleNumber):
         Output:
             - list of the values for the dimensions of the sample (varList)
             - Label of the sample as it was evaluated by the metrics (label)
+            - The time the sample took to be evaluated.
 
     """
     yamlFile = repoLoc + f'/{sampleNumber}/{resultFileName}'
@@ -53,5 +57,5 @@ def readSingleSample(repoLoc,variables: List[variableConfig], sampleNumber):
     varList = []
     for var in variables:
         varList.append(reportObj.variables[var.name])
-    return varList, reportObj.label
+    return varList, reportObj.label, reportObj.elapsed_time
 

@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from enum import Enum
 import time
 
-simConfig = simulationConfig('./yamlFiles/ac_pgm_conf.yaml')
+simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
 print(simConfig.name)
 for p in simConfig.codeBase: 
     sys.path.insert(0,p)
@@ -173,7 +173,7 @@ def main():
 
     #------------------------------- Setting up the variables -----------------------------------------------
     variablesFile = './yamlFiles/variables_ac_pgm.yaml'
-    descriptionFile = 'varDescription.yaml'
+    descriptionFile = './assets/yamlFiles/varDescription.yaml'
 
     variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
     # variables = getAllVariableConfigs('variables_limited.yaml', scalingScheme=Scale.LOGARITHMIC)
@@ -188,7 +188,7 @@ def main():
 
     logging.debug('This is the debug message from the CAPS machine...')
 
-
+    
     #----------------------------------------------------------------
     # First order Sensitivity Analysis:
 
@@ -196,7 +196,7 @@ def main():
     # subInters = 16
     # varDict = getTimeIndepVarsDict(variables)
     # randList = randomizeVariablesList(varDict, samplesNum, subInters,scalingScheme=Scale.LOGARITHMIC, saveHists=True)
-    # saveSampleToTxtFile(randList, './experiments/limitedVarianceBased.txt')
+    # saveSampleToTxtFile(randList, './assets/experiments/limitedVarianceBased.txt')
     # runSampleFrom(sampleDictList= randList, dFolder = dataFolder, remoteRepo=testRepo, fromSample=960)
 
 
@@ -204,7 +204,7 @@ def main():
     # One at a time experiment design sensitivity analysis (Standard):
 
     # sample config
-    # experFile = './experiments/OATSampleStandard_Complete.txt'
+    # experFile = './assets/experiments/OATSampleStandard_Complete.txt'
     # simRepo = remoteRepo55
     # timeIndepVars = getTimeIndepVarsDict(variables)
 
@@ -212,7 +212,7 @@ def main():
     # exper = standardOATSampleGenerator(timeIndepVars, repeat = False)
 
     ### Strict OAT sample code:
-    # experFile = './experiments/OATSampleStrict_Complete.txt'
+    # experFile = './assets/experiments/OATSampleStrict_Complete.txt'
     # exper = strictOATSampleGenerator(timeIndepVars)
 
     # saveSampleToTxtFile(exper,experFile)
@@ -229,7 +229,7 @@ def main():
     # ----------------------------------------------------------------------
     # The Fractional Factorial Desing with Hadamard matrices:
 
-    experFile = './experiments/FFD_AC_PGM.txt'
+    experFile = './assets/experiments/FFD_AC_PGM.txt'
     simRepo = remoteRepo81
     # Taking the variables with non-zero initialState value
 
@@ -256,7 +256,7 @@ def main():
     # Verification sample:
 
     # simRepo = remoteRepo22
-    # experFile = './experiments/VerifSample_TC_Added.txt'
+    # experFile = './assets/experiments/VerifSample_TC_Added.txt'
     # logVariables = getAllVariableConfigs(variablesFile, scalingScheme=Scale.LOGARITHMIC)
     # timeIndepVars = getTimeIndepVars(logVariables)
     # exper = generateVerifSample(timeIndepVars)

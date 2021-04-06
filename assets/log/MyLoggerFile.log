@@ -1,0 +1,3 @@
+2020-01-13 22:39:10,693 - 15764 - DEBUG - This is the debug message from the CAPS machine...
+2020-01-13 22:39:10,812 - 15764 - INFO - The sample profile is created in C:\Users\Behshad\Google Drive\codes\ScenarioGenerator\sampleProfile.csv
+2020-01-13 22:39:10,813 - 15764 - INFO - Mapping file name: ./mapping.csv

@@ -1,10 +1,11 @@
-from yamlParseObjects.yamlObjects import * 
+from yamlParseObjects.yamlObjects import variableConfig
 from typing import List
 from samply.hypercube import cvt, lhs
 from enum import Enum
-from ActiveLearning.benchmarks import *
+from .benchmarks import Benchmark
 from sklearn import svm
 from sklearn.metrics import accuracy_score,precision_score, recall_score
+import numpy as np 
 
 class InsufficientInformation(Exception):
     pass
@@ -33,7 +34,6 @@ class InitialSampleMethod(Enum):
     LHS = 1
     Sobol = 2
 
-
 '''
     This class determines the type of the performance metric for the current iteration
     of hypothesis.
@@ -42,9 +42,6 @@ class PerformanceMeasure(Enum):
     ACCURACY = 0
     PRECISION = 1
     RECALL = 2
-
-
-
 
 class Space():
     def __init__(self, variableList: List[variableConfig], 
@@ -183,7 +180,6 @@ class Space():
 
 
     def getBenchmarkLabels(self, benchmark:Benchmark = None, updateClassifier = False):
-        
         if benchmark is not None:
             self.benchmark = benchmark
         self.eval_labels = self.benchmark.getLabelVec(self.samples)
@@ -333,4 +329,10 @@ class Space2():
     
     def getAllDimensionBounds(self):
         return np.array([dim.bounds for dim in self.dimensions])
-        
+
+
+class ActiveClassifier():
+
+    def __init__(self):
+        pass
+    
