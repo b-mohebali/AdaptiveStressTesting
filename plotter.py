@@ -10,6 +10,7 @@ from matplotlib import cm
 from mpl_toolkits.mplot3d import axes3d
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import pickle
+from ActiveLearning.benchmarks import Benchmark 
 
 class SaveInformation():
     def __init__(self, fileName, savePDF = False, savePNG = False):
@@ -33,6 +34,7 @@ def plotSpace(space: Space,
               classifier = None, 
               forth_dimension:str = None, 
               fDim_values: List[int] = None,
+              benchmark:Benchmark = None,
               legend = True,
               newPoint = None,
               saveInfo: SaveInformation = None,
@@ -53,29 +55,32 @@ def plotSpace(space: Space,
             is fixed in each plot. Only for spaces with d>3.
     """
     if space.dNum ==2:
-        plotSpace2D(space = space, 
+        _plotSpace2D(space = space, 
                     figsize = figsize, 
                     classifier = classifier,
                     meshRes = meshRes, 
                     legend = legend,
+                    benchmark = benchmark,
                     newPoint = newPoint,
                     saveInfo = saveInfo,
                     showPlot = showPlot)
     elif space.dNum == 3: 
-        plotSpace3D(space = space,
+        _plotSpace3D(space = space,
                     showPlot= showPlot,
                     classifier = classifier,
                     figsize = figsize,
+                    benchmark = benchmark,
                     meshRes = meshRes,
                     newPoint = newPoint,
                     saveInfo=saveInfo)
     return 
 
-def plotSpace3D(space: Space, 
+def _plotSpace3D(space: Space, 
                 showPlot = True,
                 classifier = None, 
                 figsize = (6,6),
                 legend = True, 
+                benchmark = None,
                 meshRes = 100,
                 saveInfo:SaveInformation = None,
                 newPoint = None):
@@ -107,7 +112,7 @@ def plotSpace3D(space: Space,
     ax.set_ylabel(dimensionNames[1])   
     ax.set_zlabel(dimensionNames[2])   
     # Creating the mesh for the benchmark evaluation:
-    if space.benchmark is not None or clf is not None:
+    if benchmark is not None or clf is not None:
         xx = np.linspace(start = x1range[0],stop = x1range[1], num = meshRes)
         yy = np.linspace(start = x2range[0],stop = x2range[1], num = meshRes)
         zz = np.linspace(start = x3range[0],stop = x3range[1], num = meshRes)
@@ -118,9 +123,9 @@ def plotSpace3D(space: Space,
     r3= x3range[1] - x3range[0]
     
     # Evaluating the benchmark and adding it to the plot:
-    if space.benchmark is not None:
+    if benchmark is not None:
         scores = space.benchmark.getScoreVec(XYZ).reshape(XX.shape)
-        out = measure.marching_cubes(scores,level = space.benchmark.threshold)
+        out = measure.marching_cubes(scores,level = benchmark.threshold)
         verts = out[0]
         faces = out[1]
         verts = verts * [r1,r2,r3] / meshRes
@@ -154,15 +159,15 @@ def plotSpace3D(space: Space,
     plt.close()
     return 
 
-def plotSpace2D(space: Space, 
+def _plotSpace2D(space: Space, 
                 classifier, 
                 figsize = None, 
                 meshRes=100, 
+                benchmark = None,
                 legend=True,
                 newPoint = None,
                 saveInfo:SaveInformation = None,
                 showPlot = True):
-    clf = classifier if classifier is not None else space.clf
     labels = space.eval_labels
     
     _,ax = plt.subplots(figsize = figsize)  
@@ -182,15 +187,15 @@ def plotSpace2D(space: Space,
     ax.set_ylim(x2range)
     ax.set_xlabel(dimensionNames[0])
     ax.set_ylabel(dimensionNames[1])
-    if space.benchmark is not None or classifier is not None:
+    if benchmark is not None or classifier is not None:
         xx = np.linspace(start = x1range[0], stop = x1range[1], num = meshRes)
         yy = np.linspace(start = x2range[0], stop = x2range[1], num = meshRes)
         YY,XX = np.meshgrid(yy,xx)
         # Transposed to make the dimensions match the convention. 
         xy = np.vstack([XX.ravel(),YY.ravel()]).T 
-    if space.benchmark is not None:
-        scores = space.benchmark.getScoreVec(xy).reshape(XX.shape)
-        cs = ax.contour(XX,YY,scores, colors='g', levels = [space.benchmark.threshold], 
+    if benchmark is not None:
+        scores = benchmark.getScoreVec(xy).reshape(XX.shape)
+        cs = ax.contour(XX,YY,scores, colors='g', levels = [benchmark.threshold], 
                 alpha = 1, linestyles = ['dashed']) 
         cslabels = ['Actual Boundary']
         ax.clabel(cs, inline=1, fontsize=10) 
@@ -199,10 +204,10 @@ def plotSpace2D(space: Space,
     """ Plotting the contours of the decision function indicating the
         decision boundary and the margin. 
     """
-    if clf is not None:
-        ax.scatter(clf.support_vectors_[:,0], clf.support_vectors_[:,1], s=80, 
+    if classifier is not None:
+        ax.scatter(classifier.support_vectors_[:,0], classifier.support_vectors_[:,1], s=80, 
                     linewidth = 1, facecolors = 'none', edgecolors = 'orange', label='Support vectors')
-        decisionFunction = clf.decision_function(xy).reshape(XX.shape)
+        decisionFunction = classifier.decision_function(xy).reshape(XX.shape)
         cs2 = ax.contour(XX, YY, decisionFunction, colors='k', levels=[-1,0,1], alpha=1,linestyles=['dashed','solid','dotted'])
         csLabels2 = ['DF=-1','DF=0 (hypothesis)','DF=+1']
         for i in range(len(csLabels2)):

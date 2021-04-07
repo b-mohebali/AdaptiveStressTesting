@@ -41,13 +41,13 @@ print(mySpace.eval_labels)
 
 mySpace.fit_classifier()
 figFolder = simConfig.figFolder
-sInfo = SaveInformation(fileName=f'{figFolder}/thisPLot', savePDF=True, savePNG=True)
+sInfo = SaveInformation(fileName=f'{figFolder}/InitialPlot', savePDF=True, savePNG=True)
 
 print(mySpace.getAllDimensionBounds())
 
 plotSpace(mySpace,classifier = None,figsize = (10,8), legend = True, saveInfo=sInfo, showPlot=False, meshRes=50)
 plt.close()
-optimizer = gaSolver(space = mySpace, epsilon = 0.05, batchSize= 5, convergence_curve=False, progress_bar = False)
+optimizer = gaSolver(space = mySpace, classifier = mySpace.clf, epsilon = 0.05, batchSize= 5, convergence_curve=False, progress_bar = False)
 changeMeasure = [mySpace.getChangeMeasure(percent = True, updateConvLabels = True)]
 # Iterations of the exploitation:
 sampleNumbers = [len(mySpace.samples)]

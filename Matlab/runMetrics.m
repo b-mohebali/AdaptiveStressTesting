@@ -17,6 +17,7 @@ function [label,fdevMax, VLLUnbalanceMax,VdevMax] = runMetrics(dataLocation, sam
         mkdir(figFolder);
     end
     
+    %% Extracting the data vectors from the loaded .mat file: 
     timeVec = y.glog_time;
     Vbase = .45;
     Fbase = 60;
@@ -28,6 +29,7 @@ function [label,fdevMax, VLLUnbalanceMax,VdevMax] = runMetrics(dataLocation, sam
     Vbc = Vb - Vc;
     Vca = Vc - Va;
     
+    %% Calling the metrics function: 
     [status,vv,f,A,theta,r,vals]=adherence1399_680_source(timeVec, Vab, Vbc,Vca,...
         'Vbase',Vbase,'Fbase',Fbase,'plot',1,'Nfig',1);
      

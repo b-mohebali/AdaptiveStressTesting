@@ -63,8 +63,8 @@ def getMetricsResults(dataLocation: string,sampleNumber, figFolderLoc: string = 
 def main():
     dataLocation = 'E:/Data/motherSample'
     figFolder = dataLocation + '/figures'
-    startingSample = 2201      
-    finalSample = 2300
+    startingSample = 2311      
+    finalSample = 2350
     sampleNumbers = list(range(startingSample,finalSample+1))
     getMetricsResults(dataLocation,sampleNumbers, figFolder)
 

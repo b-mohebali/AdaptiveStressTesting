@@ -271,7 +271,43 @@ class ConvergenceSample():
         if updateLabels:
             self.pastLabels = self.currentLabels
         return (diff * 100.0) if percent else diff 
-
+    
+    # TODO
+    """
+    This function takes a benckmark object and a classifier and compares the 
+    prediction of the classifier with the benchmark. In case the classifier 
+    is not provided, the last iteration of the labels are assumed to be the 
+    predictions of the classifier.
+        Inputs:
+            - Benchmark: The benchmark object as implemented in the Benchmark.py file.
+            - classifier: A classifier object that implement the predict() function
+            - percentage: Whether the results is reported as percentage or 
+                a ratio between 0 and 1.
+            - Metrics type: Choses what metric is reported between accuracy, 
+                precision, or recall
+        outputs:
+            - The performance metric as selected by the user. 
+    """
+    # TODO: Get a threshold for the classification. Right now the default threshold 
+    #       is 0.5, which may not be the best for the application.
+    def getPerformanceMetrics(self,
+                            benchmark: Benchmark,
+                            classifier = None,
+                            percentage = True,
+                            metricType: PerformanceMeasure = PerformanceMeasure.ACCURACY):
+        
+        # If the classifier is not entered, the last set of labels are used for the 
+        #   evaluation. 
+        yPred = self.currentLabels if classifier is None else classifier.predict(self.samples)
+        yTrue = benchmark.getLabelVec(self.samples)
+        if metricType == PerformanceMeasure.ACCURACY:
+            metric = accuracy_score(yTrue, yPred)
+        elif metricType == PerformanceMeasure.PRECISION:
+            metric = precision_score(yTrue, yPred)
+        elif metricType == PerformanceMeasure.RECALL:
+            metric = recall_score(yTrue, yPred)
+        return metric * 100 if percentage else metric
+    
 """
     This function returns a list of dictionaries containing the values of the 
     design variables for each experiment (one dict per experiment)
@@ -310,17 +346,37 @@ def getAccuracyMeasure( convSample:ConvergenceSample,
         return accuracy_score(realLabels, predLabels) * 100 if percent else 1
     # TODO: Other types of performance measures (scores) 
 
+"""
+    New implementation of the space class with limited functionality. 
+    NOTE: The functionality of the Space class was getting too much and so
+        it was broken down into several classes.
+"""
 class Space2():
     def __init__(self, 
                 variableList: List[variableConfig]):
         self.dimensions = []
         for varConfig in variableList:
             self.dimensions.append(Dimension(varConfig=varConfig))
-            self.dNum = len(self.dimensions)
+            self._dNum = len(self.dimensions)
             self.convPointsNum = 100 * 5 ** self.dNum 
-            self.samples = []
-            self.eval_labels = []
+            self._samples = []
+            self._eval_labels = []
     
+    # Defining the samples and labels as private fields with the type list 
+    # Upon retrive, they are turned into numpy arrays. 
+    def getSamples(self):
+        return np.array(self._samples)
+    samples = property(fget = getSamples)
+
+    def getEvalLabels(self):
+        return np.array(self._eval_labels)
+    eval_labels = property(fget = getEvalLabels)
+
+    # Defining the dimension number as a private field that can't be set.
+    def getDimensionNumber(self):
+        return self._dNum
+    dNum = property(fget = getDimensionNumber)
+
     def getAllDimensionNames(self):
         return [dim.name for dim in self.dimensions]
     
@@ -329,10 +385,61 @@ class Space2():
     
     def getAllDimensionBounds(self):
         return np.array([dim.bounds for dim in self.dimensions])
+    
+    def getSamplesNum(self):
+        return len(self._samples)
+    sampleNum = property(fget = getSamplesNum)
+
+    # TODO: Formatting the stored data: 
 
 
+    # TODO: Adding samples with labels to the dataset:
+    def addSample(self, dataPoint, label):
+        self._samples.append(dataPoint)
+        self._eval_labels.append(label)
+
+    def addSamples(self, dataPoints, labels):
+        if len(labels) != len(dataPoints):
+            raise ValueError('The number of samples and labels do not match')
+        for idx, dataPoint in enumerate(dataPoints):
+            self.addSample(dataPoint, labels[idx])
+        return 
+
+    # Nearest point from the dataset:
+    # NOTE: This is copied from the old implementation of the space class.
+    def nearestPointDistance(self, X, samplesList = None):
+        if samplesList is None:
+            return np.min(np.linalg.norm(self.samples - X, axis=1))
+        return np.min(np.linalg.norm(samplesList - X, axis=1))
+
+
+"""
+    NOTE: The initial classifier used here is SVM. The necessity for any other type of 
+    classifier was not felt at this point.
+    - Also it may be shown that the SVM class does not require a simple wrapper like 
+        this. 
+"""
 class ActiveClassifier():
 
-    def __init__(self):
-        pass
+    def __init__(self, C=1000, kernel = 'rbf'):
+        self.kernel = kernel
+        self.C = C
+        self.clf = None
     
+    def fit_classifier(self, data, labels):
+        if len(data) != len(labels):
+            raise ValueError('Number of data points and labels do not match.')
+        classifier = svm.SVC(kernel = self.kernel,C = self.C)
+        classifier.fit(data, labels)
+        self._clf = classifier
+        return classifier
+
+    # Defining the classifier as a private field:
+    # NOTE: The only way to change the classifier is through training it with new data.
+    #   This may change in the future.
+    def getClassifier(self):
+        return self._clf
+    clf = property(fget = getClassifier)
+
+
+

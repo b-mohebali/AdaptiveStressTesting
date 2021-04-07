@@ -2,6 +2,7 @@ from geneticalgorithm import geneticalgorithm as ga
 from .Sampling import Space
 import numpy as np
 from abc import ABC, abstractmethod
+from ActiveLearning.benchmarks import Benchmark
 
 # TODO: This is going to be the parent class for all the optimizers used for selecting a point in a 
 #   design space. 
@@ -18,6 +19,7 @@ class GeneticAlgorithmSolver():
                 convergence_curve = True, 
                 progress_bar = True):
         self.space = space
+        self.clf = None 
         self.convergence_curve = convergence_curve
         self.progress_bar = progress_bar
         self.epsilon = epsilon
@@ -34,7 +36,7 @@ class GeneticAlgorithmSolver():
     def objFunction(self, X):
         dist = self.space.nearestPointDistance(X, self.currentSpaceSamples)
         pen = 0
-        df = self.space.clf.decision_function(X.reshape(1,len(X)))
+        df = self.clf.decision_function(X.reshape(1,len(X)))
         if abs(df) > self.epsilon:
             pen = abs(df) *100
         return -1 * dist + pen 
@@ -57,9 +59,10 @@ class GeneticAlgorithmSolver():
                         progress_bar=self.progress_bar)
         return gaModel
 
-    def findNextPoints(self,pointNum):
+    def findNextPoints(self, clf,pointNum):
+        self.clf = clf
         newPointsFound = []
-        self.currentSpaceSamples = self.space.getSamplesCopy()
+        self.currentSpaceSamples = self.space.samples
         for _ in range(pointNum):
             gaModel = self.getModel()
             gaModel.run()
