@@ -87,7 +87,7 @@ class Hosaki(Benchmark):
         x1,x2 = datum[0], datum[1]
         return  (1 - 8*x1 + 7*x1**2 - 7*x1**3 / 3 + x1**4 / 4) * x2**2 * exp(-x2)
     
-class DistanceFromOrigin(Benchmark):
+class DistanceFromCenter(Benchmark):
     def __init__(self, threshold = 1, inputDim = 3, center = None):
         Benchmark.__init__(self, threshold = threshold)
         self.direction = ComparisonDirectionPositive.LESS_THAN_TH
@@ -102,6 +102,9 @@ class TrainedSvmClassifier(Benchmark):
     This class takes an already trained classifier and uses it as the benchmark for 
     the process. The purpose is for the cases when the actual solution is not available but 
     a classifier can be trained with a high number of samples.
+
+    NOTE: The decision_function() function is specific to the SVM classifier and may no be 
+        available for other types of classifiers. 
     """
     def __init__(self, classifier, inputDim, threshold = 0.5):
         Benchmark.__init__(self, threshold)

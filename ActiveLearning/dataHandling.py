@@ -59,3 +59,15 @@ def readSingleSample(repoLoc,variables: List[variableConfig], sampleNumber):
         varList.append(reportObj.variables[var.name])
     return varList, reportObj.label, reportObj.elapsed_time
 
+
+def getNextSampleLocation(repoLoc, createFolder:bool = False):
+    """
+        Gets the location of the repository and determines what is the path to save the next sample.
+    """
+    sampleFolders = [int(name) for name in os.listdir(repoLoc) if name.isdigit()]
+    lastSampleNumber = max(sampleFolders)
+    nextSampleNumber = lastSampleNumber + 1
+    nextSamplePath = repoLoc + f'{nextSampleNumber}'
+    if createFolder and not os.path.isdir(nextSamplePath):
+        os.mkdir(nextSamplePath)
+    return nextSamplePath

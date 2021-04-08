@@ -5,6 +5,10 @@ codeBase_Windows:
   - "C:\\Users\\bm12m\\Google Drive\\codes\\testing"
 codeBase_Linux:
   - "/home/caps/Auto_RTDS_Deployment/ver13d"
+matlab_path_Windows:
+  - "./Matlab"
+matlab_path_Linux:
+  - "./Matlab"
 modelLocation: "MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V5_NewFactors"
 modelName: "PGM_V5_NF"
 figureFolder: "./assets/Figures/18"
