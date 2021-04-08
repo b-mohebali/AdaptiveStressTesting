@@ -1,11 +1,9 @@
-#! /usr/bin/python3
-
 from yamlParseObjects.yamlObjects import * 
 from yamlParseObjects.variablesUtil import *
 import logging
 import os,sys
 import subprocess
-from ActiveLearning.benchmarks import DistanceFromOrigin, Branin, Benchmark
+from ActiveLearning.benchmarks import DistanceFromCenter, Branin, Benchmark
 from ActiveLearning.Sampling import *
 import platform
 import shutil
@@ -15,7 +13,7 @@ from sklearn import svm
 from geneticalgorithm import geneticalgorithm as ga
 from ActiveLearning.optimizationHelper import GeneticAlgorithmSolver as gaSolver
 
-from plotter import * 
+from ActiveLearning.visualization import *
 import time 
 import numpy as np 
 
@@ -33,7 +31,7 @@ initialSampleSize = simConfig.initialSampleSize
 mySpace = Space2(variableList=variables)
 
 # Defining the benchmark:
-myBench = DistanceFromOrigin(threshold=1.5, inputDim=len(variables), center = [2] * len(variables))
+myBench = DistanceFromCenter(threshold=1.5, inputDim=len(variables), center = [2] * len(variables))
 # Generating the initial sample. This step is pure exploration MC sampling:
 initialSamples = generateInitialSample(space = mySpace, 
                                         sampleSize = initialSampleSize,

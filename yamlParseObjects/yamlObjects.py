@@ -26,8 +26,10 @@ class simulationConfig():
         self.timeStep = yamlObj['timeStep'] if 'timeStep' in yamlObj else 0.05
         # This way we can have different settings for different OS platforms.
         codeBaseName = 'codeBase_' + platform.system()
+        matlabPathName = 'matlab_path_' + platform.system()
         self.platform = platform.system()
         self.codeBase = yamlObj[codeBaseName] if codeBaseName in yamlObj else []
+        self.matlabPaths = yamlObj[matlabPathName] if matlabPathName in yamlObj else []
         self.profileLoc = yamlObj['profileLoc'] if 'profileLoc' in yamlObj else '.'
         self.simLength = yamlObj['length'] if 'length' in yamlObj else self.eventWindowEnd
         self.modelName = yamlObj['modelName']

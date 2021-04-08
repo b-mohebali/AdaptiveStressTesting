@@ -3,7 +3,7 @@ from yamlParseObjects.variablesUtil import *
 import logging
 import os,sys
 import subprocess
-from ActiveLearning.benchmarks import DistanceFromOrigin, Branin
+from ActiveLearning.benchmarks import DistanceFromCenter, Branin
 from ActiveLearning.Sampling import *
 import platform
 import shutil
@@ -14,7 +14,7 @@ from sklearn import svm
 from geneticalgorithm import geneticalgorithm as ga
 from ActiveLearning.optimizationHelper import GeneticAlgorithmSolver as gaSolver
 
-from plotter import *
+from ActiveLearning.visualization import *
 
 import time
 import numpy as np 
@@ -33,7 +33,7 @@ initialSampleSize = simConfig.initialSampleSize
 mySpace = Space(variableList = variables,initialSampleCount = initialSampleSize)
 currentBudget = budget - initialSampleSize
 
-myBench = DistanceFromOrigin(threshold = 1.5, inputDim = len(variables), center = [2,2])
+myBench = DistanceFromCenter(threshold = 1.5, inputDim = len(variables), center = [2,2])
 
 mySpace.generateInitialSample()
 mySpace.getBenchmarkLabels(myBench)
