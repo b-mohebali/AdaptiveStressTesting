@@ -2,7 +2,9 @@ import yaml
 import math
 import platform
 from enum import Enum
-
+from datetime import datetime 
+import time 
+from typing import List
 
 class Scale(Enum):
     LINEAR = 1
@@ -18,36 +20,34 @@ class simulationConfig():
         with open(yamlFileAddress,'rt') as fp:
             yamlString = fp.read()
         fp.close()
-        yamlObj= yaml.load(yamlString, Loader = yaml.SafeLoader)
-        self.name = yamlObj['name']
-        self.eventWindowStart = yamlObj['eventWindowStart'] if 'eventWindowStart' in yamlObj else 0
-        self.eventWindowEnd = yamlObj['eventWindowEnd'] if 'eventWindowEnd' in yamlObj else 0
-        self.description = yamlObj['description'] if 'description' in yamlObj else None
-        self.timeStep = yamlObj['timeStep'] if 'timeStep' in yamlObj else 0.05
+        self.yamlObj= yaml.load(yamlString, Loader = yaml.SafeLoader)
+        self.name = self.yamlObj['name']
+        self.eventWindowStart = self.yamlObj['eventWindowStart'] if 'eventWindowStart' in self.yamlObj else 0
+        self.eventWindowEnd = self.yamlObj['eventWindowEnd'] if 'eventWindowEnd' in self.yamlObj else 0
+        self.description = self.yamlObj['description'] if 'description' in self.yamlObj else None
+        self.timeStep = self.yamlObj['timeStep'] if 'timeStep' in self.yamlObj else 0.05
         # This way we can have different settings for different OS platforms.
         codeBaseName = 'codeBase_' + platform.system()
         matlabPathName = 'matlab_path_' + platform.system()
         self.platform = platform.system()
-        self.codeBase = yamlObj[codeBaseName] if codeBaseName in yamlObj else []
-        self.matlabPaths = yamlObj[matlabPathName] if matlabPathName in yamlObj else []
-        self.profileLoc = yamlObj['profileLoc'] if 'profileLoc' in yamlObj else '.'
-        self.simLength = yamlObj['length'] if 'length' in yamlObj else self.eventWindowEnd
-        self.modelName = yamlObj['modelName']
-        self.sampleRepo = yamlObj['sampleRepo'] if 'sampleRepo' in yamlObj else None
-        self.modelLocation = yamlObj['modelLocation']
-        self.figFolder = yamlObj['figureFolder'] if 'figureFolder' in yamlObj else None
-        self.batchSize = yamlObj['batchSize'] if 'batchSize' in yamlObj else 1
-        self.sampleBudget = self._getNecessaryProperty('sampleBudget', yamlObj)
-        self.initialSampleSize = self._getNecessaryProperty('initialSampleSize', yamlObj)
-        self.batchSize = self._getNecessaryProperty('batchSize', yamlObj)
-
-
-    def _getNecessaryProperty(self,propName, yamlObj):
-        if propName not in yamlObj:
-            raise ValueError(f'The {propName} is not specified for the process.')
-        return yamlObj[propName]
+        self.codeBase = self.yamlObj[codeBaseName] if codeBaseName in self.yamlObj else []
+        self.matlabPaths = self.yamlObj[matlabPathName] if matlabPathName in self.yamlObj else []
+        self.profileLoc = self.yamlObj['profileLoc'] if 'profileLoc' in self.yamlObj else '.'
+        self.simLength = self.yamlObj['length'] if 'length' in self.yamlObj else self.eventWindowEnd
+        self.modelName = self.yamlObj['modelName']
+        self.sampleRepo = self.yamlObj['sampleRepo'] if 'sampleRepo' in self.yamlObj else None
+        self.modelLocation = self.yamlObj['modelLocation']
+        self.batchSize = self.yamlObj['batchSize'] if 'batchSize' in self.yamlObj else 1
+        self.sampleBudget = self._getNecessaryProperty('sampleBudget')
+        self.initialSampleSize = self._getNecessaryProperty('initialSampleSize')
+        self.batchSize = self._getNecessaryProperty('batchSize')
+        self.outputFolder = self._getNecessaryProperty('outputFolder')
         
-
+    def _getNecessaryProperty(self,propName):
+        if propName not in self.yamlObj:
+            raise ValueError(f'The {propName} is not specified for the process.')
+        return self.yamlObj[propName]
+        
     def __str__(self):
         nl = '\n \t\t\t\t\t'
         descriptor = f'''Simulation name: {self.name}
@@ -116,3 +116,53 @@ class FinalReport():
         self.elapsed_time = report['elapsed_time_sec']
         self.label = report['result_label']
         self.variables = report['variables']
+
+
+"""
+    TODO: The iteration report. Will be saved in a single file and contains information
+        about how the iteration went. 
+        The final report is a list of yaml objects one for each iteration. 
+
+    NOTE: The starting time is counted from the moment the iteration report 
+        object is instantiated.
+"""
+class IterationReport():
+    def __init__(self, varNames, 
+                batchSize = 1, 
+                iterationNumber = 1,
+                startTime = datetime.now()):
+        self.iterationNumber = iterationNumber
+        self.batchSize = batchSize
+        self.startTime = startTime
+        self.stopTime = None
+        self.budgetRemaining = 0
+        self.changeMeasure = None
+        self.variableNames = varNames
+
+    def setStart(self):
+        self.__start = time.time()
+    def setStop(self):
+        self.elapsedTimeSeconds = time.time() - self.__start
+        self.stopTime = datetime.now()
+        del self.__start
+    
+    # The list comprehension makes a dictionary of dictionaries based on a list of lists.
+    #   The keys for the first dict is the index of the samples starting from 1
+    #   The keys for the second dict is the names of the variables so that the 
+    #       variable values are distinguishable in the report.
+    def setSamples(self,samples):
+        self.samples = dict((i1+1, dict((self.variableNames[_], float(sample[_])) for _ in range(len(sample)))) for i1, sample in enumerate(samples))
+    def setChangeMeasure(self, changeMeasure):
+        self.changeMeasure = float(changeMeasure)
+    # Making a dictionary with sample index as key and its corresponding label as values.
+    # NOTE: The keys' indexing starts from 1.
+    def setMetricResults(self, metricResults):
+        self.metricResults = dict((_+1,int(metricResults[_])) for _ in range(len(metricResults)))
+
+
+
+def saveIterationReport(reports, yamlFileLoc):
+    print(yamlFileLoc)
+    with open(yamlFileLoc, 'w') as yamlFile:
+        yaml.dump_all(reports, yamlFile)
+    

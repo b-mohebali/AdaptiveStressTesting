@@ -12,9 +12,11 @@ from enum import Enum
 from sklearn import svm
 from geneticalgorithm import geneticalgorithm as ga
 from ActiveLearning.optimizationHelper import GeneticAlgorithmSolver as gaSolver
+from copy import copy
 
 from ActiveLearning.visualization import *
 import time 
+from datetime import datetime 
 import numpy as np 
 
 # Loading the config files of the process:
@@ -29,10 +31,15 @@ initialSampleSize = simConfig.initialSampleSize
 
 # Defining the design space based on the variables config file: 
 mySpace = Space2(variableList=variables)
-
+dimNames = mySpace.getAllDimensionNames()
+initialReport = IterationReport(dimNames)
 # Defining the benchmark:
-myBench = DistanceFromCenter(threshold=1.5, inputDim=len(variables), center = [2] * len(variables))
+myBench = DistanceFromCenter(threshold=1.5, inputDim=mySpace.dNum, center = [4] * mySpace.dNum)
 # Generating the initial sample. This step is pure exploration MC sampling:
+
+# Starting time:
+initialReport.startTime = datetime.now()
+initialReport.setStart()
 initialSamples = generateInitialSample(space = mySpace, 
                                         sampleSize = initialSampleSize,
                                         method = InitialSampleMethod.CVT,
@@ -46,9 +53,14 @@ clf.fit(initialSamples, initialLabels)
 # Adding the samples and their labels to the space: 
 mySpace.addSamples(initialSamples, initialLabels)
 
-# Visualization of the first iteration of the space with the initial sample:
-figFolder = simConfig.figFolder
+# Setting up the location of the output of the process:
+outputFolder = simConfig.outputFolder
+iterationReportFile = f'{outputFolder}/iterationReport.yaml'
+figFolder = setFigureFolder(outputFolder)
 sInfo = SaveInformation(fileName = f'{figFolder}/InitialPlot', savePDF=True, savePNG=True)
+
+
+# Visualization of the first iteration of the space with the initial sample:
 plotSpace(mySpace, 
         classifier=clf, 
         figsize = (10,8), 
@@ -57,7 +69,9 @@ plotSpace(mySpace,
         saveInfo = sInfo, 
         benchmark = myBench)
 plt.close()
-
+# Finishing time
+initialReport.stopTime = datetime.now()
+initialReport.setStop()
 # Defining the optimizer: 
 optimizer = gaSolver(space = mySpace, 
                     epsilon = 0.05,
@@ -82,8 +96,28 @@ sampleNumbers = [mySpace.sampleNum]
 # Calculating the remaining budget:
 currentBudget = budget - initialSampleSize
 
+# Setting up the iteration reports file:
+iterationReports = []
+
+# Getting the iteration report after the initial sample:
+iterationNum = 0
+initialReport.budgetRemaining = currentBudget
+initialReport.setChangeMeasure(changeMeasure[0])
+initialReport.batchSize = initialSampleSize
+initialReport.iterationNumber = iterationNum
+initialReport.setMetricResults(initialLabels)
+initialReport.setSamples(initialSamples)
+
+iterationReports.append(initialReport)
+
+saveIterationReport(iterationReports, iterationReportFile)
+
 while currentBudget > 0:
     print('------------------------------------------------------------------------------')
+    # Setting up the iteration report timing members:
+    iterationNum += 1
+    iterReport = IterationReport(dimNames, batchSize=batchSize)
+    iterReport.setStart()
     print('Current budget: ', currentBudget, ' samples')
     # Finding new points using the optimizer object:
     # NOTE: The classifier has to be passed everytime to the optimizer for update.
@@ -132,6 +166,15 @@ while currentBudget > 0:
         saveInfo=sInfo,
         showPlot=False)
     plt.close()
+    # Adding the iteration information to the report for saving.
+    iterReport.setStop()
+    iterReport.budgetRemaining = currentBudget
+    iterReport.iterationNumber = iterationNum
+    iterReport.setMetricResults(newLabels)
+    iterReport.setSamples(newPointsfound)
+    iterReport.setChangeMeasure(newChangeMeasure)
+    iterationReports.append(iterReport)
+    saveIterationReport(iterationReports, iterationReportFile)
 
 # Final visualization of the results: 
 plotSpace(space = mySpace, figsize=(10,8), legend = True, newPoint = None, 

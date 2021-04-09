@@ -9,6 +9,9 @@ from rscad import rtds
 from repositories import *
 import simulation
 import logging
+
+from typing import Dict
+
 # This is added from my cubicle machine.
 class SaveType(Enum):
     SAVE_ALL = 1
@@ -119,3 +122,32 @@ def runSampleFrom(sampleDictList, dFolder, remoteRepo = None, fromSample = None)
     print(sampleDictList[fromSample-1])
     runSample(sampleDictList, dFolder, remoteRepo = remoteRepo, sampleGroup=sampleGroup)
     return
+
+"""
+    Runs a single point in the design space and saves the data:
+
+    NOTE: This is copied from the function that runs a series of samples on the same 
+        model. The runSample function may have to be changed to just loop through 
+        samples using this function as a building block.
+"""
+def runSinglePoint(sampleDict: Dict[str, float],
+                dFolder: str, 
+                remoteRepo: str,
+                simConfig: simulationConfig,
+                sampleNumber: int):
+    modelUnderTest = PGM_control('','./', configFile=simConfig)
+    outfile = modelUnderTest.setVariables(sampleDict)
+    testDropLoc = Trial.init_test_drop(modelUnderTest.name)
+    modelUnderTest.initialize()
+    trial = Trial(modelUnderTest, modelUnderTest.simulation, testDropLoc)
+    case_Setup.fm = False
+    trial.runWithoutMetrics()
+    newF = createSpecificDataFolder(remoteRepo, sampleNumber)
+    shutil.copyfile(f'{currentDir}/variableValues.yaml', f'{newF.rstrip("/")}/variableValues.yaml')
+    copyDataToNewLocation(newF, dFolder)
+    copyDataToremoteServer(newF, outfile, isFolder = False)
+    print('removed the extra folders from the source repository.')
+    print(f'Done with the experiment {sampleNumber} and copying files to the repository.')
+    return newF
+
+

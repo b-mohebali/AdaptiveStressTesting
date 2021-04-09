@@ -11,6 +11,7 @@ from mpl_toolkits.mplot3d import axes3d
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import pickle
 from ActiveLearning.benchmarks import Benchmark 
+import os
 
 class SaveInformation():
     def __init__(self, fileName, savePDF = False, savePNG = False):
@@ -236,3 +237,13 @@ def saveFigures(saveInfo):
     if saveInfo.savePNG:
         plt.savefig(fname = f'{saveInfo.fileName}.png',
                     facecolor='w', edgecolor = 'w', transparent = False, bbox_inches='tight')
+
+def setFigureFolder(outputReportsLoc):
+    figFolder = f'{outputReportsLoc}/Figures'
+    if not os.path.isdir(outputReportsLoc):
+        os.mkdir(outputReportsLoc)
+        os.mkdir(figFolder)
+    if not os.path.isdir(figFolder):
+        os.mkdir(figFolder)
+    return figFolder
+
