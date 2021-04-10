@@ -59,7 +59,6 @@ iterationReportFile = f'{outputFolder}/iterationReport.yaml'
 figFolder = setFigureFolder(outputFolder)
 sInfo = SaveInformation(fileName = f'{figFolder}/InitialPlot', savePDF=True, savePNG=True)
 
-
 # Visualization of the first iteration of the space with the initial sample:
 plotSpace(mySpace, 
         classifier=clf, 

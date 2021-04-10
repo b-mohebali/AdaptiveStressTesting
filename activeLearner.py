@@ -1,3 +1,9 @@
+"""
+    NOTE: This code is old and will probably not work due to code refactoring.
+    Please refer to activeLearner_refactored.py as an example of how to use 
+    the code base. 
+"""
+
 from yamlParseObjects.yamlObjects import * 
 from yamlParseObjects.variablesUtil import *
 import logging
