@@ -1,4 +1,4 @@
-#! usr/bin/python3
+#! /usr/bin/python3
 
 from yamlParseObjects.yamlObjects import *
 from yamlParseObjects.variablesUtil import *
@@ -16,8 +16,8 @@ from scipy.linalg import hadamard
 import matplotlib.pyplot as plt
 from enum import Enum
 import time
-from ActiveLearning.simulationHelper import * 
 from ActiveLearning.Sampling import *
+from metricsRunTest import * 
 
 simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
 print(simConfig.name)
@@ -26,18 +26,19 @@ for p in simConfig.codeBase:
     print(p + ' has been added to the path.')
 
 
-# from autoRTDS import Trial
-# from controls import Control, InternalControl
-# import case_Setup
-# from rscad import rtds
-# from repositories import *
-# import simulation
+from ActiveLearning.simulationHelper import * 
+from autoRTDS import Trial
+from controls import Control, InternalControl
+import case_Setup
+from rscad import rtds
+from repositories import *
+import simulation
 
 
 
 """
 Steps of checks for correctness: 
-    1- Run an FFD sample with the 4 variables in a new location with the control object
+    DONE 1- Run an FFD sample with the 4 variables in a new location with the control object
         from simulationHelper.py script. -> DONE
     2- Implement the initial sampling using the combination of the control objects and 
         the developed active learning code. 
@@ -58,21 +59,30 @@ variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=S
 # Setting the main files and locations:
 descriptionFile = './assets/yamlFiles/varDescription.yaml'
 sampleSaveFile = './assets/experiments/test_sample.txt'
-repoLoc = remoteRepo83
+repoLoc = adaptRepo2
 
+# Defining the design space and the handler for the name of the dimensions. 
 designSpace = Space2(variableList=variables)
 dimNames = designSpace.getAllDimensionNames()
 
+# Taking the initial sample based on the parameters of the process. 
 initialSamples = generateInitialSample(space = designSpace,
                                         sampleSize=initialSampleSize,
                                         method = InitialSampleMethod.CVT,
                                         checkForEmptiness=False)
-formattedSample = getSamplePointsAsDict(designSpace, initialSamples)
-saveSampleToTxtFile(samples = formattedSample, fileName = sampleSaveFile)
-saveVariableDescription(variables, descriptionFile)
-copyDataToremoteServer(repoLoc, descriptionFile)
-copyDataToremoteServer(repoLoc, variablesFile)
 
+# Preparing and running the initial sample: 
+formattedSample = getSamplePointsAsDict(designSpace, initialSamples)
+saveSampleToTxtFile(formattedSample, sampleSaveFile)
+runSample(sampleDictList=formattedSample, 
+        dFolder = dataFolder,
+        remoteRepo=repoLoc,
+        simConfig=simConfig)
+
+# Running the metrics on the first sample: 
+setUpMatlab(simConfig=simConfig)
+samplesList = list(range(1, initialSampleSize+1))
+getMetricsResults(dataLocation=repoLoc, sampleNumber = samplesList)
 
 
 

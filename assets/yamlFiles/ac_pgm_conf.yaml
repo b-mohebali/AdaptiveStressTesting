@@ -1,18 +1,21 @@
 ---
 name: "AC PGM model"
-eventWindowStart: 200
-length : 300
-eventWindowEnd: 240
-timeStep: 0.05
+modelName: "PGM_AC_NF"
 codeBase_Windows:
   - "C:\\Users\\bm12m\\Google Drive\\codes\\Codes"
   - "C:\\Users\\bm12m\\Google Drive\\codes\\testing"
 codeBase_Linux:
   - "/home/caps/Auto_RTDS_Deployment/Archived/ver13"
+matlab_path_Windows:
+  - "./Matlab"
+matlab_path_Linux:
+  - "./Matlab"
+  - "/home/caps/.wine/drive_c/STAFF/langston/MFiles"
 profileLoc: "./profileExample"
 modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM_draft_vars" 
-modelName: "Test"
-sampleBudget: 100
-initialSampleSize: 25
-batchSize: 5
+outputFolder: './assets/outputReports/1'
+sampleRepo: "D:/Data/Sample80/data"
+sampleBudget: 300
+initialSampleSize: 80
+batchSize: 1
 ...

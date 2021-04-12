@@ -186,13 +186,14 @@ remoteRepo81 = localRepo + 'sample81'
 
 # First adaptive sampling repo. Test: initial sample + metrics evaluation + initial classifier training and visualization.
 adaptRepo1 = adaptiveSamplingLoc + 'adaptiveRepo1'
-
 # test repo:
 remoteRepo83 = localRepo + 'sample83'
 
-
 # A large sample that will act as the benchmark for the algorithm:
 motherSample = adaptiveSamplingLoc + 'motherSample'
+# Adaptive Sampling repo with budget=300 and initial sample size=80
+adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'
+
 
 currentDir = os.getcwd()
 isRepoRemote = True

@@ -3,6 +3,7 @@ import string
 from yamlParseObjects.yamlObjects import * 
 import time
 import matlab.engine
+import yaml 
 matlabPath = './Matlab'
 
 eng = None
@@ -30,11 +31,14 @@ def setUpMatlab(simConfig: simulationConfig = None):
 
 
 # Testing the function that runs the metrics and saves the label.
-def getMetricsResults(dataLocation: string,sampleNumber, figFolderLoc: string = None):
+def getMetricsResults(dataLocation: str,sampleNumber, figFolderLoc: str = None):
     # Setting the default location of saving the plots that come out of the metrics
     # evaluation.
+    # NOTE: The MATLAB code makes sure that the figures folder exists. If not,
+    #       if will create that folder in the specified location.
     if figFolderLoc is None:
         figFolderLoc = dataLocation + '/figures'
+    
     # Checking to see if the samples are a list or a single 
     if isinstance(sampleNumber, list):
         labels = []
