@@ -1,6 +1,6 @@
 ---
 name: "AC PGM model"
-modelName: "PGM_AC_NF"
+modelName: "Test"
 codeBase_Windows:
   - "C:\\Users\\bm12m\\Google Drive\\codes\\Codes"
   - "C:\\Users\\bm12m\\Google Drive\\codes\\testing"
@@ -11,7 +11,12 @@ matlab_path_Windows:
 matlab_path_Linux:
   - "./Matlab"
   - "/home/caps/.wine/drive_c/STAFF/langston/MFiles"
+  - "/home/caps/.wine/drive_c/cef/MVDC_SPS/AC_PGM_Analysis"
 profileLoc: "./profileExample"
+metricNames:
+  - "Max dev |V| pu"
+  - "Max dev V freq pu"
+  - "Voltage L-L unbalance"
 modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM_draft_vars" 
 outputFolder: './assets/outputReports/1'
 sampleRepo: "D:/Data/Sample80/data"

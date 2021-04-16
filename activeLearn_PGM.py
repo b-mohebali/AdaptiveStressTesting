@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /usr/bin/python
 
 from yamlParseObjects.yamlObjects import *
 from yamlParseObjects.variablesUtil import *
@@ -17,8 +17,6 @@ import matplotlib.pyplot as plt
 from enum import Enum
 import time
 from ActiveLearning.Sampling import *
-from metricsRunTest import * 
-
 simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
 print(simConfig.name)
 for p in simConfig.codeBase:
@@ -34,6 +32,7 @@ from rscad import rtds
 from repositories import *
 import simulation
 
+from metricsRunTest import * 
 
 
 """
@@ -66,23 +65,38 @@ designSpace = Space2(variableList=variables)
 dimNames = designSpace.getAllDimensionNames()
 
 # Taking the initial sample based on the parameters of the process. 
-initialSamples = generateInitialSample(space = designSpace,
-                                        sampleSize=initialSampleSize,
-                                        method = InitialSampleMethod.CVT,
-                                        checkForEmptiness=False)
+# initialSamples = generateInitialSample(space = designSpace,
+#                                         sampleSize=initialSampleSize,
+#                                         method = InitialSampleMethod.CVT,
+#                                         checkForEmptiness=False)
 
-# Preparing and running the initial sample: 
-formattedSample = getSamplePointsAsDict(designSpace, initialSamples)
-saveSampleToTxtFile(formattedSample, sampleSaveFile)
-runSample(sampleDictList=formattedSample, 
-        dFolder = dataFolder,
-        remoteRepo=repoLoc,
-        simConfig=simConfig)
+# # Preparing and running the initial sample: 
+# formattedSample = getSamplePointsAsDict(designSpace, initialSamples)
+# saveSampleToTxtFile(formattedSample, sampleSaveFile)
+# runSample(sampleDictList=formattedSample, 
+#         dFolder = dataFolder,
+#         remoteRepo=repoLoc,
+#         simConfig=simConfig)
 
-# Running the metrics on the first sample: 
-setUpMatlab(simConfig=simConfig)
-samplesList = list(range(1, initialSampleSize+1))
-getMetricsResults(dataLocation=repoLoc, sampleNumber = samplesList)
+## Loading sample from a pregenerated file in case of interruption:
+formattedSample = loadSampleFromTxtFile(sampleSaveFile)
+print(formattedSample)
+
+#### Running the metrics on the first sample: 
+
+# setUpMatlab(simConfig=simConfig)
+# # Forming the sample list which includes all the initial samples:
+# samplesList = list(range(1, initialSampleSize+1))
+# # Calling the metrics function on all the samples:
+# getMetricsResults(dataLocation=repoLoc, sampleNumber = samplesList)
+
+
+#### Load the results into the dataset and train the initial classifier:
+
+
+
+#### Iterations of exploitative sampling:
+
 
 
 

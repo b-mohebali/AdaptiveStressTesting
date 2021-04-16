@@ -1,11 +1,21 @@
+#! /usr/bin/python
+
+from yamlParseObjects.yamlObjects import * 
 import os,sys
 import string
-from yamlParseObjects.yamlObjects import * 
 import time
-import matlab.engine
 import yaml 
 matlabPath = './Matlab'
+matlabConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
+print(matlabConfig.name)
+for p in matlabConfig.codeBase: 
+    sys.path.insert(0,p)
+    print(p + ' is added to the path')
 
+from repositories import *
+import matlab.engine
+    
+# Defining matlab eng as a global variable:
 eng = None
 
 """
@@ -20,18 +30,22 @@ eng = None
 # eng.addpath(matlabPath)
 # print('MATLAB engine started.')
 
-def setUpMatlab(simConfig: simulationConfig = None):
+def setUpMatlab(simConfig: simulationConfig = matlabConfig):
+    global eng
     eng = matlab.engine.start_matlab()
     assert len(matlab.engine._engines) > 0
     if simConfig is not None:
         paths = simConfig.matlabPaths
         for p in paths:
             eng.addpath(eng.genpath(p))
+            print(f'Directory {p} was added to matlab path.')
+    print(type(eng))
     print('MATLAB engine started.')
 
 
 # Testing the function that runs the metrics and saves the label.
-def getMetricsResults(dataLocation: str,sampleNumber, figFolderLoc: str = None):
+def getMetricsResults(dataLocation: str,sampleNumber, figFolderLoc: str = None, metricNames: List = []):
+    global eng
     # Setting the default location of saving the plots that come out of the metrics
     # evaluation.
     # NOTE: The MATLAB code makes sure that the figures folder exists. If not,
@@ -60,6 +74,9 @@ def getMetricsResults(dataLocation: str,sampleNumber, figFolderLoc: str = None):
     print('Time taken to calculate the metrics: ', elapsed)
     # capturing the label as an integer. 
     label = int(output[0])
+    # Unpacking the results of other metrics coming from the matlab evaluation:
+    metricValues = list(output[1:]) if len(output) > 1 else []
+
     # TODO: Capturing the rest of the metric values that may be useful for the 
     # factor screening in case we do it on the python side.
 
@@ -70,7 +87,10 @@ def getMetricsResults(dataLocation: str,sampleNumber, figFolderLoc: str = None):
     with open(f'{sampleLoc}/variableValues.yaml') as varValues:
         values = yaml.load(varValues, Loader= yaml.FullLoader)
     reportDict['variables'] = values
-    reportDict['result_label'] = label 
+    reportDict['result_label'] = label
+    # capturing the values of the performance metrics:
+    for idx, metricName in metricNames:
+        reportDict[metricName] = metricValues[idx]
     with open(f'{sampleLoc}/finalReport.yaml','w') as reportYaml:
         yaml.dump(reportDict, reportYaml)
     
@@ -81,10 +101,11 @@ def getMetricsResults(dataLocation: str,sampleNumber, figFolderLoc: str = None):
     # of hardcoding it.
 def main():
     setUpMatlab()
-    dataLocation = 'E:/Data/motherSample'
+    # dataLocation = 'E:/Data/motherSample'
+    dataLocation = adaptRepo2
     figFolder = dataLocation + '/figures'
-    startingSample = 2311      
-    finalSample = 2350
+    startingSample = 1 
+    finalSample = 80
     sampleNumbers = list(range(startingSample,finalSample+1))
     getMetricsResults(dataLocation,sampleNumbers, figFolder)
 

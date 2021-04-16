@@ -42,7 +42,9 @@ class simulationConfig():
         self.initialSampleSize = self._getNecessaryProperty('initialSampleSize')
         self.batchSize = self._getNecessaryProperty('batchSize')
         self.outputFolder = self._getNecessaryProperty('outputFolder')
-        
+        self.metricNames = self.yamlObj['metricNames'] if 'metricNames' in self.yamlObj else []
+
+
     def _getNecessaryProperty(self,propName):
         if propName not in self.yamlObj:
             raise ValueError(f'The {propName} is not specified for the process.')
