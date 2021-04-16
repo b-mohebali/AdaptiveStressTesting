@@ -12,7 +12,7 @@ for p in matlabConfig.codeBase:
     sys.path.insert(0,p)
     print(p + ' is added to the path')
 
-from repositories import *
+# from repositories import *
 import matlab.engine
     
 # Defining matlab eng as a global variable:
@@ -44,7 +44,7 @@ def setUpMatlab(simConfig: simulationConfig = matlabConfig):
 
 
 # Testing the function that runs the metrics and saves the label.
-def getMetricsResults(dataLocation: str,sampleNumber, figFolderLoc: str = None, metricNames: List = []):
+def getMetricsResults(dataLocation: str,sampleNumber,metricNames, figFolderLoc: str = None):
     global eng
     # Setting the default location of saving the plots that come out of the metrics
     # evaluation.
@@ -57,7 +57,7 @@ def getMetricsResults(dataLocation: str,sampleNumber, figFolderLoc: str = None, 
     if isinstance(sampleNumber, list):
         labels = []
         for sampleNum in sampleNumber:
-            l = getMetricsResults(dataLocation, sampleNum, figFolderLoc)
+            l = getMetricsResults(dataLocation, sampleNum,metricNames=metricNames, figFolderLoc = figFolderLoc)
             labels.append(l)
         return labels 
     
@@ -69,14 +69,12 @@ def getMetricsResults(dataLocation: str,sampleNumber, figFolderLoc: str = None, 
     startTime = time.time()
     output = eng.runMetrics(dataLocation, sampleNumber, figFolderLoc, nargout = 4)
     endTime = time.time()
-    print(output)
     elapsed = endTime - startTime
     print('Time taken to calculate the metrics: ', elapsed)
     # capturing the label as an integer. 
     label = int(output[0])
     # Unpacking the results of other metrics coming from the matlab evaluation:
     metricValues = list(output[1:]) if len(output) > 1 else []
-
     # TODO: Capturing the rest of the metric values that may be useful for the 
     # factor screening in case we do it on the python side.
 
@@ -89,7 +87,8 @@ def getMetricsResults(dataLocation: str,sampleNumber, figFolderLoc: str = None, 
     reportDict['variables'] = values
     reportDict['result_label'] = label
     # capturing the values of the performance metrics:
-    for idx, metricName in metricNames:
+    for idx, metricName in enumerate(metricNames):
+        print(metricName, ': ', metricValues[idx])
         reportDict[metricName] = metricValues[idx]
     with open(f'{sampleLoc}/finalReport.yaml','w') as reportYaml:
         yaml.dump(reportDict, reportYaml)
@@ -101,13 +100,13 @@ def getMetricsResults(dataLocation: str,sampleNumber, figFolderLoc: str = None, 
     # of hardcoding it.
 def main():
     setUpMatlab()
-    # dataLocation = 'E:/Data/motherSample'
-    dataLocation = adaptRepo2
+    dataLocation = 'E:/Data/adaptiveRepo1'
+    # dataLocation = adaptRepo2
     figFolder = dataLocation + '/figures'
     startingSample = 1 
-    finalSample = 80
+    finalSample = 2
     sampleNumbers = list(range(startingSample,finalSample+1))
-    getMetricsResults(dataLocation,sampleNumbers, figFolder)
+    getMetricsResults(dataLocation,sampleNumbers,metricNames = matlabConfig.metricNames, figFolderLoc=figFolder)
 
 if __name__=='__main__':
     main()
