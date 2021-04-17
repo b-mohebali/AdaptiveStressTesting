@@ -72,7 +72,7 @@ plt.close()
 initialReport.stopTime = datetime.now()
 initialReport.setStop()
 # Defining the optimizer: 
-optimizer = gaSolver(space = mySpace, 
+optimizer = GeneticAlgorithmSolver(space = mySpace, 
                     epsilon = 0.05,
                     batchSize = simConfig.batchSize,
                     convergence_curve=False,

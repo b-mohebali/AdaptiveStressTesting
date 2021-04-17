@@ -9,6 +9,7 @@ from rscad import rtds
 from repositories import *
 import simulation
 import logging
+import os
 
 from typing import Dict
 
@@ -109,6 +110,8 @@ def runSample(sampleDictList,
         copyDataToremoteServer(newF, outfile, isFolder = False)
         print('removed the extra folders from the source repository.')
         print(f'Done with the experiment {sampleIndex} and copying files to the repository.')
+    print('This is the working directory after the sample is done: ',os.getcwd())
+    os.chdir(currentDir)
     return
  
 
@@ -134,10 +137,12 @@ def runSinglePoint(sampleDict: Dict[str, float],
                 dFolder: str, 
                 remoteRepo: str,
                 simConfig: simulationConfig,
-                sampleNumber: int):
-    modelUnderTest = PGM_control('','./', configFile=simConfig)
+                sampleNumber: int,
+                modelUnderTest = None):
+    if modelUnderTest is None:
+        modelUnderTest = PGM_control('','./', configFile=simConfig)
     outfile = modelUnderTest.setVariables(sampleDict)
-    testDropLoc = Trial.init_test_drop(modelUnderTest.name)
+    testDropLoc = Trial.init_test_drop(modelUnderTest.NAME)
     modelUnderTest.initialize()
     trial = Trial(modelUnderTest, modelUnderTest.simulation, testDropLoc)
     case_Setup.fm = False

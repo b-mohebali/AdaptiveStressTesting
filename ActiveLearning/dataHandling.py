@@ -11,6 +11,9 @@ resultFileName = 'finalReport.yaml'
 def readDataset(repoLoc, variables:List[variableConfig]):
     """
         Reading a dataset from a group of evaluated samples.
+        TODO: Change the list of the variables to the dimension names list.
+            This is the only information needed about the variables.
+        
         Input: 
             - Location of the samples
             - List of the variables configurations for the order of their names
@@ -50,6 +53,7 @@ def readSingleSample(repoLoc,variables: List[variableConfig], sampleNumber):
             - list of the values for the dimensions of the sample (varList)
             - Label of the sample as it was evaluated by the metrics (label)
             - The time the sample took to be evaluated.
+        
 
     """
     yamlFile = repoLoc + f'/{sampleNumber}/{resultFileName}'
@@ -60,14 +64,18 @@ def readSingleSample(repoLoc,variables: List[variableConfig], sampleNumber):
     return varList, reportObj.label, reportObj.elapsed_time
 
 
-def getNextSampleLocation(repoLoc, createFolder:bool = False):
+def getNextSampleNumber(repoLoc, createFolder:bool = False, count = 1):
     """
-        Gets the location of the repository and determines what is the path to save the next sample.
+        Gets the location of the repository and determines what is the 
+        number of the next sample. 
+
+        Returns a list of sample numbers if count > 1
     """
     sampleFolders = [int(name) for name in os.listdir(repoLoc) if name.isdigit()]
     lastSampleNumber = max(sampleFolders)
     nextSampleNumber = lastSampleNumber + 1
-    nextSamplePath = repoLoc + f'{nextSampleNumber}'
-    if createFolder and not os.path.isdir(nextSamplePath):
-        os.mkdir(nextSamplePath)
-    return nextSamplePath
+    nextSamples = [_ for _ in range(nextSampleNumber, nextSampleNumber+count+1)]
+    if  createFolder:
+        [os.mkdir(repoLoc + f'/{_}') for _ in nextSamples]
+    return nextSamples
+

@@ -312,8 +312,7 @@ class ConvergenceSample():
     This function returns a list of dictionaries containing the values of the 
     design variables for each experiment (one dict per experiment)
     Inputs:
-        - Space: The space object comtaining information about 
-            the dimensinos and their name
+        - dimNames: List of the name of the dimensions in the space        
         - sampleList: A List of lists containing the values for all the 
             sample points. The order is the same as the dimensions of the
             space passed to the function
@@ -322,12 +321,12 @@ class ConvergenceSample():
         - Samples dictionary: A list of dictionaries each haveing the name 
             and the value of the dimensions for each of the sample points.    
 """
-def getSamplePointsAsDict(space: Space, sampleList):
+def getSamplePointsAsDict(dimNames, sampleList):
     output = []
     for sample in sampleList:
         sampleDict = {}
-        for idx, dim in enumerate(space.dimensions):
-            sampleDict[dim.name] = sample[idx]
+        for idx, dimName in enumerate(dimNames):
+            sampleDict[dimName] = sample[idx]
         output.append(sampleDict)
     return output 
 

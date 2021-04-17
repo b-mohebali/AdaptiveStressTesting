@@ -12,7 +12,7 @@ for p in matlabConfig.codeBase:
     sys.path.insert(0,p)
     print(p + ' is added to the path')
 
-# from repositories import *
+from repositories import *
 import matlab.engine
     
 # Defining matlab eng as a global variable:
@@ -31,7 +31,6 @@ eng = None
 # print('MATLAB engine started.')
 
 def setUpMatlab(simConfig: simulationConfig = matlabConfig):
-    global eng
     eng = matlab.engine.start_matlab()
     assert len(matlab.engine._engines) > 0
     if simConfig is not None:
@@ -41,11 +40,14 @@ def setUpMatlab(simConfig: simulationConfig = matlabConfig):
             print(f'Directory {p} was added to matlab path.')
     print(type(eng))
     print('MATLAB engine started.')
-
+    return eng
 
 # Testing the function that runs the metrics and saves the label.
-def getMetricsResults(dataLocation: str,sampleNumber,metricNames, figFolderLoc: str = None):
-    global eng
+def getMetricsResults(dataLocation: str,
+                        eng,
+                        sampleNumber,
+                        metricNames, 
+                        figFolderLoc: str = None):
     # Setting the default location of saving the plots that come out of the metrics
     # evaluation.
     # NOTE: The MATLAB code makes sure that the figures folder exists. If not,
@@ -99,14 +101,17 @@ def getMetricsResults(dataLocation: str,sampleNumber,metricNames, figFolderLoc: 
     # TODO: Get the ranges of the samples from the command line parameters instead 
     # of hardcoding it.
 def main():
-    setUpMatlab()
-    dataLocation = 'E:/Data/adaptiveRepo1'
-    # dataLocation = adaptRepo2
+    engine = setUpMatlab()
+    # dataLocation = 'E:/Data/adaptiveRepo1'
+    dataLocation = adaptRepo2
     figFolder = dataLocation + '/figures'
     startingSample = 1 
     finalSample = 2
     sampleNumbers = list(range(startingSample,finalSample+1))
-    getMetricsResults(dataLocation,sampleNumbers,metricNames = matlabConfig.metricNames, figFolderLoc=figFolder)
+    getMetricsResults(dataLocation,eng = engine, 
+                        sampleNumber = sampleNumbers,
+                        metricNames = matlabConfig.metricNames, 
+                        figFolderLoc=figFolder)
 
 if __name__=='__main__':
     main()
