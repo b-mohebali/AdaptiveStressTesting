@@ -8,7 +8,8 @@ from yamlParseObjects.yamlObjects import *
 
 resultFileName = 'finalReport.yaml'
 
-def readDataset(repoLoc, variables:List[variableConfig]):
+# def readDataset(repoLoc, variables:List[variableConfig]):
+def readDataset(repoLoc, dimNames):
     """
         Reading a dataset from a group of evaluated samples.
         TODO: Change the list of the variables to the dimension names list.
@@ -28,25 +29,37 @@ def readDataset(repoLoc, variables:List[variableConfig]):
         all the other types of names (alphabetical or symbolic characters)
 
     """
+    # sampleFolders = [name for name in os.listdir(repoLoc) if name.isdigit()]
+    # labels = []
+    # dataset = []
+    # elapsed_times = []
+    # for sampleFolder in sampleFolders: 
+    #     d,l,t = readSingleSample(repoLoc, variables, sampleFolder)
+    #     labels.append(l)
+    #     dataset.append(d)
+    #     elapsed_times.append(t)
+    # return dataset, labels, elapsed_times
+
     sampleFolders = [name for name in os.listdir(repoLoc) if name.isdigit()]
     labels = []
     dataset = []
     elapsed_times = []
     for sampleFolder in sampleFolders: 
-        d,l,t = readSingleSample(repoLoc, variables, sampleFolder)
+        d,l,t = readSingleSample(repoLoc, dimNames, sampleFolder)
         labels.append(l)
         dataset.append(d)
         elapsed_times.append(t)
     return dataset, labels, elapsed_times
 
-
-def readSingleSample(repoLoc,variables: List[variableConfig], sampleNumber):
+def readSingleSample(repoLoc,dimNames, sampleNumber):
+# def readSingleSample(repoLoc,variables: List[variableConfig], sampleNumber):
     """
         This function read the results of a single sample from the repo.
 
         Inputs:
             - Location of the samples (repoLoc)
-            - List of varaibles configuration (variables)
+            # - List of varaibles configuration (variables)
+            - List of the dimension names
             - Sample Number (sampleNumber)
 
         Output:
@@ -56,12 +69,20 @@ def readSingleSample(repoLoc,variables: List[variableConfig], sampleNumber):
         
 
     """
+    # yamlFile = repoLoc + f'/{sampleNumber}/{resultFileName}'
+    # reportObj = FinalReport(yamlFile)
+    # varList = []
+    # for var in variables:
+    #     varList.append(reportObj.variables[var.name])
+    # return varList, reportObj.label, reportObj.elapsed_time
+
     yamlFile = repoLoc + f'/{sampleNumber}/{resultFileName}'
     reportObj = FinalReport(yamlFile)
     varList = []
-    for var in variables:
-        varList.append(reportObj.variables[var.name])
+    for dimName in dimNames:
+        varList.append(reportObj.variables[dimName])
     return varList, reportObj.label, reportObj.elapsed_time
+
 
 
 def getNextSampleNumber(repoLoc, createFolder:bool = False, count = 1):
