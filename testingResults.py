@@ -1,4 +1,4 @@
-#! /usr/bin/python
+# # ! /usr/bin/python
 
 from yamlParseObjects.yamlObjects import *
 from yamlParseObjects.variablesUtil import *
@@ -19,7 +19,6 @@ import time
 from ActiveLearning.Sampling import *
 from ActiveLearning.dataHandling import *
 from ActiveLearning.visualization import * 
-from ActiveLearning.optimizationHelper import GeneticAlgorithmSolver
 from sklearn import svm
 
 simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
@@ -28,38 +27,39 @@ for p in simConfig.codeBase:
     sys.path.insert(0,p)
     print(p + ' has been added to the path.')
 
-
-from ActiveLearning.simulationHelper import * 
-from autoRTDS import Trial
-from controls import Control, InternalControl
-import case_Setup
-from rscad import rtds
-from repositories import *
-import simulation
+import slickml
+from slickml.metrics import BinaryClassificationMetrics 
+from sklearn.metrics import accuracy_score, roc_curve,auc
 
 
-repoLoc = adaptRepo2
+currentDir = '.'
+
+repoLoc = 'E:/Data/motherSample'
+trainRepo = 'E:/Data/adaptRepo2'
 variablesFile = currentDir + '/assets/yamlFiles/ac_pgm_adaptive.yaml'
 
 variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
 dimNames = [var.name for var in variables]
 
-dataset, labels, times = readDataset(repoLoc, dimNames)
-print(dataset, labels)
 
-clf = svm.SVC(kernel = 'rbf', C = 1000)
+
+dataset, labels, times = readDataset(repoLoc, dimNames)
+print(len(dataset), len(labels))
+
+clf = svm.SVC(kernel = 'rbf', C = 1000, probability=True)
 clf.fit(dataset,labels)
 
-from sklearn.metrics import accuracy_score, roc_curve,auc
 
 predLabels = clf.predict(dataset)
 diff = 1 - np.sum(np.abs(predLabels - labels)) / len(labels)
 print(diff * 100)
-train_pred = clf.decision_function(dataset)
+print(np.sum(labels) / len(labels))
+
+predictProba = clf.predict_proba(dataset)
+train_pred = predictProba[:,1]
 trainFpr, trainTpr, thresholds = roc_curve(labels, train_pred)
+print(predictProba)
 
-plt.plot(trainFpr, trainTpr, label = 'AUC train = '+str(auc(trainFpr, trainTpr)))
-plt.plot([0,1],[0,1],'g--')
 
-plt.show()
-
+clf_metrics = BinaryClassificationMetrics(labels, train_pred) 
+clf_metrics.plot()
