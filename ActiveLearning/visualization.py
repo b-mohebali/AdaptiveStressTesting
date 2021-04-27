@@ -39,9 +39,11 @@ def plotSpace(space: Space,
               legend = True,
               newPoint = None,
               saveInfo: SaveInformation = None,
-              showPlot = True) -> None:
+              showPlot = True,
+              insigDimensions = [2,3], 
+              gridRes = None) -> None:
     """This function plots the samples in a Space object.
-    - Options: 3D and 2D spaces.
+    - Options: 3D and 2D spaces. (4D coming up)
     - TO-DO: Higher dimensions implementation by generating a set 
         of plots  in which the 4th dimension is fixed at a point. 
         The set of the fixed values are passed to this function. 
@@ -72,9 +74,75 @@ def plotSpace(space: Space,
                     figsize = figsize,
                     benchmark = benchmark,
                     meshRes = meshRes,
+                    legend = legend,
                     newPoint = newPoint,
                     saveInfo=saveInfo)
+    elif space.dNum == 4:
+        _plotSpace4D(space = space, 
+                    showPlot = showPlot,
+                    classifier=classifier,
+                    figsize=figsize,
+                    legend = legend,
+                    benchmark=benchmark,
+                    meshRes = meshRes,
+                    saveInfo=saveInfo,
+                    insigDimensions = insigDimensions,
+                    gridRes = gridRes)
     return 
+
+
+"""
+
+    NOTE: The 4D version of the visualizer does not have the feature to show the data points or the newly found points.
+"""
+def _plotSpace4D(space: Space,
+                insigDimensions,
+                showPlot = True, 
+                classifier = None,
+                figsize = (6,6),
+                legend = True,
+                benchmark = None,
+                meshRes = 100,
+                gridRes = (4,4),
+                saveInfo: SaveInformation = None):
+    ### Getting the information about the significant and insignificant dimensions. 
+    allDims = [_ for _ in range(4)]
+    sigDims = [_ for _ in range(4) if _ not in insigDimensions]
+    ranges = space.getAllDimensionBounds()
+    dimensionNames  = space.getAllDimensionNames()
+    # Getting the range of each dimension. This is used later in meshing the space. 
+    sigDim1Range = ranges[sigDims[0]]
+    sigDim2Range = ranges[sigDims[1]]
+    insigDim1Range = ranges[insigDimensions[0]]
+    insigDim2Range = ranges[insigDimensions[1]]
+
+    # Values for the insignificant dimensions: 
+    insigDim1Vals = np.linspace(start = insigDim1Range[0],
+                                stop = insigDim1Range[1],
+                                num = gridRes[0],
+                                endpoint = True)
+    insigDim2Vals = np.linspace(start = insigDim2Range[0],
+                                stop = insigDim2Range[1],
+                                num = gridRes[1],
+                                endpoint = True)
+                                
+    # Setting the figure:
+    fig,ax = plt.subplots(gridRes[0], gridRes[1])
+
+    xx = np.linspace(start = sigDim1Range[0],
+                    stop = sigDim1Range[1],
+                    num = meshRes)
+    yy = np.linspace(start = sigDim2Range[0],
+                    stop = sigDim2Range[1],
+                    num = meshRes)
+    YY,XX= np.meshgrid(xx,yy,indexing='ij')
+    xy = np.vstack([XX.ravel(), YY.ravel()]).T
+
+    
+    if classifier is not None:
+        decisionFunction = classifier.decision_function(xy).reshape(XX.shape)
+
+    
 
 def _plotSpace3D(space: Space, 
                 showPlot = True,

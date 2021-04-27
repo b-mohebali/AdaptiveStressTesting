@@ -105,13 +105,19 @@ class TrainedSvmClassifier(Benchmark):
 
     NOTE: The decision_function() function is specific to the SVM classifier and may no be 
         available for other types of classifiers. 
+    
+    NOTE: The threshold for this classifier depends on the decision function being the 
+        probability or just the output of the decision function.
     """
-    def __init__(self, classifier, inputDim, threshold = 0.5):
+    def __init__(self, classifier, inputDim, threshold):
         Benchmark.__init__(self, threshold)
         self.classifier = classifier
+        self.threshold = 0.5 if classifier.probability else 0
         self.inputDim = inputDim
 
     # NOTE: Needs testing once the mother sample is done.
     def _function(self, datum):
         return self.classifier.decision_function(datum.reshape(1,self.inputDim))
     
+    def isProbability(self):
+        return self.classifier.probability
