@@ -33,14 +33,12 @@ def plotSpace(space: Space,
               figsize=(6,6),
               meshRes = 100,
               classifier = None, 
-              forth_dimension:str = None, 
-              fDim_values: List[int] = None,
               benchmark:Benchmark = None,
               legend = True,
               newPoint = None,
               saveInfo: SaveInformation = None,
               showPlot = True,
-              insigDimensions = [2,3], 
+              insigDimensions = None, 
               gridRes = None) -> None:
     """This function plots the samples in a Space object.
     - Options: 3D and 2D spaces. (4D coming up)
@@ -106,17 +104,17 @@ def _plotSpace4D(space: Space,
                 gridRes = (4,4),
                 saveInfo: SaveInformation = None):
     ### Getting the information about the significant and insignificant dimensions. 
-    allDims = [_ for _ in range(4)]
-    sigDims = [_ for _ in range(4) if _ not in insigDimensions]
+    
+    ## Implementation of the 4D visualization: 
+    allDims = list(range(4))
+    sigDims = [_ for _ in allDims if _ not in insigDimensions]
     ranges = space.getAllDimensionBounds()
-    dimensionNames  = space.getAllDimensionNames()
-    # Getting the range of each dimension. This is used later in meshing the space. 
+    dimNames = space.getAllDimensionNames()
     sigDim1Range = ranges[sigDims[0]]
     sigDim2Range = ranges[sigDims[1]]
     insigDim1Range = ranges[insigDimensions[0]]
     insigDim2Range = ranges[insigDimensions[1]]
 
-    # Values for the insignificant dimensions: 
     insigDim1Vals = np.linspace(start = insigDim1Range[0],
                                 stop = insigDim1Range[1],
                                 num = gridRes[0],
@@ -125,24 +123,74 @@ def _plotSpace4D(space: Space,
                                 stop = insigDim2Range[1],
                                 num = gridRes[1],
                                 endpoint = True)
-                                
-    # Setting the figure:
-    fig,ax = plt.subplots(gridRes[0], gridRes[1])
 
     xx = np.linspace(start = sigDim1Range[0],
-                    stop = sigDim1Range[1],
-                    num = meshRes)
+                stop = sigDim1Range[1],
+                num = meshRes)
     yy = np.linspace(start = sigDim2Range[0],
-                    stop = sigDim2Range[1],
-                    num = meshRes)
-    YY,XX= np.meshgrid(xx,yy,indexing='ij')
+                stop = sigDim2Range[1],
+                num = meshRes)
+
+    XX,YY = np.meshgrid(xx,yy, indexing = 'ij')
     xy = np.vstack([XX.ravel(), YY.ravel()]).T
 
-    
-    if classifier is not None:
-        decisionFunction = classifier.decision_function(xy).reshape(XX.shape)
+    dataVec = np.zeros(shape = (YY.size, 4), dtype = float)
 
-    
+    onesVec = np.ones((XX.size,),dtype = float)
+    insigVec1 = onesVec * insigDim1Vals[0]
+    insigVec2 = onesVec * insigDim2Vals[0]
+
+    dataVec[:,insigDimensions[0]] = insigVec1
+    dataVec[:,insigDimensions[1]] = insigVec2
+    dataVec[:,sigDims[0]] = xy[:,0]
+    dataVec[:,sigDims[1]] = xy[:,1]
+
+    plotNum = 1
+    fig,ax = plt.subplots(nrows = gridRes[0], ncols = gridRes[1], figsize = (10,15))
+    fig.tight_layout()
+    for rowNum in range(gridRes[0]):
+        for colNum in range(gridRes[1]):
+            dataVec[:,insigDimensions[0]] = onesVec * insigDim1Vals[rowNum]
+            dataVec[:,insigDimensions[1]] = onesVec * insigDim2Vals[colNum]
+            ax = plt.subplot(gridRes[0],gridRes[1],plotNum)
+            decisionFunction = classifier.decision_function(dataVec).reshape(XX.shape)
+            cs2 = ax.contour(XX, YY, decisionFunction, colors='k', levels=[-1,0,1], alpha=1,linestyles=['dashed','solid','dotted'])
+            csLabels2 = ['DF=-1','DF=0 (hypothesis)','DF=+1']
+            if plotNum ==1:
+                for i in range(len(csLabels2)):
+                    cs2.collections[i].set_label(csLabels2[i])
+            
+            ### Tagging and labeling the axes:
+            if plotNum <= gridRes[1]:
+                ax.set_title(f'{dimNames[insigDimensions[1]]} = {insigDim2Vals[colNum]:.4f}')
+            if plotNum%gridRes[1]==0:
+                ax2 = ax.twinx()
+                ax2.set_ylabel(f'{dimNames[insigDimensions[0]]} = {insigDim1Vals[rowNum]:.4f}')
+                ax2.set_yticklabels([])
+            if plotNum%gridRes[1]==1:
+                ax.set_ylabel(dimNames[sigDims[1]])
+            if (plotNum+gridRes[1]) > (gridRes[0]*gridRes[1]):
+                ax.set_xlabel(dimNames[sigDims[0]])
+            # Plotting the benchmark classifier
+            if benchmark is not None:
+                scores = benchmark.getScoreVec(dataVec).reshape(XX.shape)
+                cs = ax.contour(XX,YY,scores, colors='r', levels = [benchmark.threshold], 
+                    alpha = 1, linestyles = ['solid']) 
+                cslabels = ['Actual Boundary']
+                # ax.clabel(cs, inline=1, fontsize=10) 
+                if plotNum==1:
+                    for i in range(len(cslabels)):
+                        cs.collections[i].set_label(cslabels[i])
+            
+            # Updating the plot number, needed for locating the subplots.
+            plotNum += 1
+            
+    if legend:
+        fig.legend(loc = 'upper left',bbox_to_anchor=(1.03, 1.0))
+    if saveInfo is not None:
+        saveFigures(saveInfo = saveInfo)
+
+
 
 def _plotSpace3D(space: Space, 
                 showPlot = True,
