@@ -87,7 +87,7 @@ sampleSaveFile = currentDir + '/assets/experiments/test_sample.txt'
 repoLoc = adaptRepo2
 
 # Defining the design space and the handler for the name of the dimensions. 
-designSpace = Space2(variableList=variables)
+designSpace = SampleSpace(variableList=variables)
 dimNames = designSpace.getAllDimensionNames()
 initialReport = IterationReport(dimNames)
 initialReport.setStart()

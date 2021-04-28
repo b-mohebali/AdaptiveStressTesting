@@ -350,7 +350,7 @@ def getAccuracyMeasure( convSample:ConvergenceSample,
     NOTE: The functionality of the Space class was getting too much and so
         it was broken down into several classes.
 """
-class Space2():
+class SampleSpace():
     def __init__(self, 
                 variableList: List[variableConfig]):
         self.dimensions = []

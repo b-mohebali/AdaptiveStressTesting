@@ -109,10 +109,10 @@ class TrainedSvmClassifier(Benchmark):
     NOTE: The threshold for this classifier depends on the decision function being the 
         probability or just the output of the decision function.
     """
-    def __init__(self, classifier, inputDim, threshold):
+    def __init__(self, classifier, inputDim, threshold=0):
         Benchmark.__init__(self, threshold)
-        self.classifier = classifier
         self.threshold = 0.5 if classifier.probability else 0
+        self.classifier = classifier
         self.inputDim = inputDim
 
     # NOTE: Needs testing once the mother sample is done.

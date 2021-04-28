@@ -8,8 +8,7 @@ from yamlParseObjects.yamlObjects import *
 
 resultFileName = 'finalReport.yaml'
 
-# def readDataset(repoLoc, variables:List[variableConfig]):
-def readDataset(repoLoc, dimNames):
+def readDataset(repoLoc, dimNames, includeTimes = False):
     """
         Reading a dataset from a group of evaluated samples.
         TODO: Change the list of the variables to the dimension names list.
@@ -18,28 +17,19 @@ def readDataset(repoLoc, dimNames):
         Input: 
             - Location of the samples
             - List of the variables configurations for the order of their names
+            - IncludeTimes: Boolean determining whether the process time of each 
+                is needed and should be included in the output or not. 
 
         Output:
-            - Dataset in the form of data points as a list of lists
-            - Label of each sample in the same order as the samples in the dataset
-            - The time each sample took to be evaluated.
+            - dataset: Dataset in the form of data points as a list of lists
+            - labels: Label of each sample in the same order as the samples in the dataset
+            - times: (Optional) The time each sample took to be evaluated.
 
 
         Note: Assumes that the samples are in folders with numerical names. Ignores
         all the other types of names (alphabetical or symbolic characters)
 
     """
-    # sampleFolders = [name for name in os.listdir(repoLoc) if name.isdigit()]
-    # labels = []
-    # dataset = []
-    # elapsed_times = []
-    # for sampleFolder in sampleFolders: 
-    #     d,l,t = readSingleSample(repoLoc, variables, sampleFolder)
-    #     labels.append(l)
-    #     dataset.append(d)
-    #     elapsed_times.append(t)
-    # return dataset, labels, elapsed_times
-
     sampleFolders = [name for name in os.listdir(repoLoc) if name.isdigit()]
     labels = []
     dataset = []
@@ -49,10 +39,11 @@ def readDataset(repoLoc, dimNames):
         labels.append(l)
         dataset.append(d)
         elapsed_times.append(t)
-    return dataset, labels, elapsed_times
+    if includeTimes:
+        return dataset, labels, elapsed_times
+    return dataset, labels
 
 def readSingleSample(repoLoc,dimNames, sampleNumber):
-# def readSingleSample(repoLoc,variables: List[variableConfig], sampleNumber):
     """
         This function read the results of a single sample from the repo.
 
@@ -69,13 +60,6 @@ def readSingleSample(repoLoc,dimNames, sampleNumber):
         
 
     """
-    # yamlFile = repoLoc + f'/{sampleNumber}/{resultFileName}'
-    # reportObj = FinalReport(yamlFile)
-    # varList = []
-    # for var in variables:
-    #     varList.append(reportObj.variables[var.name])
-    # return varList, reportObj.label, reportObj.elapsed_time
-
     yamlFile = repoLoc + f'/{sampleNumber}/{resultFileName}'
     reportObj = FinalReport(yamlFile)
     varList = []
