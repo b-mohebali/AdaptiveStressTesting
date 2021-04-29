@@ -19,6 +19,9 @@ def readDataset(repoLoc, dimNames, includeTimes = False, sampleRange = None):
             - List of the variables configurations for the order of their names
             - IncludeTimes: Boolean determining whether the process time of each 
                 is needed and should be included in the output or not. 
+            - sampleRange: If not None, only the samples in the entered range
+                will be read for dataset loading. If None, all samples in the 
+                repository will be read for dataset loading. 
 
         Output:
             - dataset: Dataset in the form of data points as a list of lists
@@ -31,6 +34,10 @@ def readDataset(repoLoc, dimNames, includeTimes = False, sampleRange = None):
 
     """
     sampleFolders = [name for name in os.listdir(repoLoc) if name.isdigit()]
+    # This makes sure that only the samples that actually exist in the 
+    #   repo will be loaded into the dataset.
+    if sampleRange is not None:
+        sampleFolders  = [_ for _ in sampleFolders if _ in sampleRange]
     labels = []
     dataset = []
     elapsed_times = []

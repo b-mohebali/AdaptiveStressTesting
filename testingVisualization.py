@@ -59,7 +59,7 @@ designSpace._samples, designSpace._eval_labels = dataset, labels
 # Defining the visualization parameters:
 insigDims = [0,2] # 0-indexed dimensions that are on the grid axes.
 figSize = (12,12)
-gridRes = (3,3)
+gridRes = (4,3)
 
 
 legend = True 
@@ -79,21 +79,23 @@ sInfo = SaveInformation(fileName = f'{figFolder}/grid_plot', savePDF=True, saveP
 
 # # Creating the mother sample classifier as athe benchmark for the visualiztion:
 
-motherData, motherLabels = readDataset(repoLoc, dimNames)
-motherClf = svm.SVC(kernel = 'rbf', C = 1000)
-motherClf.fit(motherData, motherLabels)
-from ActiveLearning.benchmarks import TrainedSvmClassifier
+# Using pickle to save and load the benchmark classifier:
+motherClfPickle = repositories.picklesLoc + 'mother_clf.pickle'
+if os.path.exists(motherClfPickle) and os.path.isfile(motherClfPickle):
+    with open(motherClfPickle, "rb") as pickleIn:
+        motherClf = pickle.load(pickleIn)
+else:    
+    motherData, motherLabels = readDataset(repoLoc, dimNames)
+    motherClf = svm.SVC(kernel = 'rbf', C = 1000)
+    motherClf.fit(motherData, motherLabels)
+    with open(motherClfPickle, "wb") as pickleOut:
+        pickle.dump(motherClf, pickleOut)
+
 threshold = 0.5 if motherClf.probability else 0
+from ActiveLearning.benchmarks import TrainedSvmClassifier
 classifierBench = TrainedSvmClassifier(motherClf, len(variables), threshold)
 
-pickleFile = repositories.picklesLoc + 'classifier_bench.pickle'
-with open(pickleFile, "wb") as pickleOut:
-    pickle.dump(classifierBench, pickleOut)
-
-
-# Pickling the mother sample and its trained classifier:
-
-
+   
 # Calling the visualization procedure:
 plotSpace(designSpace,
             figsize = figSize,
@@ -104,5 +106,4 @@ plotSpace(designSpace,
             saveInfo=sInfo,
             insigDimensions=insigDims,
             legend = True,
-            # prev_classifier=motherClf,
             benchmark = classifierBench)   

@@ -20,6 +20,7 @@ from ActiveLearning.Sampling import *
 from ActiveLearning.dataHandling import *
 from ActiveLearning.visualization import * 
 from ActiveLearning.optimizationHelper import GeneticAlgorithmSolver
+from ActiveLearning.benchmarks import TrainedSvmClassifier
 from sklearn import svm
 from copy import copy
 simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
@@ -177,6 +178,14 @@ initialReport.setSamples(dataset)
 iterationReports.append(initialReport)
 saveIterationReport(iterationReports, iterationReportsFile)
 
+# Loading the benchmark classifier from the pickle that was saved as an asset:
+motherClfPickle = picklesLoc + 'mother_clf.pickle'
+classifierBench = None
+if os.path.exists(motherClfPickle) and os.path.isfile(motherClfPickle):
+    with open(motherClfPickle,'rb') as pickleIn:
+        motherClf = pickle.load(pickleIn)
+    threshold = 0.5 if motherClf.probability else 0
+    classifierBench = TrainedSvmClassifier(motherClf, len(variables), threshold)
 
 
 ## -----------------------------------
@@ -191,6 +200,8 @@ TODO: Implementation of the benchmark for this visualizer.
     The correct way is to use a pickle that contains the classifier 
     trained on the mother sample. Since the results of the evaluation 
     of the mother sample are in the local system.
+
+    NOTE: Done but not tested yet.
 """
 plotSpace(designSpace,
             figsize = figSize,
@@ -200,7 +211,8 @@ plotSpace(designSpace,
             showPlot=False,
             saveInfo=sInfo,
             insigDimensions=insigDims,
-            legend = False) 
+            legend = True,
+            benchmark = classifierBench) 
 plt.close()
 
 ## Adaptive Sampling loop:
@@ -256,7 +268,8 @@ while currentBudget > 0:
             saveInfo=sInfo,
             insigDimensions=insigDims,
             legend = False,
-            prev_classifier = prevClf) 
+            prev_classifier = prevClf,
+            benchmark = classifierBench) 
     # Saving the iteration report:
     # TODO: Reduce the lines of code that does this job:
     iterReport.setStop()
