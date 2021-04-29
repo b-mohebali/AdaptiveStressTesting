@@ -149,8 +149,11 @@ def _plotSpace4D(space: Space,
     dataVec[:,sigDims[1]] = xy[:,1]
 
     plotNum = 1
-    fig,ax = plt.subplots(nrows = gridRes[0], ncols = gridRes[1], figsize = figSize)
-    fig.tight_layout()
+    fig,ax = plt.subplots(nrows = gridRes[0], ncols = gridRes[1], figsize = figsize)
+    """
+        This loop goes through the values of the "insignificant" dimensions that are discretized and 
+        creates a grid of 2D plots 
+    """
     for rowNum in range(gridRes[0]):
         for colNum in range(gridRes[1]):
             dataVec[:,insigDimensions[0]] = onesVec * insigDim1Vals[rowNum]
@@ -174,32 +177,40 @@ def _plotSpace4D(space: Space,
                 ax.set_ylabel(dimNames[sigDims[1]])
             if (plotNum+gridRes[1]) > (gridRes[0]*gridRes[1]):
                 ax.set_xlabel(dimNames[sigDims[0]])
-            # Plotting the benchmark classifier
+
+            ### Plotting the benchmark classifier
             if benchmark is not None:
                 scores = benchmark.getScoreVec(dataVec).reshape(XX.shape)
                 cs = ax.contour(XX,YY,scores, colors='r', levels = [benchmark.threshold], 
                     alpha = 1, linestyles = ['solid']) 
                 cslabels = ['Actual Boundary']
-                # ax.clabel(cs, inline=1, fontsize=10) 
                 if plotNum==1:
                     for i in range(len(cslabels)):
                         cs.collections[i].set_label(cslabels[i])
+            # Plotting the previous boundary for comparison:
             if prev_classifier is not None:
                 prev_DF = prev_classifier.decision_function(dataVec).reshape(XX.shape)
                 prev_thresh = 0.5 if prev_classifier.probability else 0
                 cs = ax.contour(XX,YY,prev_DF, colors='g', levels = [prev_thresh], 
                     alpha = 1, linestyles = ['solid'])
                 cslabels = ['Previous iteration']
+                if plotNum==1:
+                    for i in range(len(cslabels)):
+                        cs.collections[i].set_label(cslabels[i])
             # Updating the plot number, needed for locating the subplots.
             plotNum += 1
             
     if legend:
         fig.legend(loc = 'upper left',bbox_to_anchor=(1.03, 1.0))
+    fig.tight_layout()
     if saveInfo is not None:
         saveFigures(saveInfo = saveInfo)
-
-
-
+    if showPlot:
+        plt.show()
+        return 
+    plt.close()
+    return 
+    
 def _plotSpace3D(space: Space, 
                 showPlot = True,
                 classifier = None, 

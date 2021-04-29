@@ -8,7 +8,7 @@ from yamlParseObjects.yamlObjects import *
 
 resultFileName = 'finalReport.yaml'
 
-def readDataset(repoLoc, dimNames, includeTimes = False):
+def readDataset(repoLoc, dimNames, includeTimes = False, sampleRange = None):
     """
         Reading a dataset from a group of evaluated samples.
         TODO: Change the list of the variables to the dimension names list.

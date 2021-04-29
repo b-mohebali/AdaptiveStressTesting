@@ -1,9 +1,19 @@
 import os
-import case_Setup
+import platform
+if platform.system()=="Linux":
+    import case_Setup
+    dataFolder = case_Setup.LOGGER_OUTPUT
 
+##_______________________________________________________
+# Location of the assets local to the codebase:
+yamlFilesLoc = './assets/yamlFiles/'
+picklesLoc = './assets/pickles/'
+
+
+##_______________________________________________________
+# Location of the Linux machine assets and data files:
 # Repo for the Monte-Carlo sample 
 dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis/'
-dataFolder = case_Setup.LOGGER_OUTPUT
 
 repoRoot = 'caps@10.146.64.68:/home/caps/SensAnalysis/'
 repoRoot2 = 'caps@10.146.64.69:/home/caps/SensAnalysis/'
