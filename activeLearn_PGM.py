@@ -21,7 +21,7 @@ from ActiveLearning.dataHandling import *
 from ActiveLearning.visualization import * 
 from ActiveLearning.optimizationHelper import GeneticAlgorithmSolver
 from sklearn import svm
-
+from copy import copy
 simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
 print(simConfig.name)
 for p in simConfig.codeBase:
@@ -70,7 +70,6 @@ NOTE 1: Use the currentDir variable from repositories to point to the AdaptiveSt
 
 """
 
-
 print('This is the AC PGM sampling test file. ')
 variablesFile = currentDir + '/assets/yamlFiles/ac_pgm_adaptive.yaml'
 
@@ -84,7 +83,7 @@ variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=S
 # Setting the main files and locations:
 descriptionFile = currentDir + '/assets/yamlFiles/varDescription.yaml'
 sampleSaveFile = currentDir + '/assets/experiments/test_sample.txt'
-repoLoc = adaptRepo2
+repoLoc = adaptRepo3
 
 # Defining the design space and the handler for the name of the dimensions. 
 designSpace = SampleSpace(variableList=variables)
@@ -92,24 +91,24 @@ dimNames = designSpace.getAllDimensionNames()
 initialReport = IterationReport(dimNames)
 initialReport.setStart()
 # # Taking the initial sample based on the parameters of the process. 
-# initialSamples = generateInitialSample(space = designSpace,
-#                                         sampleSize=initialSampleSize,
-#                                         method = InitialSampleMethod.CVT,
-#                                         checkForEmptiness=False)
+initialSamples = generateInitialSample(space = designSpace,
+                                        sampleSize=initialSampleSize,
+                                        method = InitialSampleMethod.CVT,
+                                        checkForEmptiness=False)
 
 # # Preparing and running the initial sample: 
-# formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
-# saveSampleToTxtFile(formattedSample, sampleSaveFile)
-# runSample(sampleDictList=formattedSample, 
-#         dFolder = dataFolder,
-#         remoteRepo=repoLoc,
-#         simConfig=simConfig)
+formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
+saveSampleToTxtFile(formattedSample, sampleSaveFile)
+runSample(sampleDictList=formattedSample, 
+        dFolder = dataFolder,
+        remoteRepo=repoLoc,
+        simConfig=simConfig)
 
 
 
 ## Loading sample from a pregenerated file in case of interruption:
-print(currentDir)
-formattedSample = loadSampleFromTxtFile(sampleSaveFile)
+# print(currentDir)
+# formattedSample = loadSampleFromTxtFile(sampleSaveFile)
 
 # runSample(formattedSample, dFolder = dataFolder, 
 #                 remoteRepo=repoLoc,
@@ -119,24 +118,22 @@ formattedSample = loadSampleFromTxtFile(sampleSaveFile)
 
 #### Running the metrics on the first sample: 
 
-# setUpMatlab(simConfig=simConfig)
+setUpMatlab(simConfig=simConfig)
 # # Forming the sample list which includes all the initial samples:
-# samplesList = list(range(44, initialSampleSize+1))
+samplesList = list(range(1, initialSampleSize+1))
 # # Calling the metrics function on all the samples:
-# getMetricsResults(dataLocation=repoLoc,
-#                 eng = matlabEngine,
-#                 sampleNumber = samplesList,
-#                 metricNames = simConfig.metricNames)
+getMetricsResults(dataLocation=repoLoc,
+                eng = matlabEngine,
+                sampleNumber = samplesList,
+                metricNames = simConfig.metricNames)
 
 # TODO: The mother sample results is not loaded into the caps servers
 #### Load the mother sample for comparison:
 
 
 #### Load the results into the dataset and train the initial classifier:
-dataset, labels, times = readDataset(repoLoc, variables)
-print(dataset)
-print(labels)
-print(times)
+dataset, labels = readDataset(repoLoc, variables)
+
 
 # updating the space:
 designSpace._samples, designSpace._eval_labels = dataset, labels
@@ -181,6 +178,32 @@ iterationReports.append(initialReport)
 saveIterationReport(iterationReports, iterationReportsFile)
 
 
+
+## -----------------------------------
+# # Setting up the parameters for visualization: 
+insigDims = [0,2]
+figSize = (12,10)
+gridRes = (4,4)
+meshRes = 100
+sInfo = SaveInformation(fileName = f'{figFolder}/initial_plot', savePDF=True, savePNG=False)
+"""
+TODO: Implementation of the benchmark for this visualizer. 
+    The correct way is to use a pickle that contains the classifier 
+    trained on the mother sample. Since the results of the evaluation 
+    of the mother sample are in the local system.
+"""
+plotSpace(designSpace,
+            figsize = figSize,
+            meshRes = 100,
+            classifier = clf,
+            gridRes = gridRes,
+            showPlot=False,
+            saveInfo=sInfo,
+            insigDimensions=insigDims,
+            legend = False) 
+plt.close()
+
+## Adaptive Sampling loop:
 while currentBudget > 0:
     # Setting up the iteration number:
     iterationNum += 1
@@ -211,8 +234,9 @@ while currentBudget > 0:
                         metricNames = simConfig.metricNames,
                         figFolderLoc=figFolder)
     # Updating the classifier and checking the change measure:
-    dataset,labels,times = readDataset(repoLoc, variables)
+    dataset,labels = readDataset(repoLoc, variables)
     designSpace._samples, designSpace._eval_labels = dataset, labels
+    prevClf = clf
     clf = svm.SVC(kernel = 'rbf', C = 1000)
     clf.fit(dataset, labels)
     newChangeMeasure = convergenceSample.getChangeMeasure(percent = True,
@@ -221,6 +245,18 @@ while currentBudget > 0:
     changeMeasure.append(newChangeMeasure)
     print('Hypothesis change estimate: ', changeMeasure[-1:], ' %')
 
+    # Visualization of the current state of the space and the classifier
+    sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_Labeled'
+    plotSpace(designSpace,
+            figsize = figSize,
+            meshRes = 100,
+            classifier = clf,
+            gridRes = gridRes,
+            showPlot=False,
+            saveInfo=sInfo,
+            insigDimensions=insigDims,
+            legend = False,
+            prev_classifier = prevClf) 
     # Saving the iteration report:
     # TODO: Reduce the lines of code that does this job:
     iterReport.setStop()

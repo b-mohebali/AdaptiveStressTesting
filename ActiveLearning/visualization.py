@@ -39,7 +39,8 @@ def plotSpace(space: Space,
               saveInfo: SaveInformation = None,
               showPlot = True,
               insigDimensions = None, 
-              gridRes = None) -> None:
+              gridRes = None,
+              prev_classifier =None) -> None:
     """This function plots the samples in a Space object.
     - Options: 3D and 2D spaces. (4D coming up)
     - TO-DO: Higher dimensions implementation by generating a set 
@@ -85,7 +86,8 @@ def plotSpace(space: Space,
                     meshRes = meshRes,
                     saveInfo=saveInfo,
                     insigDimensions = insigDimensions,
-                    gridRes = gridRes)
+                    gridRes = gridRes,
+                    prev_classifier = prev_classifier)
     return 
 
 
@@ -102,7 +104,8 @@ def _plotSpace4D(space: Space,
                 benchmark = None,
                 meshRes = 100,
                 gridRes = (4,4),
-                saveInfo: SaveInformation = None):
+                saveInfo: SaveInformation = None,
+                prev_classifier = None):
     ### Getting the information about the significant and insignificant dimensions. 
     
     ## Implementation of the 4D visualization: 
@@ -146,7 +149,7 @@ def _plotSpace4D(space: Space,
     dataVec[:,sigDims[1]] = xy[:,1]
 
     plotNum = 1
-    fig,ax = plt.subplots(nrows = gridRes[0], ncols = gridRes[1], figsize = (10,15))
+    fig,ax = plt.subplots(nrows = gridRes[0], ncols = gridRes[1], figsize = figSize)
     fig.tight_layout()
     for rowNum in range(gridRes[0]):
         for colNum in range(gridRes[1]):
@@ -181,7 +184,12 @@ def _plotSpace4D(space: Space,
                 if plotNum==1:
                     for i in range(len(cslabels)):
                         cs.collections[i].set_label(cslabels[i])
-            
+            if prev_classifier is not None:
+                prev_DF = prev_classifier.decision_function(dataVec).reshape(XX.shape)
+                prev_thresh = 0.5 if prev_classifier.probability else 0
+                cs = ax.contour(XX,YY,prev_DF, colors='g', levels = [prev_thresh], 
+                    alpha = 1, linestyles = ['solid'])
+                cslabels = ['Previous iteration']
             # Updating the plot number, needed for locating the subplots.
             plotNum += 1
             

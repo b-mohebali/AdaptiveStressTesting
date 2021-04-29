@@ -28,7 +28,6 @@ class PGM_control(Control):
         self.start_file      = None
         self.controls_dir    = controls_dir
         self.simConfig = configFile
-        # self.folder = f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4_filterRedesign'
         self.folder = f'{case_Setup.CEF_BASE_DIR}/{self.simConfig.modelLocation}'
         print(f'File folder: {self.folder}')
         self.simulation = self.pull_case(self.folder+'/')

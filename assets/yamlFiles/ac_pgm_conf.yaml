@@ -20,7 +20,7 @@ metricNames:
 modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM_draft_vars" 
 outputFolder: './assets/outputReports/'
 sampleRepo: "D:/Data/Sample80/data"
-sampleBudget: 300
+sampleBudget: 400
 initialSampleSize: 80
 batchSize: 1
 ...

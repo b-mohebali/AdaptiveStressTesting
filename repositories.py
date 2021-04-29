@@ -193,6 +193,9 @@ remoteRepo83 = localRepo + 'sample83'
 motherSample = adaptiveSamplingLoc + 'motherSample'
 # Adaptive Sampling repo with budget=300 and initial sample size=80
 adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'
+# Adaptive Sampling repo with budget = 400 samples and initial sample size=80
+adaptRepo3 = adaptiveSamplingLoc + 'adaptiveRepo3'
+
 
 
 currentDir = os.getcwd()
