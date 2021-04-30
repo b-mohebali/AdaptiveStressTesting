@@ -58,16 +58,23 @@ mut = PGM_control('','./', configFile=simConfig)
 Steps of checks for correctness: 
     DONE 1- Run an FFD sample with the 4 variables in a new location with the control object
         from simulationHelper.py script. -> DONE
-    2- Implement the initial sampling using the combination of the control objects and 
+    DONE 2- Implement the initial sampling using the combination of the control objects and 
         the developed active learning code. 
-    3- Implement the exploitation part. Save the change measures in each step in case the 
+    DONE 3- Implement the exploitation part. Save the change measures in each step in case the 
         process is interrupted for any reason.
-        
+    DONE 4- Implement the loading of the benchmark classifier trained on the Monte-Carlo data. 
+    5- Run a sample with Visualiation and the benchmark and compare the results.
+    6- Calculate the metrics of the classifier such as precision, recall, accuracy, measure of 
+        change vs the number of iterations.
+    7- Empirically show that the active learner can reach comparable performance with the 
+        Monte-Carlo sampling method using a fraction of the process time. 
+    8- Improve on the process time using exploration, prallelization, batch sampling.
+
 """
 """
 NOTE 1: Use the currentDir variable from repositories to point to the AdaptiveStressTesting
     folder. The automation codebase tends to change the working directory during 
-    the process and it has to be switched back to use the assets 
+    the process and it has to be switched back to use the assets.
 
 """
 
@@ -83,7 +90,7 @@ variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=S
 
 # Setting the main files and locations:
 descriptionFile = currentDir + '/assets/yamlFiles/varDescription.yaml'
-sampleSaveFile = currentDir + '/assets/experiments/test_sample.txt'
+sampleSaveFile = currentDir + '/assets/experiments/adaptive_sample.txt'
 repoLoc = adaptRepo3
 
 # Defining the design space and the handler for the name of the dimensions. 
@@ -128,8 +135,19 @@ getMetricsResults(dataLocation=repoLoc,
                 sampleNumber = samplesList,
                 metricNames = simConfig.metricNames)
 
-# TODO: The mother sample results is not loaded into the caps servers
 #### Load the mother sample for comparison:
+"""
+This part loads a pickled classifier that is trained on the Monte-Carlo sample taken from the 
+    model. The purpose for this classifier is to act as a benchmark for the active classifier
+    that we are trying to make. 
+"""
+motherClfPickle = picklesLoc + 'mother_clf.pickle'
+classifierBench = None
+if os.path.exists(motherClfPickle) and os.path.isfile(motherClfPickle):
+    with open(motherClfPickle,'rb') as pickleIn:
+        motherClf = pickle.load(pickleIn)
+    threshold = 0.5 if motherClf.probability else 0
+    classifierBench = TrainedSvmClassifier(motherClf, len(variables), threshold)
 
 
 #### Load the results into the dataset and train the initial classifier:
@@ -177,15 +195,6 @@ initialReport.setSamples(dataset)
 
 iterationReports.append(initialReport)
 saveIterationReport(iterationReports, iterationReportsFile)
-
-# Loading the benchmark classifier from the pickle that was saved as an asset:
-motherClfPickle = picklesLoc + 'mother_clf.pickle'
-classifierBench = None
-if os.path.exists(motherClfPickle) and os.path.isfile(motherClfPickle):
-    with open(motherClfPickle,'rb') as pickleIn:
-        motherClf = pickle.load(pickleIn)
-    threshold = 0.5 if motherClf.probability else 0
-    classifierBench = TrainedSvmClassifier(motherClf, len(variables), threshold)
 
 
 ## -----------------------------------
