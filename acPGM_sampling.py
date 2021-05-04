@@ -62,31 +62,24 @@ figFolder = repoLoc + '/figures'
 
 # Forming the space:
 designSpace = Space(variableList= variables, initialSampleCount=initialSampleSize)
-currentBudget = budget - initialSampleSize
-
+dimNames = designSpace.getAllDimensionNames()
 # # Getting the initial sample and saving it to a location:
 designSpace.generateInitialSample(method = InitialSampleMethod.LHS)
-formattedSample = designSpace.getSamplePointsAsDict()
-saveSampleToTxtFile(samples = formattedSample, fileName = sampleSaveFile)
-saveVariableDescription(variables, descriptionFile)
-copyDataToremoteServer(repoLoc, descriptionFile)
-copyDataToremoteServer(repoLoc, variablesFile)
+
+
+# formattedSample = getSamplePointsAsDict(dimNames, sampleList)
+
+# saveSampleToTxtFile(samples = formattedSample, fileName = sampleSaveFile)
+# saveVariableDescription(variables, descriptionFile)
+# copyDataToremoteServer(repoLoc, descriptionFile)
+# copyDataToremoteServer(repoLoc, variablesFile)
 
 # # Running the initial sample:
+formattedSample = loadSampleFromTxtFile(sampleSaveFile)
+
+sampleGroup = range(1517, initialSampleSize + 1)
 runSample(sampleDictList=formattedSample, 
         dFolder = dataFolder, 
-        remoteRepo=repoLoc)
+        remoteRepo=repoLoc,
+        sampleGroup=sampleGroup)
 
-# Running the metrics on the initial sample:
-# for sampleIndex in range(1,initialSampleSize+1):
-#     getMetricsResults(dataLocation=repoLoc, 
-#                       sampleNumber=sampleIndex, 
-#                       figFolderLoc=figFolder)
-# initSample = generateInitialSample(space = designSpace, 
-#                                     sampleSize = 2500)
-# formattedSample = getSamplePointsAsDict(designSpace, initSample)
-# saveSampleToTxtFile(formattedSample, fileName = sampleSaveFile)
-
-# formattedSample = loadSampleFromTxtFile(sampleSaveFile)
-# runSample(sampleDictList=formattedSample, dFolder = dataFolder, remoteRepo=repoLoc)
-    
