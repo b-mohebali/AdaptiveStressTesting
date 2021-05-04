@@ -87,7 +87,8 @@ def plotSpace(space: Space,
                     saveInfo=saveInfo,
                     insigDimensions = insigDimensions,
                     gridRes = gridRes,
-                    prev_classifier = prev_classifier)
+                    prev_classifier = prev_classifier, 
+                    newPoint = newPoint)
     return 
 
 

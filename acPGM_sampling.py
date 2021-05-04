@@ -1,4 +1,4 @@
-# #! /usr/bin/python3
+#! /usr/bin/python
 
 from yamlParseObjects.yamlObjects import *
 from yamlParseObjects.variablesUtil import *
@@ -17,22 +17,22 @@ import matplotlib.pyplot as plt
 from enum import Enum
 import time
 
-simConfig = simulationConfig('./yamlFiles/ac_pgm_conf.yaml')
+simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
 print(simConfig.name)
 for p in simConfig.codeBase: 
     sys.path.insert(0,p)
     print(p + ' is added to the path')
 
-# from autoRTDS import Trial
-# import case_Setup
-# from rscad import rtds
-# from repositories import *
-# import simulation
-# from ShowRunner import *
+from autoRTDS import Trial
+import case_Setup
+from rscad import rtds
+from repositories import *
+import simulation
+from ShowRunner import *
 
 from ActiveLearning.Sampling import *
 from ActiveLearning.dataHandling import *
-# from metricsRunTest import getMetricsResults
+from metricsRunTest import getMetricsResults
 
 print('This is the AC PGM sampling test file. ')
 
@@ -41,8 +41,9 @@ variablesFile = './assets/yamlFiles/ac_pgm_adaptive.yaml'
 # Extracting the hyperparameters of the analysis:
 budget = simConfig.sampleBudget
 batchSize = simConfig.batchSize
-initialSampleSize = simConfig.initialSampleSize
 
+# We use this script to generate the MC sample for benchmark:
+initialSampleSize = 5000
 
 
 variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
@@ -52,10 +53,10 @@ for var in variables:
 
 # Setting the main files and locations:
 descriptionFile = './assets/yamlFiles/varDescription.yaml'
-sampleSaveFile = './assets/experiments/mother_sample.txt'
-# repoLoc = motherSample
+sampleSaveFile = './assets/experiments/mother_sample_2.txt'
+repoLoc = motherSample2
 
-repoLoc = 'D:/Data/adaptiveRepo1'
+# repoLoc = 'D:/Data/adaptiveRepo1'
 # Figure folder for the metrics outputs:
 figFolder = repoLoc + '/figures'
 
@@ -64,15 +65,17 @@ designSpace = Space(variableList= variables, initialSampleCount=initialSampleSiz
 currentBudget = budget - initialSampleSize
 
 # # Getting the initial sample and saving it to a location:
-# designSpace.generateInitialSample()
-# formattedSample = designSpace.getSamplePointsAsDict()
-# saveSampleToTxtFile(samples = formattedSample, fileName = sampleSaveFile)
-# saveVariableDescription(timeIndepVars, descriptionFile)
-# copyDataToremoteServer(simRepo, descriptionFile)
-# copyDataToremoteServer(simRepo, variablesFile)
+designSpace.generateInitialSample(method = InitialSampleMethod.LHS)
+formattedSample = designSpace.getSamplePointsAsDict()
+saveSampleToTxtFile(samples = formattedSample, fileName = sampleSaveFile)
+saveVariableDescription(variables, descriptionFile)
+copyDataToremoteServer(repoLoc, descriptionFile)
+copyDataToremoteServer(repoLoc, variablesFile)
 
 # # Running the initial sample:
-# runSample(sampleDictList=formattedSample, dFolder = dataFolder, remoteRepo=repoLoc)
+runSample(sampleDictList=formattedSample, 
+        dFolder = dataFolder, 
+        remoteRepo=repoLoc)
 
 # Running the metrics on the initial sample:
 # for sampleIndex in range(1,initialSampleSize+1):
@@ -87,13 +90,3 @@ currentBudget = budget - initialSampleSize
 # formattedSample = loadSampleFromTxtFile(sampleSaveFile)
 # runSample(sampleDictList=formattedSample, dFolder = dataFolder, remoteRepo=repoLoc)
     
-# Loading the labels from an evaluated repo:
-
-startTime = time.time()
-ds, l = readDataset(repoLoc,variables = variables)
-endTime = time.time()
-print(f'Time taken for {len(l)} samples:', endTime-startTime, ' seconds')
-for var in variables:
-    print(var.name)
-for idx,dp  in enumerate(ds):
-    print(l[idx], dp)

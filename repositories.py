@@ -199,8 +199,13 @@ adaptRepo1 = adaptiveSamplingLoc + 'adaptiveRepo1'
 # test repo:
 remoteRepo83 = localRepo + 'sample83'
 
-# A large sample that will act as the benchmark for the algorithm:
+# A large sample that will act as the benchmark for the algorithm (2500 samples):
 motherSample = adaptiveSamplingLoc + 'motherSample'
+# A larger sample that will act as a benchmark for the algorithm (5000 samples lhs):
+# NOTE: reason for use of LHS over CVT is that we can add to this sample 
+#   later but not to the CVT sample. 
+motherSample2 = adaptiveSamplingLoc + 'motherSample2'
+
 # Adaptive Sampling repo with budget=300 and initial sample size=80
 adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'
 # Adaptive Sampling repo with budget = 400 samples and initial sample size=80

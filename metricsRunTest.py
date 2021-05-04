@@ -47,7 +47,8 @@ def getMetricsResults(dataLocation: str,
                         eng,
                         sampleNumber,
                         metricNames, 
-                        figFolderLoc: str = None):
+                        figFolderLoc: str = None,
+                        proc_num = 1):
     # Setting the default location of saving the plots that come out of the metrics
     # evaluation.
     # NOTE: The MATLAB code makes sure that the figures folder exists. If not,
@@ -59,7 +60,10 @@ def getMetricsResults(dataLocation: str,
     if isinstance(sampleNumber, list):
         labels = []
         for sampleNum in sampleNumber:
-            l = getMetricsResults(dataLocation, sampleNum,metricNames=metricNames, figFolderLoc = figFolderLoc)
+            l = getMetricsResults(dataLocation,eng = eng,
+                                 sampleNumber = sampleNum,
+                                 metricNames=metricNames, 
+                                 figFolderLoc = figFolderLoc)
             labels.append(l)
         return labels 
     

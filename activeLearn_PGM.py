@@ -81,6 +81,7 @@ NOTE 1: Use the currentDir variable from repositories to point to the AdaptiveSt
 print('This is the AC PGM sampling test file. ')
 variablesFile = currentDir + '/assets/yamlFiles/ac_pgm_adaptive.yaml'
 
+
 # Extracting the hyperparameters of the analysis:
 budget = simConfig.sampleBudget
 batchSize = simConfig.batchSize
@@ -93,6 +94,10 @@ descriptionFile = currentDir + '/assets/yamlFiles/varDescription.yaml'
 sampleSaveFile = currentDir + '/assets/experiments/adaptive_sample.txt'
 repoLoc = adaptRepo3
 
+# Defining the location of the output files:
+outputFolder = f'{repoLoc}/outputs'
+figFolder = setFigureFolder(outputFolder)
+
 # Defining the design space and the handler for the name of the dimensions. 
 designSpace = SampleSpace(variableList=variables)
 dimNames = designSpace.getAllDimensionNames()
@@ -104,13 +109,13 @@ initialSamples = generateInitialSample(space = designSpace,
                                         method = InitialSampleMethod.CVT,
                                         checkForEmptiness=False)
 
-# # Preparing and running the initial sample: 
-formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
-saveSampleToTxtFile(formattedSample, sampleSaveFile)
-runSample(sampleDictList=formattedSample, 
-        dFolder = dataFolder,
-        remoteRepo=repoLoc,
-        simConfig=simConfig)
+### Preparing and running the initial sample: 
+# formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
+# saveSampleToTxtFile(formattedSample, sampleSaveFile)
+# runSample(sampleDictList=formattedSample, 
+#         dFolder = dataFolder,
+#         remoteRepo=repoLoc,
+#         simConfig=simConfig)
 
 
 
@@ -129,11 +134,12 @@ runSample(sampleDictList=formattedSample,
 setUpMatlab(simConfig=simConfig)
 # # Forming the sample list which includes all the initial samples:
 samplesList = list(range(1, initialSampleSize+1))
-# # Calling the metrics function on all the samples:
-getMetricsResults(dataLocation=repoLoc,
-                eng = matlabEngine,
-                sampleNumber = samplesList,
-                metricNames = simConfig.metricNames)
+### Calling the metrics function on all the samples:
+# getMetricsResults(dataLocation=repoLoc,
+#                 eng = matlabEngine,
+#                 sampleNumber = samplesList,
+#                 metricNames = simConfig.metricNames, 
+#                 figFolderLoc=figFolder)
 
 #### Load the mother sample for comparison:
 """
@@ -151,7 +157,7 @@ if os.path.exists(motherClfPickle) and os.path.isfile(motherClfPickle):
 
 
 #### Load the results into the dataset and train the initial classifier:
-dataset, labels = readDataset(repoLoc, variables)
+dataset, labels = readDataset(repoLoc, dimNames=dimNames)
 
 
 # updating the space:
@@ -171,6 +177,7 @@ convergenceSample = ConvergenceSample(designSpace)
 changeMeasure = [convergenceSample.getChangeMeasure(percent = True,
                             classifier = clf,
                             updateLabels=True)]
+samplesNumber = [initialSampleSize]
 
 # Defining the optimizer object:
 optimizer = GeneticAlgorithmSolver(space = designSpace,
@@ -181,8 +188,7 @@ optimizer = GeneticAlgorithmSolver(space = designSpace,
 
 iterationReports = []
 # Creating the report object:
-outputFolder = f'{repoLoc}/outputs'
-figFolder = setFigureFolder(outputFolder)
+
 iterationReportsFile = f'{outputFolder}/iterationReport.yaml'
 iterationNum = 0
 # Saving the initial iteration report.
@@ -203,7 +209,9 @@ insigDims = [0,2]
 figSize = (12,10)
 gridRes = (4,4)
 meshRes = 100
-sInfo = SaveInformation(fileName = f'{figFolder}/initial_plot', savePDF=True, savePNG=False)
+sInfo = SaveInformation(fileName = f'{figFolder}/initial_plot', 
+                        savePDF=True, 
+                        savePNG=True)
 """
 TODO: Implementation of the benchmark for this visualizer. 
     The correct way is to use a pickle that contains the classifier 
@@ -237,10 +245,18 @@ while currentBudget > 0:
     # Updating the remaining budget:
     currentBudget -= len(newPointsFound)
     # formatting the samples for simulation:
+    # NOTE: this is due to the old setting used for the DOE code in the past.
     formattedFoundPoints = getSamplePointsAsDict(dimNames, newPointsFound)
     # Getting the number of next samples:
-    nextSamples = getNextSampleNumber(repoLoc, createFolder=False, count = len(newPointsFound))
+    nextSamples = getNextSampleNumber(repoLoc, 
+        createFolder=False, 
+        count = len(newPointsFound))
     # running the simulation at the points that were just found:
+    """
+    TODO: Run all the matlab processes simultaneously. The simulation is done 
+            on a point by point basis for now. But the bottleneck of the 
+            timing is in the MATLAB metrics calculations. 
+    """
     for idx, sample in enumerate(formattedFoundPoints):
         runSinglePoint(sampleDict = sample,
                         dFolder = dataFolder,
@@ -255,7 +271,7 @@ while currentBudget > 0:
                         metricNames = simConfig.metricNames,
                         figFolderLoc=figFolder)
     # Updating the classifier and checking the change measure:
-    dataset,labels = readDataset(repoLoc, variables)
+    dataset,labels = readDataset(repoLoc, dimNames= dimNames)
     designSpace._samples, designSpace._eval_labels = dataset, labels
     prevClf = clf
     clf = svm.SVC(kernel = 'rbf', C = 1000)
@@ -263,7 +279,10 @@ while currentBudget > 0:
     newChangeMeasure = convergenceSample.getChangeMeasure(percent = True,
                         classifier = clf, 
                         updateLabels = True)
+    
+    # Saving the change measure vector vs the number of samples in each iteration. 
     changeMeasure.append(newChangeMeasure)
+    samplesNumber.append(len(labels))
     print('Hypothesis change estimate: ', changeMeasure[-1:], ' %')
 
     # Visualization of the current state of the space and the classifier
@@ -276,9 +295,10 @@ while currentBudget > 0:
             showPlot=False,
             saveInfo=sInfo,
             insigDimensions=insigDims,
-            legend = False,
+            legend = True,
             prev_classifier = prevClf,
             benchmark = classifierBench) 
+    plt.close() # Just in case. 
     # Saving the iteration report:
     # TODO: Reduce the lines of code that does this job:
     iterReport.setStop()
@@ -290,6 +310,13 @@ while currentBudget > 0:
     iterationReports.append(iterReport)
     saveIterationReport(iterationReports,iterationReportsFile)
 
+# Plotting the change measure throughout the process.
+plt.figure(figsize = (8,5))
+plt.plot(samplesNumber, changeMeasure)
+plt.grid(True)
+sInfo = SaveInformation(fileName = f'{figFolder}/change_measure', savePDF = True, savePNG = True)
+saveFigures(sInfo)
+plt.close()
 
 
 
