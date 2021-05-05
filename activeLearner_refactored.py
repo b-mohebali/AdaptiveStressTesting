@@ -30,7 +30,7 @@ batchSize = simConfig.batchSize
 initialSampleSize = simConfig.initialSampleSize
 
 # Defining the design space based on the variables config file: 
-mySpace = Space2(variableList=variables)
+mySpace = SampleSpace(variableList=variables)
 dimNames = mySpace.getAllDimensionNames()
 initialReport = IterationReport(dimNames)
 # Defining the benchmark:
@@ -108,7 +108,6 @@ initialReport.setMetricResults(initialLabels)
 initialReport.setSamples(initialSamples)
 
 iterationReports.append(initialReport)
-
 saveIterationReport(iterationReports, iterationReportFile)
 
 while currentBudget > 0:

@@ -77,7 +77,7 @@ designSpace.generateInitialSample(method = InitialSampleMethod.LHS)
 # # Running the initial sample:
 formattedSample = loadSampleFromTxtFile(sampleSaveFile)
 
-sampleGroup = range(1517, initialSampleSize + 1)
+sampleGroup = range(2053, initialSampleSize + 1)
 runSample(sampleDictList=formattedSample, 
         dFolder = dataFolder, 
         remoteRepo=repoLoc,
