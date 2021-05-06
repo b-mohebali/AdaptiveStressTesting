@@ -11,10 +11,7 @@ import math
 from multiprocessing import Process
 
 """
-    NOTE: MATLAB engine is started by and passed to the script that needs the MATLAB 
-        engine for anything. The script keeps the engine alive for as long as it 
-        needs it. 
-        Global definition of MATLAB in this script was tried but did not work.
+    NOTE: MATLAB engine is started by and passed to the script that needs the MATLAB engine for anything. The script keeps the engine alive for as long as it needs it. Global definition of MATLAB in this script was tried but did not work.
 """
 
 def setUpMatlab(simConfig: simulationConfig):
@@ -87,14 +84,14 @@ def getMetricsResults(dataLocation: str,
         yaml.dump(reportDict, reportYaml)
     
     return label
-"""
-    This class contains the information needed for running a set of MATLAB metrics
-    evaluation. 
-    NOTE: Each of the metric processes starts its own MATLAB engine. It is not 
-        possible to start a matlab engine and pass it to the started process
-        as MATLAB engine object cannot be serialized using pickle.
-"""
+
+
 class MetricsProcess:
+    """
+        This class contains the information needed for running a set of MATLAB metrics
+        evaluation. 
+        NOTE: Each of the metric processes starts its own MATLAB engine. It is not possible to start a matlab engine and pass it to the started process as MATLAB engine object cannot be serialized using pickle.
+    """
     def __init__(self, 
                 dataLocation, 
                 sampleGroup, 
@@ -108,25 +105,30 @@ class MetricsProcess:
 
     def runMetrics(self):
         start = time.perf_counter()
+        # Starting the MATLAB engine by calling the setup function:
         self.engine = setUpMatlab(simConfig=self.config)
         finish = time.perf_counter()
         print(f'MATLAB engine for process {os.getpid()} started in {round(finish - start, 2)} seconds')
+        # Calling the MATLAB function that evaluates the sample:
         getMetricsResults(dataLocation = self.dataLocation, 
                 eng = self.engine,
                 sampleNumber = self.sampleGroup, 
                 metricNames = self.metricNames, 
                 figFolderLoc=self.figFolder)
+        # Shutting down the engine after the work is done:
+        self.engine.quit()
 
-"""
-    This function runs the metrics on a group of samples by 
-    starting processes, starting separate matlab engines for each 
-    and calling the metrics run function. 
-"""
+
 def runMetricsBatch(dataLocation, 
                     sampleGroup, 
                     configFile,
                     figureFolder = None, 
                     processNumber = 1):
+    """
+        This function runs the metrics on a group of samples by 
+        starting processes, starting separate matlab engines for each 
+        and calling the metrics run function. 
+    """
     samplePerProc = math.ceil(len(sampleGroup)/processNumber)
     sampleGroups = []
     # Dividing the samples into groups, one for each process:
@@ -153,8 +155,7 @@ def runMetricsBatch(dataLocation,
     
     
 # Main function for "manual" setting of the range of the samples to be evaluated.
-    # TODO: Get the ranges of the samples from the command line parameters instead 
-    # of hardcoding it.
+# TODO: Get the ranges of the samples from the command line parameters instead of hardcoding it.
 def main():
     engine = setUpMatlab()
     # dataLocation = 'E:/Data/adaptiveRepo1'

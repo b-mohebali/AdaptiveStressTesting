@@ -99,15 +99,11 @@ class DistanceFromCenter(Benchmark):
 
 class TrainedSvmClassifier(Benchmark):
     """
-    This class takes an already trained classifier and uses it as the benchmark for 
-    the process. The purpose is for the cases when the actual solution is not available but 
-    a classifier can be trained with a high number of samples.
+    This class takes an already trained classifier and uses it as the benchmark for the process. The purpose is for the cases when the actual solution is not available but a classifier can be trained with a high number of samples.
 
-    NOTE: The decision_function() function is specific to the SVM classifier and may no be 
-        available for other types of classifiers. 
+    NOTE: The decision_function() function is specific to the SVM classifier and may no be available for other types of classifiers. 
     
-    NOTE: The threshold for this classifier depends on the decision function being the 
-        probability or just the output of the decision function.
+    NOTE: The threshold for this classifier depends on the decision function being the probability or just the output of the decision function.
     """
     def __init__(self, classifier, inputDim, threshold=0):
         Benchmark.__init__(self, threshold)

@@ -17,11 +17,9 @@ def readDataset(repoLoc, dimNames, includeTimes = False, sampleRange = None):
         Input: 
             - Location of the samples
             - List of the variables configurations for the order of their names
-            - IncludeTimes: Boolean determining whether the process time of each 
-                is needed and should be included in the output or not. 
+            - IncludeTimes: Boolean determining whether the process time of each is needed and should be included in the output or not. 
             - sampleRange: If not None, only the samples in the entered range
-                will be read for dataset loading. If None, all samples in the 
-                repository will be read for dataset loading. 
+                will be read for dataset loading. If None, all samples in the repository will be read for dataset loading. 
 
         Output:
             - dataset: Dataset in the form of data points as a list of lists
@@ -56,16 +54,13 @@ def readSingleSample(repoLoc,dimNames, sampleNumber):
 
         Inputs:
             - Location of the samples (repoLoc)
-            # - List of varaibles configuration (variables)
-            - List of the dimension names
+            - List of the dimension names (dimNames)
             - Sample Number (sampleNumber)
 
         Output:
             - list of the values for the dimensions of the sample (varList)
             - Label of the sample as it was evaluated by the metrics (label)
             - The time the sample took to be evaluated.
-        
-
     """
     yamlFile = repoLoc + f'/{sampleNumber}/{resultFileName}'
     reportObj = FinalReport(yamlFile)
@@ -74,12 +69,9 @@ def readSingleSample(repoLoc,dimNames, sampleNumber):
         varList.append(reportObj.variables[dimName])
     return varList, reportObj.label, reportObj.elapsed_time
 
-
-
 def getNextSampleNumber(repoLoc, createFolder:bool = False, count = 1):
     """
-        Gets the location of the repository and determines what is the 
-        number of the next sample. 
+        Gets the location of the repository and determines what is the number of the next sample. 
 
         Returns a list of sample numbers if count > 1
     """
