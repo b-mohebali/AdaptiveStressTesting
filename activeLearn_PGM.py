@@ -19,7 +19,7 @@ import time
 from ActiveLearning.Sampling import *
 from ActiveLearning.dataHandling import *
 from ActiveLearning.visualization import * 
-from ActiveLearning.optimizationHelper import GeneticAlgorithmSolver
+from ActiveLearning.optimizationHelper import GeneticAlgorithmExploiter
 from ActiveLearning.benchmarks import TrainedSvmClassifier
 from sklearn import svm
 from copy import copy
@@ -180,7 +180,7 @@ changeMeasure = [convergenceSample.getChangeMeasure(percent = True,
 samplesNumber = [initialSampleSize]
 
 # Defining the optimizer object:
-optimizer = GeneticAlgorithmSolver(space = designSpace,
+optimizer = GeneticAlgorithmExploiter(space = designSpace,
                                     epsilon = 0.03,
                                     batchSize = batchSize,
                                     convergence_curve = False,

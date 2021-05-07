@@ -11,7 +11,7 @@ class Optimizer(ABC):
 
 
 # The wrapper class for the genetic algorithm that solves the exploitation problem:
-class GeneticAlgorithmSolver():
+class GeneticAlgorithmExploiter():
     def __init__(self, 
                 space: Space, 
                 epsilon: float, 

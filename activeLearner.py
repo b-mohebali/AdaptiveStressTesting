@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 from enum import Enum
 from sklearn import svm
 from geneticalgorithm import geneticalgorithm as ga
-from ActiveLearning.optimizationHelper import GeneticAlgorithmSolver as gaSolver
+from ActiveLearning.optimizationHelper import GeneticAlgorithmExploiter as gaSolver
 
 from ActiveLearning.visualization import *
 
