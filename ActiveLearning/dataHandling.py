@@ -4,6 +4,12 @@ import yaml
 import string
 from typing import List
 from yamlParseObjects.yamlObjects import *
+from repositories import * 
+import pickle
+import string
+
+class BadExtention(Exception):
+    pass
 
 
 resultFileName = 'finalReport.yaml'
@@ -11,8 +17,6 @@ resultFileName = 'finalReport.yaml'
 def readDataset(repoLoc, dimNames, includeTimes = False, sampleRange = None):
     """
         Reading a dataset from a group of evaluated samples.
-        TODO: Change the list of the variables to the dimension names list.
-            This is the only information needed about the variables.
         
         Input: 
             - Location of the samples
@@ -78,8 +82,25 @@ def getNextSampleNumber(repoLoc, createFolder:bool = False, count = 1):
     sampleFolders = [int(name) for name in os.listdir(repoLoc) if name.isdigit()]
     lastSampleNumber = max(sampleFolders)
     nextSampleNumber = lastSampleNumber + 1
-    nextSamples = [_ for _ in range(nextSampleNumber, nextSampleNumber+count+1)]
-    if  createFolder:
+    nextSamples = [_ for _ in range(nextSampleNumber, nextSampleNumber+count)]
+    if createFolder:
         [os.mkdir(repoLoc + f'/{_}') for _ in nextSamples]
     return nextSamples
+
+"""
+    Takes a classifier and a name for the saved file. Saves the classifier object as a pickle in the directory allocated to the trained classifiers.
+
+    Inputs:
+        - cls: Classifier that is going to be saved.
+        - pickleName: The name of the file being used to save the classifier
+"""
+def saveClassifierAsPickle(cls, pickleName: str):
+    # Checking if the file has the right extension:
+    if not pickleName.endswith('.pickle'):
+        raise BadExtention("The file name has to end with .pickle")
+    # Building the absolute path of the saved file:
+    fileName = picklesLoc + pickleName
+    # Saving the pickle:
+    with opne(fileName, 'wb'):
+        pickle.dump(cls, fileName)
 

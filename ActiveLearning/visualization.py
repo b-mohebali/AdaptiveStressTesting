@@ -40,7 +40,8 @@ def plotSpace(space: Space,
               showPlot = True,
               insigDimensions = None, 
               gridRes = None,
-              prev_classifier =None) -> None:
+              prev_classifier =None,
+              ocmparison_classifier = None) -> None:
     """This function plots the samples in a Space object.
     - Options: 3D and 2D spaces. (4D coming up)
     - TO-DO: Higher dimensions implementation by generating a set 
@@ -88,7 +89,7 @@ def plotSpace(space: Space,
                     insigDimensions = insigDimensions,
                     gridRes = gridRes,
                     prev_classifier = prev_classifier, 
-                    newPoint = newPoint)
+                    comparison_classifier = comparison_classifier)
     return 
 
 
@@ -106,7 +107,8 @@ def _plotSpace4D(space: Space,
                 meshRes = 100,
                 gridRes = (4,4),
                 saveInfo: SaveInformation = None,
-                prev_classifier = None):
+                prev_classifier = None,
+                comparison_classifier = None):
     ### Getting the information about the significant and insignificant dimensions. 
     
     ## Implementation of the 4D visualization: 
@@ -161,7 +163,8 @@ def _plotSpace4D(space: Space,
             dataVec[:,insigDimensions[1]] = onesVec * insigDim2Vals[colNum]
             ax = plt.subplot(gridRes[0],gridRes[1],plotNum)
             decisionFunction = classifier.decision_function(dataVec).reshape(XX.shape)
-            cs2 = ax.contour(XX, YY, decisionFunction, colors='k', levels=[-1,0,1], alpha=1,linestyles=['dashed','solid','dotted'])
+            lvls = [0.4,0.5,0.6] if classifier.probability else [-1,0,1]
+            cs2 = ax.contour(XX, YY, decisionFunction, colors='k', levels=lvls, alpha=1,linestyles=['dashed','solid','dotted'])
             csLabels2 = ['DF=-1','DF=0 (hypothesis)','DF=+1']
             if plotNum ==1:
                 for i in range(len(csLabels2)):
@@ -195,6 +198,16 @@ def _plotSpace4D(space: Space,
                 cs = ax.contour(XX,YY,prev_DF, colors='g', levels = [prev_thresh], 
                     alpha = 1, linestyles = ['solid'])
                 cslabels = ['Previous iteration']
+                if plotNum==1:
+                    for i in range(len(cslabels)):
+                        cs.collections[i].set_label(cslabels[i])
+            # Adding the comparison classifier:
+            if comparison_classifier is not None:
+                comp_Df = comparison_classifier.decision_function(dataVec).reshape(XX.shape)
+                comp_thresh = 0.5 if comparison_classifier.probability else 0
+                cs = ax.contour(XX,YY,comp_DF, colors='m', levels = [comp_thresh], 
+                    alpha = 1, linestyles = ['solid'])
+                cslabels = ['Compared']
                 if plotNum==1:
                     for i in range(len(cslabels)):
                         cs.collections[i].set_label(cslabels[i])

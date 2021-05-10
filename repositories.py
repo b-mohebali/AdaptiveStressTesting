@@ -1,13 +1,15 @@
 import os
 import platform
+
 if platform.system()=="Linux":
     import case_Setup
     dataFolder = case_Setup.LOGGER_OUTPUT
 
 ##_______________________________________________________
 # Location of the assets local to the codebase:
-yamlFilesLoc = './assets/yamlFiles/'
-picklesLoc = './assets/pickles/'
+assetsLoc = './assets/'
+yamlFilesLoc = assetsLoc + 'yamlFiles/'
+picklesLoc = assetsLoc + 'pickles/'
 
 
 ##_______________________________________________________
