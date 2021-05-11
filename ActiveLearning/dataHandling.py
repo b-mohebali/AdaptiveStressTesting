@@ -11,40 +11,45 @@ import string
 class BadExtention(Exception):
     pass
 
+resultFileName = 'finalReport.yaml'
 
 
-"""
-    This class contains the answers to some questions regarding where we are in the process of adaptive sampling. Its main application is when the proces is interrupted midway and needs to be restarted from the middle without the need to discard the already gathered samples. These are the questions and potential answers:
-
-    1- Is the initial sample taking done?
-        - No -> What is the # of the next sample to be taken?
-        - Yes -> Are all the metrics evaluated?
-            - Yes -> Go to Question2.
-            - No -> What is the # of the next sample to be evaluated by the MATLAB code?
-    2- Is the adaptive sampling phase done completed?
-        - Yes -> Are all the samples evaluated by MATLAB code? 
-            - Yes -> train the classifier and report the final results.
-            - No -> What is the # of the next sample to be evaluated by the MATLAB code? 
-        - No -> What is the # of the next sample to be taken? 
-
-"""
 class ProcessLocator:
+    """
+        This class contains the answers to some questions regarding where we are in the process of adaptive sampling. Its main application is when the proces is interrupted midway and needs to be restarted from the middle without the need to discard the already gathered samples. These are the questions and potential answers:
+
+        1- Is the initial sample taking done?
+            - No -> What is the # of the next sample to be taken?
+            - Yes -> Are all the metrics evaluated?
+                - Yes -> Go to Question2.
+                - No -> What is the # of the next sample to be evaluated by the MATLAB code?
+        2- Is the adaptive sampling phase done completed?
+            - Yes -> Are all the samples evaluated by MATLAB code? 
+                - Yes -> train the classifier and report the final results.
+                - No -> What is the # of the next sample to be evaluated by the MATLAB code? 
+            - No -> What is the # of the next sample to be taken? 
+
+    """
     def __init__(self):
         self.initialSampleDone = False
         self.initialSamplesEvaluated = False
         self.nextSampleNum = None
-        self.nextEvalsampleNum = None
+        self.nextEvalSampleNums = None
         self.adaptiveSamplingDone = False
         self.adaptiveSamplesEvaluated = False
         self.nextAdapSampleNum = None
 
+
     def findAnswers(self, repoLoc, simConfig: simulationConfig):
+        """ 
+            The logic of finding the answers to those questions is here:
+        """
         initSampleSize = simConfig.initialSampleSize
         budget = simConfig.sampleBudget
         currentSample = getNextSampleNumber(repoLoc)[0]
         if currentSample <= initSampleSize:
             self.nextSampleNum = currentSample
-            self.nextEvalsampleNum = 1
+            self.nextEvalSampleNum = 1
         else:
             self.initialSampleDone = True 
 
@@ -55,7 +60,6 @@ class ProcessLocator:
 
 
 
-resultFileName = 'finalReport.yaml'
 
 def readDataset(repoLoc, dimNames, includeTimes = False, sampleRange = None):
     """

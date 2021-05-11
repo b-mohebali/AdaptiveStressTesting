@@ -9,6 +9,7 @@ from repositories import *
 import matlab.engine
 import math
 from multiprocessing import Process
+from ActiveLearning.dataHandling import resultFileName
 
 """
     NOTE: MATLAB engine is started by and passed to the script that needs the MATLAB engine for anything. The script keeps the engine alive for as long as it needs it. Global definition of MATLAB in this script was tried but did not work.
@@ -46,7 +47,7 @@ def getMetricsResults(dataLocation: str,
             l = getMetricsResults(dataLocation,
                                 eng = eng,
                                 sampleNumber = sampleNum,
-                                metricNames=metricNames, 
+                                metricNames = metricNames, 
                                 figFolderLoc = figFolderLoc)
             labels.append(l)
         return labels 
@@ -78,11 +79,10 @@ def getMetricsResults(dataLocation: str,
     reportDict['result_label'] = label
     # capturing the values of the performance metrics:
     for idx, metricName in enumerate(metricNames):
-        print(metricName, ': ', metricValues[idx])
+        print(metricName, ': ', float('{:.5f}'.format(metricValues[idx])))
         reportDict[metricName] = metricValues[idx]
-    with open(f'{sampleLoc}/finalReport.yaml','w') as reportYaml:
-        yaml.dump(reportDict, reportYaml)
-    
+    with open(f'{sampleLoc}/{resultFileName}','w') as reportYaml:
+        yaml.dump(reportDict, reportYaml)    
     return label
 
 
