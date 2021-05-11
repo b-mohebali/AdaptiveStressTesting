@@ -1,4 +1,4 @@
-#! /usr/bin/python
+# #! /usr/bin/python
 
 from yamlParseObjects.yamlObjects import * 
 import os,sys
@@ -103,6 +103,7 @@ class MetricsProcess:
         self.figFolder = figFolder
         self.config = matlabConfig
 
+    # Running this function will go through all the samples assigned to this process, evaluating them one by one until all are evaluated and then the process will join with the main process. 
     def runMetrics(self):
         start = time.perf_counter()
         # Starting the MATLAB engine by calling the setup function:
@@ -119,21 +120,24 @@ class MetricsProcess:
         self.engine.quit()
 
 
-def runMetricsBatch(dataLocation, 
-                    sampleGroup, 
-                    configFile,
-                    figureFolder = None, 
-                    processNumber = 1):
+def runMetricsBatch(dataLocation: str, 
+                    sampleGroup: list, 
+                    configFile: simulationConfig,
+                    figureFolder: str = None, 
+                    processNumber: int = 1) -> None:
     """
         This function runs the metrics on a group of samples by 
         starting processes, starting separate matlab engines for each 
         and calling the metrics run function. 
     """
-    samplePerProc = math.ceil(len(sampleGroup)/processNumber)
+    # samplePerProc = math.ceil(len(sampleGroup)/processNumber)
     sampleGroups = []
     # Dividing the samples into groups, one for each process:
-    for _ in range(processNumber):
-        sampleGroups.append(sampleGroup[_*samplePerProc:min((_+1)*samplePerProc,len(sampleGroup))])
+    for proc in range(processNumber): 
+        sInd = range(proc, len(sampleGroup), processNumber)
+        sg = [sampleGroup[ind] for ind in sInd]
+        print(f'Process # {proc+1} sample numbers: {sg}')
+        sampleGroups.append(sg)
     # Instantiating the metrics process objects, one for each sample group:
     metricProcesses = [
         MetricsProcess(dataLocation = dataLocation, 
@@ -152,22 +156,21 @@ def runMetricsBatch(dataLocation,
         p.join()
     return 
 
-    
-    
 # Main function for "manual" setting of the range of the samples to be evaluated.
 # TODO: Get the ranges of the samples from the command line parameters instead of hardcoding it.
 def main():
-    engine = setUpMatlab()
-    # dataLocation = 'E:/Data/adaptiveRepo1'
-    dataLocation = adaptRepo2
+    dataLocation = 'E:/Data/motherSample2'
     figFolder = dataLocation + '/figures'
-    startingSample = 1 
-    finalSample = 2
+    startingSample = 1800
+    finalSample = 2399
     sampleNumbers = list(range(startingSample,finalSample+1))
-    getMetricsResults(dataLocation,eng = engine, 
-                        sampleNumber = sampleNumbers,
-                        metricNames = matlabConfig.metricNames, 
-                        figFolderLoc=figFolder)
+    matlabConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
+    processNumber = 4
+    runMetricsBatch(dataLocation = dataLocation,
+                    sampleGroup=sampleNumbers,
+                    configFile=matlabConfig,
+                    figureFolder=figFolder,
+                    processNumber=processNumber)
 
 if __name__=='__main__':
     main()

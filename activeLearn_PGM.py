@@ -1,5 +1,6 @@
 #! /usr/bin/python
 
+from multiprocessing import process
 from yamlParseObjects.yamlObjects import *
 from yamlParseObjects.variablesUtil import *
 import logging 
@@ -125,11 +126,13 @@ setUpMatlab(simConfig=simConfig)
 # # Forming the sample list which includes all the initial samples:
 samplesList = list(range(1, initialSampleSize+1))
 ### Calling the metrics function on all the samples:
-# getMetricsResults(dataLocation=repoLoc,
-#                 eng = matlabEngine,
-#                 sampleNumber = samplesList,
-#                 metricNames = simConfig.metricNames, 
-#                 figFolderLoc=figFolder)
+# Using the parallelized metrics evaluation part. 
+runMetricsBatch(dataLocation=repoLoc,
+                sampleGroup=samplesList,
+                configFile=simConfig,
+                figureFolder=figFolder,
+                processNumber=4)
+
 
 #### Load the mother sample for comparison:
 """
