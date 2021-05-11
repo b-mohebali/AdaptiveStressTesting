@@ -12,6 +12,49 @@ class BadExtention(Exception):
     pass
 
 
+
+"""
+    This class contains the answers to some questions regarding where we are in the process of adaptive sampling. Its main application is when the proces is interrupted midway and needs to be restarted from the middle without the need to discard the already gathered samples. These are the questions and potential answers:
+
+    1- Is the initial sample taking done?
+        - No -> What is the # of the next sample to be taken?
+        - Yes -> Are all the metrics evaluated?
+            - Yes -> Go to Question2.
+            - No -> What is the # of the next sample to be evaluated by the MATLAB code?
+    2- Is the adaptive sampling phase done completed?
+        - Yes -> Are all the samples evaluated by MATLAB code? 
+            - Yes -> train the classifier and report the final results.
+            - No -> What is the # of the next sample to be evaluated by the MATLAB code? 
+        - No -> What is the # of the next sample to be taken? 
+
+"""
+class ProcessLocator:
+    def __init__(self):
+        self.initialSampleDone = False
+        self.initialSamplesEvaluated = False
+        self.nextSampleNum = None
+        self.nextEvalsampleNum = None
+        self.adaptiveSamplingDone = False
+        self.adaptiveSamplesEvaluated = False
+        self.nextAdapSampleNum = None
+
+    def findAnswers(self, repoLoc, simConfig: simulationConfig):
+        initSampleSize = simConfig.initialSampleSize
+        budget = simConfig.sampleBudget
+        currentSample = getNextSampleNumber(repoLoc)[0]
+        if currentSample <= initSampleSize:
+            self.nextSampleNum = currentSample
+            self.nextEvalsampleNum = 1
+        else:
+            self.initialSampleDone = True 
+
+
+
+        return self
+
+
+
+
 resultFileName = 'finalReport.yaml'
 
 def readDataset(repoLoc, dimNames, includeTimes = False, sampleRange = None):
@@ -87,14 +130,26 @@ def getNextSampleNumber(repoLoc, createFolder:bool = False, count = 1):
         [os.mkdir(repoLoc + f'/{_}') for _ in nextSamples]
     return nextSamples
 
-"""
-    Takes a classifier and a name for the saved file. Saves the classifier object as a pickle in the directory allocated to the trained classifiers.
+def getNextEvalSample(repoLoc):
+    """
+        Gets the location of the repository and determines the first sample that needs MATLAB metrics evaluation. This means all the samples before this sample must be evaluated using the MATLAB metrics implementation. 
 
-    Inputs:
-        - cls: Classifier that is going to be saved.
-        - pickleName: The name of the file being used to save the classifier
-"""
+        Returns the number of the next sample that needs MATLAB metrics evaluation.
+    """
+    sampleFolders = [int(name) for name in os.listdir(repoLoc) if name.isdigit()]
+    
+    
+    pass
+
+
 def saveClassifierAsPickle(cls, pickleName: str):
+    """
+        Takes a classifier and a name for the saved file. Saves the classifier object as a pickle in the directory allocated to the trained classifiers.
+
+        Inputs:
+            - cls: Classifier that is going to be saved.
+            - pickleName: The name of the file being used to save the classifier
+    """
     # Checking if the file has the right extension:
     if not pickleName.endswith('.pickle'):
         raise BadExtention("The file name has to end with .pickle")

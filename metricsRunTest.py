@@ -20,7 +20,7 @@ def setUpMatlab(simConfig: simulationConfig):
     if simConfig is not None:
         paths = simConfig.matlabPaths
         for p in paths:
-            eng.addpath(eng.genpath(p))df
+            eng.addpath(eng.genpath(p))
             print(f'Directory {p} was added to matlab path.')
     print(type(eng))
     print('MATLAB engine started.')

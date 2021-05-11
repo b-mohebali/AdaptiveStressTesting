@@ -61,11 +61,10 @@ repoLoc = motherSample2
 figFolder = repoLoc + '/figures'
 
 # Forming the space:
-designSpace = Space(variableList= variables, initialSampleCount=initialSampleSize)
+designSpace = SampleSpace(variableList= variables)
 dimNames = designSpace.getAllDimensionNames()
 # # Getting the initial sample and saving it to a location:
-designSpace.generateInitialSample(method = InitialSampleMethod.LHS)
-
+# sampleList = generateInitialSample(designSpace, initialSampleSize)
 
 # formattedSample = getSamplePointsAsDict(dimNames, sampleList)
 
@@ -77,7 +76,7 @@ designSpace.generateInitialSample(method = InitialSampleMethod.LHS)
 # # Running the initial sample:
 formattedSample = loadSampleFromTxtFile(sampleSaveFile)
 
-sampleGroup = range(2400, initialSampleSize + 1)
+sampleGroup = range(2552, initialSampleSize + 1)
 runSample(sampleDictList=formattedSample, 
         dFolder = dataFolder, 
         remoteRepo=repoLoc,

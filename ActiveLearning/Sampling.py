@@ -43,6 +43,82 @@ class PerformanceMeasure(Enum):
     PRECISION = 1
     RECALL = 2
 
+
+"""
+    New implementation of the space class with limited functionality. 
+    NOTE: The functionality of the Space class was getting too much and so
+        it was broken down into several classes.
+"""
+class SampleSpace():
+    def __init__(self, 
+                variableList: List[variableConfig]):
+        self.dimensions = []
+        for varConfig in variableList:
+            self.dimensions.append(Dimension(varConfig=varConfig))
+            self._dNum = len(self.dimensions)
+            self.convPointsNum = 100 * 5 ** self.dNum 
+            self._samples = []
+            self._eval_labels = []
+    
+    # Defining the samples and labels as private fields with the type list 
+    # Upon retrive, they are turned into numpy arrays. 
+    def getSamples(self):
+        return np.array(self._samples)
+    samples = property(fget = getSamples)
+
+    def getEvalLabels(self):
+        return np.array(self._eval_labels)
+    eval_labels = property(fget = getEvalLabels)
+
+    # Defining the dimension number as a private field that can't be set.
+    def getDimensionNumber(self):
+        return self._dNum
+    dNum = property(fget = getDimensionNumber)
+
+    def getAllDimensionNames(self):
+        return [dim.name for dim in self.dimensions]
+    
+    def getAllDimensionDescriptions(self):
+        return [dim.description for dim in self.dimensions]
+    
+    def getAllDimensionBounds(self):
+        return np.array([dim.bounds for dim in self.dimensions])
+    
+    def getSamplesNum(self):
+        return len(self._samples)
+    sampleNum = property(fget = getSamplesNum)
+
+    # TODO: Formatting the stored data: 
+
+
+    # TODO: Adding samples with labels to the dataset:
+    def addSample(self, dataPoint, label):
+        self._samples.append(dataPoint)
+        self._eval_labels.append(label)
+
+    def addSamples(self, dataPoints, labels):
+        if len(labels) != len(dataPoints):
+            raise ValueError('The number of samples and labels do not match')
+        for idx, dataPoint in enumerate(dataPoints):
+            self.addSample(dataPoint, labels[idx])
+        return 
+
+    # Nearest point from the dataset:
+    # NOTE: This is copied from the old implementation of the space class.
+    def nearestPointDistance(self, X, samplesList = None):
+        if samplesList is None:
+            return np.min(np.linalg.norm(self.samples - X, axis=1))
+        return np.min(np.linalg.norm(samplesList - X, axis=1))
+
+
+"""
+    NOTE: The initial classifier used here is SVM. The necessity for any other type of 
+    classifier was not felt at this point.
+    - Also it may be shown that the SVM class does not require a simple wrapper like 
+        this. 
+"""
+
+
 # class Space():
 #     def __init__(self, variableList: List[variableConfig], 
 #                 initialSampleCount = 20, 
@@ -210,37 +286,6 @@ class PerformanceMeasure(Enum):
 #         return
 
 
-def generateInitialSample(space: Space, 
-                        sampleSize: int, 
-                        method: InitialSampleMethod = InitialSampleMethod.CVT,
-                        checkForEmptiness = False):
-    ''' This function samples from the entire space. 
-        Can be used for the convergence samples as well without the check for 
-        the emptiness of the space.
-
-        space:  Contains information about the number of dimensions and their range 
-                of variations.
-
-        method: CVT (Centroid Voronoi Tesselation)
-                LHS (Latin Hypercube)
-
-        CheckForEmptiness: (True/False) 
-                Raises error if the sample list of the space is not empty, meaning 
-                that the initial sample is most likely taken. 
-    '''
-    if checkForEmptiness and len(space.samples) > 0:
-        raise SampleNotEmpty('The space already contains samples.')
-    if method == InitialSampleMethod.CVT:
-        samples = cvt(count = sampleSize, dimensionality= space.dNum)
-    elif method == InitialSampleMethod.LHS:
-        samples = lhs(count = sampleSize, dimensionality=space.dNum)
-    for dimIndex, dimension in enumerate(space.dimensions):
-        samples[:,dimIndex] *= dimension.range
-        samples[:,dimIndex] += dimension.bounds[0]
-    return samples
-
-
-
 
 # TODO: This class holds the sample used for convergence check at each iteration:
 class ConvergenceSample():
@@ -254,7 +299,7 @@ class ConvergenceSample():
             benchmark and not an expensive computational model.  
     '''
     def __init__(self, 
-                space: Space):
+                space: SampleSpace):
         self.size = 100 * 5**space.dNum
         self.samples = generateInitialSample(space, 
                                             sampleSize=self.size, 
@@ -345,79 +390,6 @@ def getAccuracyMeasure( convSample:ConvergenceSample,
         return accuracy_score(realLabels, predLabels) * 100 if percent else 1
     # TODO: Other types of performance measures (scores) 
 
-"""
-    New implementation of the space class with limited functionality. 
-    NOTE: The functionality of the Space class was getting too much and so
-        it was broken down into several classes.
-"""
-class SampleSpace():
-    def __init__(self, 
-                variableList: List[variableConfig]):
-        self.dimensions = []
-        for varConfig in variableList:
-            self.dimensions.append(Dimension(varConfig=varConfig))
-            self._dNum = len(self.dimensions)
-            self.convPointsNum = 100 * 5 ** self.dNum 
-            self._samples = []
-            self._eval_labels = []
-    
-    # Defining the samples and labels as private fields with the type list 
-    # Upon retrive, they are turned into numpy arrays. 
-    def getSamples(self):
-        return np.array(self._samples)
-    samples = property(fget = getSamples)
-
-    def getEvalLabels(self):
-        return np.array(self._eval_labels)
-    eval_labels = property(fget = getEvalLabels)
-
-    # Defining the dimension number as a private field that can't be set.
-    def getDimensionNumber(self):
-        return self._dNum
-    dNum = property(fget = getDimensionNumber)
-
-    def getAllDimensionNames(self):
-        return [dim.name for dim in self.dimensions]
-    
-    def getAllDimensionDescriptions(self):
-        return [dim.description for dim in self.dimensions]
-    
-    def getAllDimensionBounds(self):
-        return np.array([dim.bounds for dim in self.dimensions])
-    
-    def getSamplesNum(self):
-        return len(self._samples)
-    sampleNum = property(fget = getSamplesNum)
-
-    # TODO: Formatting the stored data: 
-
-
-    # TODO: Adding samples with labels to the dataset:
-    def addSample(self, dataPoint, label):
-        self._samples.append(dataPoint)
-        self._eval_labels.append(label)
-
-    def addSamples(self, dataPoints, labels):
-        if len(labels) != len(dataPoints):
-            raise ValueError('The number of samples and labels do not match')
-        for idx, dataPoint in enumerate(dataPoints):
-            self.addSample(dataPoint, labels[idx])
-        return 
-
-    # Nearest point from the dataset:
-    # NOTE: This is copied from the old implementation of the space class.
-    def nearestPointDistance(self, X, samplesList = None):
-        if samplesList is None:
-            return np.min(np.linalg.norm(self.samples - X, axis=1))
-        return np.min(np.linalg.norm(samplesList - X, axis=1))
-
-
-"""
-    NOTE: The initial classifier used here is SVM. The necessity for any other type of 
-    classifier was not felt at this point.
-    - Also it may be shown that the SVM class does not require a simple wrapper like 
-        this. 
-"""
 class ActiveClassifier():
 
     def __init__(self, C=1000, kernel = 'rbf'):
@@ -441,4 +413,37 @@ class ActiveClassifier():
     clf = property(fget = getClassifier)
 
 
+
+
+
+def generateInitialSample(space: SampleSpace, 
+                        sampleSize: int, 
+                        method: InitialSampleMethod = InitialSampleMethod.CVT,
+                        checkForEmptiness = False):
+    ''' This function samples from the entire space. 
+        Can be used for the convergence samples as well without the check for 
+        the emptiness of the space.
+
+        space:  Contains information about the number of dimensions and their range 
+                of variations.
+
+        method: CVT (Centroid Voronoi Tesselation)
+                LHS (Latin Hypercube)
+
+        CheckForEmptiness: (True/False) 
+                Raises error if the sample list of the space is not empty, meaning 
+                that the initial sample is most likely taken. 
+    '''
+    if checkForEmptiness and len(space.samples) > 0:
+        raise SampleNotEmpty('The space already contains samples.')
+    if method == InitialSampleMethod.CVT:
+        print('Generating the samples using CVT method. This may take a while...')
+        samples = cvt(count = sampleSize, dimensionality= space.dNum)
+    elif method == InitialSampleMethod.LHS:
+        print('Generating the samples using LHS method. This may take a while...')
+        samples = lhs(count = sampleSize, dimensionality=space.dNum)
+    for dimIndex, dimension in enumerate(space.dimensions):
+        samples[:,dimIndex] *= dimension.range
+        samples[:,dimIndex] += dimension.bounds[0]
+    return samples
 

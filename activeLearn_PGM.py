@@ -56,26 +56,16 @@ mut = PGM_control('','./', configFile=simConfig)
 
 """
 Steps of checks for correctness: 
-    DONE 1- Run an FFD sample with the 4 variables in a new location with the control object
-        from simulationHelper.py script. -> DONE
-    DONE 2- Implement the initial sampling using the combination of the control objects and 
-        the developed active learning code. 
-    DONE 3- Implement the exploitation part. Save the change measures in each step in case the 
-        process is interrupted for any reason.
+    DONE 1- Run an FFD sample with the 4 variables in a new location with the control object from simulationHelper.py script. -> DONE
+    DONE 2- Implement the initial sampling using the combination of the control objects and the developed active learning code. 
+    DONE 3- Implement the exploitation part. Save the change measures in each step in case the process is interrupted for any reason.
     DONE 4- Implement the loading of the benchmark classifier trained on the Monte-Carlo data. 
-    5- Run a sample with Visualiation and the benchmark and compare the results.
-    6- Calculate the metrics of the classifier such as precision, recall, accuracy, measure of 
-        change vs the number of iterations.
-    7- Empirically show that the active learner can reach comparable performance with the 
-        Monte-Carlo sampling method using a fraction of the process time. 
+    DONE 5- Run a sample with Visualiation and the benchmark and compare the results.
+    6- Calculate the metrics of the classifier such as precision, recall, accuracy, measure of change vs the number of iterations.
+    7- Empirically show that the active learner can reach comparable performance with the Monte-Carlo sampling method using a fraction of the process time. 
     8- Improve on the process time using exploration, prallelization, batch sampling.
 
-"""
-"""
-NOTE 1: Use the currentDir variable from repositories to point to the AdaptiveStressTesting
-    folder. The automation codebase tends to change the working directory during 
-    the process and it has to be switched back to use the assets.
-
+NOTE 1: Use the currentDir variable from repositories to point to the AdaptiveStressTesting folder. The automation codebase tends to change the working directory during the process and it has to be switched back to use the assets.
 """
 
 print('This is the AC PGM sampling test file. ')
