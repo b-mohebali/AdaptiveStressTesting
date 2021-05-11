@@ -76,7 +76,7 @@ dimNames = designSpace.getAllDimensionNames()
 # # Running the initial sample:
 formattedSample = loadSampleFromTxtFile(sampleSaveFile)
 
-sampleGroup = range(2655, initialSampleSize + 1)
+sampleGroup = range(2656, initialSampleSize + 1)
 runSample(sampleDictList=formattedSample, 
         dFolder = dataFolder, 
         remoteRepo=repoLoc,
