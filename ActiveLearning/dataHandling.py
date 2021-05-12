@@ -1,3 +1,4 @@
+from os.path import isfile
 import numpy as np 
 import os, sys, platform, shutil
 import yaml
@@ -12,53 +13,6 @@ class BadExtention(Exception):
     pass
 
 resultFileName = 'finalReport.yaml'
-
-
-class ProcessLocator:
-    """
-        This class contains the answers to some questions regarding where we are in the process of adaptive sampling. Its main application is when the proces is interrupted midway and needs to be restarted from the middle without the need to discard the already gathered samples. These are the questions and potential answers:
-
-        1- Is the initial sample taking done?
-            - No -> What is the # of the next sample to be taken?
-            - Yes -> Are all the metrics evaluated?
-                - Yes -> Go to Question2.
-                - No -> What is the # of the next sample to be evaluated by the MATLAB code?
-        2- Is the adaptive sampling phase done completed?
-            - Yes -> Are all the samples evaluated by MATLAB code? 
-                - Yes -> train the classifier and report the final results.
-                - No -> What is the # of the next sample to be evaluated by the MATLAB code? 
-            - No -> What is the # of the next sample to be taken? 
-
-    """
-    def __init__(self):
-        self.initialSampleDone = False
-        self.initialSamplesEvaluated = False
-        self.nextSampleNum = None
-        self.nextEvalSampleNums = None
-        self.adaptiveSamplingDone = False
-        self.adaptiveSamplesEvaluated = False
-        self.nextAdapSampleNum = None
-
-
-    def findAnswers(self, repoLoc, simConfig: simulationConfig):
-        """ 
-            The logic of finding the answers to those questions is here:
-        """
-        initSampleSize = simConfig.initialSampleSize
-        budget = simConfig.sampleBudget
-        currentSample = getNextSampleNumber(repoLoc)[0]
-        if currentSample <= initSampleSize:
-            self.nextSampleNum = currentSample
-            self.nextEvalSampleNum = 1
-        else:
-            self.initialSampleDone = True 
-
-
-
-        return self
-
-
-
 
 
 def readDataset(repoLoc, dimNames, includeTimes = False, sampleRange = None):
@@ -120,6 +74,7 @@ def readSingleSample(repoLoc,dimNames, sampleNumber):
         varList.append(reportObj.variables[dimName])
     return varList, reportObj.label, reportObj.elapsed_time
 
+
 def getNextSampleNumber(repoLoc, createFolder:bool = False, count = 1):
     """
         Gets the location of the repository and determines what is the number of the next sample. 
@@ -139,12 +94,15 @@ def getNextEvalSample(repoLoc):
         Gets the location of the repository and determines the first sample that needs MATLAB metrics evaluation. This means all the samples before this sample must be evaluated using the MATLAB metrics implementation. 
 
         Returns the number of the next sample that needs MATLAB metrics evaluation.
+        If all the samples in the repo are evaluated (meaning the report files are present in all the sample folders) returns None.
     """
     sampleFolders = [int(name) for name in os.listdir(repoLoc) if name.isdigit()]
-    
-    
-    pass
-
+    sampleFolders.sort()
+    for sf in sampleFolders:
+        resultFileLoc = f'{repoLoc}/{sf}/{resultFileName}'
+        if not os.path.isfile(resultFileLoc):
+            return sf
+    return None
 
 def saveClassifierAsPickle(cls, pickleName: str):
     """
@@ -160,6 +118,65 @@ def saveClassifierAsPickle(cls, pickleName: str):
     # Building the absolute path of the saved file:
     fileName = picklesLoc + pickleName
     # Saving the pickle:
-    with opne(fileName, 'wb'):
+    with open(fileName, 'wb'):
         pickle.dump(cls, fileName)
+
+
+class ProcessLocator:
+    """
+        This class contains the answers to some questions regarding where we are in the process of adaptive sampling. Its main application is when the proces is interrupted midway and needs to be restarted from the middle without the need to discard the already gathered samples. These are the questions and potential answers:
+
+        1- Is the initial sample taking done?
+            - No -> What is the # of the next sample to be taken?
+            - Yes -> Are all the metrics evaluated?
+                - Yes -> Go to Question2.
+                - No -> What is the # of the next sample to be evaluated by the MATLAB code?
+        2- Is the adaptive sampling phase done completed?
+            - Yes -> 3- Are all the samples evaluated by MATLAB code? 
+                - Yes -> train the classifier and report the final results.
+                - No -> What is the # of the next sample to be evaluated by the MATLAB code? 
+            - No -> What is the # of the next sample to be taken? 
+    """
+    def __init__(self):
+        self.initialSampleDone = False          # Are initial samples taken?
+        self.initialSamplesEvaluated = False    # Are initial samples evaluated?
+        self.adaptiveSamplingDone = False       # Are adaptive samples taken?
+        self.adaptiveSamplesEvaluated = False   # Are adaptive samples evaluated?
+        self.nextSampleNum = None               # Next sample to be simulated.
+        self.nextEvalSampleNum = None           # Next sample to be evaluated.
+
+    def locateProcess(self, repoLoc, simConfig: simulationConfig):
+        """ 
+            The logic of finding the answers to those questions is here:
+        """
+        initSampleSize = simConfig.initialSampleSize
+        budget = simConfig.sampleBudget
+        nextEval = getNextEvalSample(repoLoc=repoLoc)
+        currentSample = getNextSampleNumber(repoLoc)[0]
+        # Checking to see if the initial sample is done:
+        if currentSample <= initSampleSize:
+            self.nextSampleNum = currentSample
+            self.nextEvalSampleNum = nextEval
+            return self
+        else:
+            self.initialSampleDone = True 
+            if nextEval <= initSampleSize:
+                # If we are here it means the adaptive phase is not started yet. But the initial samples are all taken but not evaluated. 
+                self.nextEvalSampleNum = nextEval
+                return self 
+            self.initialSamplesEvaluated = True 
+        # Check to see if the adaptive sampling phase is done:
+        if currentSample <= budget: 
+            # If we are here it means that the adaptive samples are not done but the initial samples are fully taken and evaluted.
+            self.adaptiveSamplesEvaluated = (nextEval > budget)
+            self.nextEvalSampleNum = nextEval
+            self.nextSampleNum= currentSample
+            return self
+        else: 
+            # If we are here the adaptive samples are all taken according to the assigned budget. 
+            self.adaptiveSamplingDone = True 
+            self.adaptiveSamplesEvaluated = nextEval > budget
+            self.nextEvalSampleNum = nextEval if not self.adaptiveSamplesEvaluated else None
+        return self
+
 
