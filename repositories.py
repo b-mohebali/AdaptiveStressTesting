@@ -213,6 +213,8 @@ adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'
 # Adaptive Sampling repo with budget = 400 samples and initial sample size=80
 adaptRepo3 = adaptiveSamplingLoc + 'adaptiveRepo3'
 
+# Monte Carlo sample of size 400 taken as the baseline for the adaptive samples of the same size:
+monteCarlo400 = adaptiveSamplingLoc + 'monteCarlo400'
 
 
 currentDir = os.getcwd()

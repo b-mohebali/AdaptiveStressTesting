@@ -161,8 +161,8 @@ def runMetricsBatch(dataLocation: str,
 def main():
     dataLocation = 'E:/Data/motherSample2'
     figFolder = dataLocation + '/figures'
-    startingSample = 1904
-    finalSample = 2410
+    startingSample = 3074
+    finalSample = 3398
     sampleNumbers = list(range(startingSample,finalSample+1))
     matlabConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
     processNumber = 5
