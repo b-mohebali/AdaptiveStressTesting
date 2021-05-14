@@ -1,60 +1,39 @@
 !!python/object:yamlParseObjects.yamlObjects.IterationReport
-budgetRemaining: 100
-changeMeasure:
-- 0.5
-- 0.6
-- 0.4
-- 0.3
-iterationNumber: 1
-metricsResults:
-- 0
-- 1
-- 0
-- 0
-samples:
-- 1
-- 2
-- 3
-- 4
-startTime: 2021-04-09 05:53:35.619861
-stopTime: 12
+batchSize: 2
+budgetRemaining: 23
+changeMeasure: 1
+iterationNumber: 43
+startTime: 2021-05-12 14:12:08.307858
+stopTime: 2021-05-12 14:12:08.307860
+variableNames:
+- this
+- is
+- just
+- a
+- string
 --- !!python/object:yamlParseObjects.yamlObjects.IterationReport
-budgetRemaining: 99
-changeMeasure:
-- 0.5
-- 0.2
-- 0.1
-- 0.05
-iterationNumber: 2
-metricsResults:
-- 1
-- 0
-- 1
-- 0
-samples:
-- 5
-- 6
-- 7
-- 8
-startTime: 12
-stopTime: 14
+batchSize: 2
+budgetRemaining: 23
+changeMeasure: 1
+iterationNumber: 43
+startTime: 2021-05-12 14:12:08.307858
+stopTime: 2021-05-12 14:12:08.307860
+variableNames:
+- this
+- is
+- just
+- a
+- string
 --- !!python/object:yamlParseObjects.yamlObjects.IterationReport
-budgetRemaining: 98
-changeMeasure:
-- 0.5
-- 0.2
-- 0.1
-- 0.05
-iterationNumber: 3
-metricsResults:
-- 0
-- 1
-- 0
-- 1
-samples:
-- 9
-- 10
-- 11
-- 12
-startTime: 2021-04-09 05:53:35.619861
-stopTime: 18
+batchSize: 2
+budgetRemaining: 23
+changeMeasure: 1
+iterationNumber: 43
+startTime: 2021-05-12 14:12:08.307858
+stopTime: 2021-05-12 14:12:08.307860
+variableNames:
+- this
+- is
+- just
+- a
+- string

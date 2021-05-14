@@ -43,7 +43,7 @@ budget = simConfig.sampleBudget
 batchSize = simConfig.batchSize
 
 # We use this script to generate the MC sample for benchmark:
-initialSampleSize = 5000
+initialSampleSize = 400
 
 
 variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
@@ -53,16 +53,16 @@ for var in variables:
 
 # Setting the main files and locations:
 descriptionFile = './assets/yamlFiles/varDescription.yaml'
-sampleSaveFile = './assets/experiments/mother_sample_2.txt'
-repoLoc = motherSample2
+sampleSaveFile = './assets/experiments/monteCarlo400.txt'
+repoLoc = monteCarlo400 
 
 # repoLoc = 'D:/Data/adaptiveRepo1'
 # Figure folder for the metrics outputs:
 figFolder = repoLoc + '/figures'
 
 # Forming the space:
-designSpace = SampleSpace(variableList= variables)
-dimNames = designSpace.getAllDimensionNames()
+# designSpace = SampleSpace(variableList= variables)
+# dimNames = designSpace.getAllDimensionNames()
 # # Getting the initial sample and saving it to a location:
 # sampleList = generateInitialSample(designSpace, initialSampleSize)
 
@@ -73,12 +73,11 @@ dimNames = designSpace.getAllDimensionNames()
 # copyDataToremoteServer(repoLoc, descriptionFile)
 # copyDataToremoteServer(repoLoc, variablesFile)
 
-# # Running the initial sample:
+## Running the initial sample:
 formattedSample = loadSampleFromTxtFile(sampleSaveFile)
 
-sampleGroup = range(2956, initialSampleSize + 1)
+sampleGroup = range(6, initialSampleSize + 1)
 runSample(sampleDictList=formattedSample, 
         dFolder = dataFolder, 
         remoteRepo=repoLoc,
-        sampleGroup=sampleGroup)
-
+        sampleGroup = sampleGroup)

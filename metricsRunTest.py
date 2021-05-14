@@ -159,10 +159,10 @@ def runMetricsBatch(dataLocation: str,
 # Main function for "manual" setting of the range of the samples to be evaluated.
 # TODO: Get the ranges of the samples from the command line parameters instead of hardcoding it.
 def main():
-    dataLocation = 'E:/Data/motherSample2'
+    dataLocation = 'E:/Data/monteCarlo400'
     figFolder = dataLocation + '/figures'
-    startingSample = 3074
-    finalSample = 3398
+    startingSample = 1
+    finalSample = 400
     sampleNumbers = list(range(startingSample,finalSample+1))
     matlabConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
     processNumber = 5

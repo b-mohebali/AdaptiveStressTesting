@@ -208,13 +208,21 @@ motherSample = adaptiveSamplingLoc + 'motherSample'
 #   later but not to the CVT sample. 
 motherSample2 = adaptiveSamplingLoc + 'motherSample2'
 
-# Adaptive Sampling repo with budget=300 and initial sample size=80
-adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'
-# Adaptive Sampling repo with budget = 400 samples and initial sample size=80
-adaptRepo3 = adaptiveSamplingLoc + 'adaptiveRepo3'
+"""
+    Adaptive Samples notation: 
+    sample {Total sample size}({Initial sample size})-{Batch size}
+    Example : 400(80)-1 -> A sample of 400 simulations with 80 samples taken initially and batches of size 1.
+"""
 
+# Adaptive Sampling 300(80)-1
+adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'
+# Adaptive Sampling 400(80)-1 Droop control on the voltage and frequency was engaged. 
+adaptRepo3 = adaptiveSamplingLoc + 'adaptiveRepo3'
 # Monte Carlo sample of size 400 taken as the baseline for the adaptive samples of the same size:
 monteCarlo400 = adaptiveSamplingLoc + 'monteCarlo400'
+# Adaptive Sampling 400(80)-1 Droop control disengaged. 
+adaptRepo4 = adaptiveSamplingLoc + 'adaptiveRepo4'
+
 
 
 currentDir = os.getcwd()

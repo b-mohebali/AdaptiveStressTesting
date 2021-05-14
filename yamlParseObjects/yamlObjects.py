@@ -10,7 +10,6 @@ class Scale(Enum):
     LINEAR = 1
     LOGARITHMIC = 2
 
-
 variableSpan = 0.5
 variableScale = 6
 
@@ -43,7 +42,6 @@ class simulationConfig():
         self.batchSize = self._getNecessaryProperty('batchSize')
         self.outputFolder = self._getNecessaryProperty('outputFolder')
         self.metricNames = self.yamlObj['metricNames'] if 'metricNames' in self.yamlObj else []
-
 
     def _getNecessaryProperty(self,propName):
         if propName not in self.yamlObj:
@@ -96,8 +94,6 @@ def getAllVariableConfigs(yamlFileAddress, scalingScheme = Scale.LINEAR):
             scales = [initialState / variableScale, initialState * variableScale]
             lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else min(scales) # Lower bound set to 90% of the initial state.
             upperLimit = yamlVar['upperLimit'] if 'upperLimit' in yamlVar else max(scales) 
-        
-
         mappedName = yamlVar['mappedName'] if 'mappedName' in yamlVar else name
         desc  = yamlVar['description'] if 'description' in yamlVar else name
         variableCon = variableConfig(name = name, 
@@ -118,7 +114,6 @@ class FinalReport():
         self.elapsed_time = report['elapsed_time_sec']
         self.label = report['result_label']
         self.variables = report['variables']
-
 
 """
     TODO: The iteration report. Will be saved in a single file and contains information
@@ -160,7 +155,8 @@ class IterationReport():
     # NOTE: The keys' indexing starts from 1.
     def setMetricResults(self, metricResults):
         self.metricResults = dict((_+1,int(metricResults[_])) for _ in range(len(metricResults)))
-
+    def setAccuracy(self, acc):
+        self.accuracy = acc
 
 
 def saveIterationReport(reports, yamlFileLoc):

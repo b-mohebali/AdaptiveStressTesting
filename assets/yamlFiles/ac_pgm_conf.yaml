@@ -17,7 +17,7 @@ metricNames:
   - "Max dev |V| pu"
   - "Max dev V freq pu"
   - "Voltage L-L unbalance"
-modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM_draft_vars" 
+modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM_droop_disabled" 
 outputFolder: './assets/outputReports/'
 sampleRepo: "D:/Data/Sample80/data"
 sampleBudget: 400

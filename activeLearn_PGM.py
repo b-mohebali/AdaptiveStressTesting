@@ -258,11 +258,18 @@ while currentBudget > 0:
                         sampleNumber = nextSamples[idx],
                         modelUnderTest=mut)
     # Evaluating the newly simulated samples using MATLAB engine:
-        getMetricsResults(dataLocation = repoLoc, 
-                        eng = matlabEngine,
-                        sampleNumber = nextSamples[idx],
-                        metricNames = simConfig.metricNames,
-                        figFolderLoc=figFolder)
+    # getMetricsResults(dataLocation = repoLoc, 
+    #                 eng = matlabEngine,
+    #                 sampleNumber = nextSamples[idx],
+    #                 metricNames = simConfig.metricNames,
+    #                 figFolderLoc=figFolder)
+    runMetricsBatch(dataLocation=repoLoc,
+                sampleGroup=nextSamples,
+                configFile=simConfig,
+                figureFolder=figFolder,
+                processNumber=4)
+    
+    
     # Updating the classifier and checking the change measure:
     dataset,labels = readDataset(repoLoc, dimNames= dimNames)
     designSpace._samples, designSpace._eval_labels = dataset, labels

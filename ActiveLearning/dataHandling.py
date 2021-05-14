@@ -180,3 +180,47 @@ class ProcessLocator:
         return self
 
 
+def loadChangeMeasure(reportFile: str):
+    """
+        This function takes the location of an iteration report yaml file and returns a list of iteration numbers as well as the change measure in each iteration. 
+
+        Inputs:
+            - iterationReport: The absolute location of the yaml file containing the report from an adaptive sampling process. 
+        
+        Outputs: 
+            - iterationNumbers: The list of the iteration numbers. Used as the x-axis data for plotting the change measure.
+            - changeMeasures: The list of the change measure values throughout the iterations of the process. Used as the y-axis data for plotting.
+    """
+    with open(reportFile, 'rt') as rFile:
+        yamlString = rFile.read()
+    reports = yaml.load_all(yamlString, Loader = yaml.Loader)
+    iterationNumbers = []
+    changeMeasures = []
+    for report in reports:
+        iterationNumbers.append(report.iterationNumber)
+        changeMeasures.append(report.changeMeasure)
+    return iterationNumbers, changeMeasures 
+
+def loadAccuracy(reportFile: str):
+    """
+        This function takes the location of an iteration report yaml file and returns a list of iteration numbers as well as the accuracy in each iteration.
+
+        NOTE: The accuracy may not have been recorded through the process for reasons such as lack of benchmark. In that case nothing will be returned. In case some of the reports have recorded accuracy, only the accuracy and iteration number of the reports with recorded accuracy will be returned.
+
+        Inputs:
+            - iterationReport: The absolute location of the yaml file containing the report from an adaptive sampling process. 
+        
+        Outputs: 
+            - iterationNumbers: The list of the iteration numbers. Used as the x-axis data for plotting accuracy.
+            - accuracies: The list of the accuracies values throughout the iterations of the process if they exist. Used as the y-axis data for plotting.
+    """
+    with open(reportFile, 'rt') as rFile:
+        yamlString = rFile.read()
+    reports = yaml.load_all(yamlString, Loader = yaml.Loader)
+    iterationNumbers = []
+    accuracies = []
+    for report in reports:
+        if hasattr(report, 'accuracy'):
+            iterationNumbers.append(report.iterationNumber)
+            accuracies.append(report.changeMeasure)
+    return iterationNumbers, accuracies
