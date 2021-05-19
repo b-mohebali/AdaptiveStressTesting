@@ -1,5 +1,5 @@
 from geneticalgorithm import geneticalgorithm as ga
-from .Sampling import Space
+from .Sampling import SampleSpace
 import numpy as np
 from abc import ABC, abstractmethod
 from ActiveLearning.benchmarks import Benchmark
@@ -13,7 +13,7 @@ class Optimizer(ABC):
 # The wrapper class for the genetic algorithm that solves the exploitation problem:
 class GeneticAlgorithmExploiter():
     def __init__(self, 
-                space: Space, 
+                space: SampleSpace, 
                 epsilon: float, 
                 batchSize: int = 1, 
                 convergence_curve = True, 
@@ -73,5 +73,3 @@ class GeneticAlgorithmExploiter():
     
     def addPointToSampleList(self, point):
         self.currentSpaceSamples = np.append(self.currentSpaceSamples, point.reshape(1,len(point)),axis=0)    
-
-

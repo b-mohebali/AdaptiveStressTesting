@@ -78,7 +78,7 @@ class variableConfig():
         '''
         return descriptor.__str__()
 
-def getAllVariableConfigs(yamlFileAddress, scalingScheme = Scale.LINEAR):
+def getAllVariableConfigs(yamlFileAddress, span:float = variableSpan, scalingScheme = Scale.LINEAR, scale:float = variableScale):
     with open(yamlFileAddress,'rt') as fp:
         yamlString = fp.read()
     fp.close()
@@ -88,11 +88,11 @@ def getAllVariableConfigs(yamlFileAddress, scalingScheme = Scale.LINEAR):
         t = yamlVar['type']
         initialState = yamlVar['initialState']
         if scalingScheme==Scale.LINEAR:
-            lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else initialState*(1 - variableSpan) # Lower bound set to 90% of the initial state.
-            upperLimit = yamlVar['upperLimit'] if 'upperLimit' in yamlVar else initialState*(1 + variableSpan)
+            lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else initialState*(1 - span) 
+            upperLimit = yamlVar['upperLimit'] if 'upperLimit' in yamlVar else initialState*(1 + span)
         elif scalingScheme == Scale.LOGARITHMIC:
-            scales = [initialState / variableScale, initialState * variableScale]
-            lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else min(scales) # Lower bound set to 90% of the initial state.
+            scales = [initialState / scale, initialState * scale]
+            lowerLimit = yamlVar['lowerLimit'] if 'lowerLimit' in yamlVar else min(scales)
             upperLimit = yamlVar['upperLimit'] if 'upperLimit' in yamlVar else max(scales) 
         mappedName = yamlVar['mappedName'] if 'mappedName' in yamlVar else name
         desc  = yamlVar['description'] if 'description' in yamlVar else name

@@ -1,7 +1,7 @@
 from yamlParseObjects.yamlObjects import *
 import csv
 import matplotlib.pyplot as plt 
-from ActiveLearning.Sampling import Space
+from ActiveLearning.Sampling import SampleSpace
 from typing import List
 import numpy as np 
 from collections import namedtuple
@@ -29,7 +29,7 @@ class SaveInformation():
 def saveFigurePickle(saveInfo: SaveInformation):
     pass
 
-def plotSpace(space: Space, 
+def plotSpace(space: SampleSpace, 
               figsize=(6,6),
               meshRes = 100,
               classifier = None, 
@@ -97,7 +97,7 @@ def plotSpace(space: Space,
 
     NOTE: The 4D version of the visualizer does not have the feature to show the data points or the newly found points.
 """
-def _plotSpace4D(space: Space,
+def _plotSpace4D(space: SampleSpace,
                 insigDimensions,
                 showPlot = True, 
                 classifier = None,
@@ -225,7 +225,7 @@ def _plotSpace4D(space: Space,
     plt.close()
     return 
     
-def _plotSpace3D(space: Space, 
+def _plotSpace3D(space: SampleSpace, 
                 showPlot = True,
                 classifier = None, 
                 figsize = (6,6),
@@ -309,7 +309,7 @@ def _plotSpace3D(space: Space,
     plt.close()
     return 
 
-def _plotSpace2D(space: Space, 
+def _plotSpace2D(space: SampleSpace, 
                 classifier, 
                 figsize = None, 
                 meshRes=100, 

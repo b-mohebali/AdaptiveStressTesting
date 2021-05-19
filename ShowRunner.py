@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 
+from metricsRunTest import setUpMatlab
 from yamlParseObjects.yamlObjects import *
 from yamlParseObjects.variablesUtil import *
 import logging 
@@ -16,6 +17,7 @@ from scipy.linalg import hadamard
 import matplotlib.pyplot as plt
 from enum import Enum
 import time
+from ActiveLearning.simulationHelper import *
 
 simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
 print(simConfig.name)
@@ -30,152 +32,16 @@ from rscad import rtds
 from repositories import *
 import simulation
 
-# buildSampleProfile(fileName='sampleProfile.csv')
-
-# # Excluding the time independent variables from the scenario.
-# scenarioVariables = [v for v in variables if v.varType.lower() != 'timeindep']
-# createMappingFile(variables = scenarioVariables,fileName='mapping', profileFileName='sampleProfile')
-
-# myEvent = VariableChangeSameTime(variables = variables[:2], simConfig = simConfig, startPoint=30, length = 15)
-# print(myEvent)
-# myEvent.updateCsv('sampleProfile.csv')
-
-# print('-----------------------------')
-# with open('sampleProfile.csv', 'r', newline='') as csvFile:
-#     csvReader = csv.reader(csvFile)
-#     firstRow = next(csvReader)# repo 10 for FFD with larger limits (50%) and the new scenario (just high load with a fixed length)
-# print(firstRow)
-
-
-# This is added from my cubicle machine.
-class SaveType(Enum):
-    SAVE_ALL = 1
-    SAVE_ONE = 2
-
-class OATSampleMetod(Enum):
-    STANDARD = 1
-    STRICT = 2
-
-class StorageInfo():
-    def __init__(self, dFolder, rRepo):
-        self.dFolder = dFolder
-        self.rRepo = rRepo
-
-class VariableNotFoundInModel(Exception):
-    pass
-
-class PGM_control(Control):
-    NAME = 'PGM_control'
-    def __init__(self, ctrl_str, controls_dir, configFile):
-        super().__init__(ctrl_str, controls_dir)
-        logging.info('Instantiating the PGM control')
-        self.start_file_name = None
-        self.ctrl_str        = ctrl_str
-        self.start_file      = None
-        self.controls_dir    = controls_dir
-        self.simConfig = configFile
-        # self.folder = f'{case_Setup.CEF_BASE_DIR}/MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V4_filterRedesign'
-        self.folder = f'{case_Setup.CEF_BASE_DIR}/{self.simConfig.modelLocation}'
-        print(f'File folder: {self.folder}')
-        self.simulation = self.pull_case(self.folder+'/')
-        self.dft_file = self.simulation.dft_file
-        self.simulation.set_run_script('Start_Case.scr')
-        self.rtds_sys = rtds.RtdsSystem.from_dft(self.dft_file.str())
-        self.simulation.set_int_control(internal_ctrl = True)
-    
-    def _setVariableValues(self, randValues, saveOriginal = False):
-        print('------------------------------------------------------------')
-        print('Setting draft variables to specific values within their range')
-        draftVars = self.rtds_sys.get_draftvars()
-        sliders = self.rtds_sys.get_sliders()
-        for dftVar in draftVars:
-            if dftVar['Name'] in randValues:
-                print(f'Variable name: {dftVar["Name"]}, value before change: {dftVar["Value"]}, Value after change: {randValues[dftVar["Name"]]}')
-                dftVar['Value'] = randValues[dftVar['Name']]
-        for sldr in sliders:
-            if sldr['Name'] in randValues:
-                print(f'Slider name: {sldr["Name"]}, value before change: {sldr["Init"]}, Value after change: {randValues[sldr["Name"]]}')
-                sldr['Init'] = randValues[sldr['Name']]
-        outfile = f'{case_Setup.DRIVE_C}/testing/fileman/{self.simConfig.modelName}.dft'
-        self.rtds_sys.save_dft(fpath = outfile)
-        if saveOriginal:
-            self.rtds_sys.save_dft(fpath = f'{self.folder}/{self.simConfig.modelName}.dft')
-        # Waiting for the draft file to be saved:
-        print('------------------------------------------------------------')
-        return outfile
-
-    # This function will set all the variables to their nominal values.
-    def setVariablesToInitialState(self, variables):
-        inits = getVariablesInitialValueDict(variables)
-        outfile = self._setVariableValues(inits, saveOriginal=True)
-        return outfile
-    
-    def setVariablesToRandom(self, variables, variableFile = SaveType.SAVE_ALL):
-        timeIndepVars = getTimeIndepVarsDict(variables)
-        randVars = randomizeVariables(timeIndepVars)
-        os.chdir(currentDir)
-        os.remove('variableValues.yaml')
-        saveVariableValues(randVars, 'variableValues.yaml')
-        outfile = self._setVariableValues(randVars)
-        return outfile
-    
-    # This function gets the already randomized list of the variables
-    # and their values.
-    def setVariables(self, randVars, variableFile = SaveType.SAVE_ALL):
-        os.chdir(currentDir)
-        os.remove('variableValues.yaml')
-        saveVariableValues(randVars, 'variableValues.yaml')
-        outfile = self._setVariableValues(randVars)
-        return outfile
-        
-
-#-------------------------------------------------------------
-def runSample(sampleDictList, dFolder, remoteRepo, sampleGroup = None):
-    indexGroup = range(1, len(sampleDictList)+1)
-    myControl = PGM_control('', './', configFile=simConfig)   
-    if sampleGroup is not None: 
-        indexGroup = sampleGroup
-    for sampleIndex in indexGroup:
-        sample = sampleDictList[sampleIndex - 1]
-        outfile = myControl.setVariables(sample)
-        testDropLoc = Trial.init_test_drop(myControl.NAME)
-        ctrl = myControl
-        ctrl.initialize()
-        trial = Trial(ctrl, ctrl.simulation, testDropLoc)
-        # # HACK. This checks if it has to do fm metrics. 
-        case_Setup.fm = False 
-        trial.runWithoutMetrics()
-        ### This is where the output is copied to a new location. 
-        newF = createSpecificDataFolder(remoteRepo, sampleIndex)
-        shutil.copyfile(f"{currentDir}/variableValues.yaml", f'{newF.rstrip("/")}/variableValues.yaml')
-        copyDataToNewLocation(newF, dFolder)
-        copyDataToremoteServer(newF, outfile, isFolder = False)
-        print('removed the extra folders from the source repository.')
-        print(f'Done with the experiment {sampleIndex} and copying files to the repository.')
-    return
- 
-
-def runSampleFrom(sampleDictList, dFolder, remoteRepo = None, fromSample = None):
-    N = len(sampleDictList)
-    if fromSample is not None:
-        sampleGroup = range(fromSample, N+1)
-    else:
-        sampleGroup = range(N)
-    print('Starting sample: ')
-    print(sampleDictList[fromSample-1])
-    runSample(sampleDictList, dFolder, remoteRepo = remoteRepo, sampleGroup=sampleGroup)
-    return
-
-
 def main():
     # -------------------------- File path definitions ---------------------------------------------------------------
 
 
     #------------------------------- Setting up the variables -----------------------------------------------
-    variablesFile = './yamlFiles/variables_ac_pgm.yaml'
+    print('Current directory: ', currentDir)
+    variablesFile = './assets/yamlFiles/variables_ac_pgm.yaml'
     descriptionFile = './assets/yamlFiles/varDescription.yaml'
 
-    variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
+    variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR, span = 0.65 )
     # variables = getAllVariableConfigs('variables_limited.yaml', scalingScheme=Scale.LOGARITHMIC)
     for v in variables: 
         print(f'Variable: {v.name}, mapped name: {v.mappedName}, Initial value: {v.initialState}')
@@ -187,7 +53,6 @@ def main():
                         format='%(asctime)s - %(process)d - %(levelname)s - %(message)s')
 
     logging.debug('This is the debug message from the CAPS machine...')
-
     
     #----------------------------------------------------------------
     # First order Sensitivity Analysis:
@@ -230,11 +95,14 @@ def main():
     # The Fractional Factorial Desing with Hadamard matrices:
 
     experFile = './assets/experiments/FFD_AC_PGM.txt'
-    simRepo = remoteRepo81
+    simRepo = remoteRepo89
     # Taking the variables with non-zero initialState value
 
     timeIndepVars = getTimeIndepVars(variables, shuffle = True, omitZero = True)
-
+    print('========================================================================')
+    for var in variables: 
+        print(f'Name: {var.name}, Span: [{var.lowerLimit},{var.upperLimit}]')    
+    print('========================================================================')
 
     exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
     saveSampleToTxtFile(exper, fileName = experFile)
@@ -243,7 +111,10 @@ def main():
     copyDataToremoteServer(simRepo, descriptionFile)
     # exper = loadSampleFromTxtFile(experFile)
 
-    runSample(sampleDictList=exper,dFolder = dataFolder, remoteRepo = simRepo)
+    runSample(sampleDictList=exper,
+                dFolder = dataFolder, 
+                remoteRepo = simRepo,
+                simConfig=simConfig)
     # runSampleFrom(sampleDictList = exper, dFolder = dataFolder, remoteRepo = simRepo, fromSample = 12)
 
     # ----------------------------------------------------------------------

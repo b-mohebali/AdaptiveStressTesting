@@ -1,22 +1,39 @@
 
 from yamlParseObjects.yamlObjects import * 
 from yamlParseObjects.variablesUtil import * 
+import platform
+from repositories import *
+import logging
+import os
+from typing import Dict
+
 
 from autoRTDS import Trial
 from controls import Control, InternalControl
 import case_Setup
 from rscad import rtds
-from repositories import *
 import simulation
-import logging
-import os
 
-from typing import Dict
+
+
 
 # This is added from my cubicle machine.
 class SaveType(Enum):
     SAVE_ALL = 1
     SAVE_ONE = 2
+
+class OATSampleMetod(Enum):
+    STANDARD = 1
+    STRICT = 2
+
+class StorageInfo():
+    def __init__(self, dFolder, rRepo):
+        self.dFolder = dFolder
+        self.rRepo = rRepo
+
+class VariableNotFoundInModel(Exception):
+    pass
+
 
 class PGM_control(Control):
     NAME = 'PGM_control'

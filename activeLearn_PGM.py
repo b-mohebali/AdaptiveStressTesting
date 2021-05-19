@@ -82,8 +82,8 @@ variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=S
 
 # Setting the main files and locations:
 descriptionFile = currentDir + '/assets/yamlFiles/varDescription.yaml'
-sampleSaveFile = currentDir + '/assets/experiments/adaptive_sample.txt'
-repoLoc = adaptRepo3
+sampleSaveFile = currentDir + '/assets/experiments/adaptive_sample-400(80)-1.txt'
+repoLoc = adaptRepo4
 
 # Defining the location of the output files:
 outputFolder = f'{repoLoc}/outputs'
@@ -94,45 +94,51 @@ designSpace = SampleSpace(variableList=variables)
 dimNames = designSpace.getAllDimensionNames()
 initialReport = IterationReport(dimNames)
 initialReport.setStart()
+
+#-------------------CREATING SAMPLES BEFORE SIMULATION----------------
 # # Taking the initial sample based on the parameters of the process. 
-initialSamples = generateInitialSample(space = designSpace,
-                                        sampleSize=initialSampleSize,
-                                        method = InitialSampleMethod.CVT,
-                                        checkForEmptiness=False)
+# initialSamples = generateInitialSample(space = designSpace,
+#                                         sampleSize=initialSampleSize,
+#                                         method = InitialSampleMethod.CVT,
+#                                         checkForEmptiness=False)
 
 ### Preparing and running the initial sample: 
 # formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
 # saveSampleToTxtFile(formattedSample, sampleSaveFile)
 # runSample(sampleDictList=formattedSample, 
-#         dFolder = dataFolder,
-#         remoteRepo=repoLoc,
-#         simConfig=simConfig)
+#             dFolder = dataFolder,
+#             remoteRepo=repoLoc,
+#             simConfig=simConfig)
 
 
-
+#-------------------LOADING SAMPLES----------------------------------
 ## Loading sample from a pregenerated file in case of interruption:
-# print(currentDir)
-# formattedSample = loadSampleFromTxtFile(sampleSaveFile)
+print(currentDir)
+formattedSample = loadSampleFromTxtFile(sampleSaveFile)
 
 # runSample(formattedSample, dFolder = dataFolder, 
 #                 remoteRepo=repoLoc,
 #                 simConfig=simConfig,
 #                 sampleGroup=[80])
-
+#--------------------------------------------------------------------
 
 #### Running the metrics on the first sample: 
-
-setUpMatlab(simConfig=simConfig)
-# # Forming the sample list which includes all the initial samples:
+# Forming the sample list which includes all the initial samples:
 samplesList = list(range(1, initialSampleSize+1))
 ### Calling the metrics function on all the samples:
 # Using the parallelized metrics evaluation part. 
-runMetricsBatch(dataLocation=repoLoc,
-                sampleGroup=samplesList,
-                configFile=simConfig,
-                figureFolder=figFolder,
-                processNumber=4)
-
+# runMetricsBatch(dataLocation=repoLoc,
+#                 sampleGroup=samplesList,
+#                 configFile=simConfig,
+#                 figureFolder=figFolder,
+#                 PN_suggest=2)
+engine = setUpMatlab(simConfig=simConfig)
+getMetricsResults(dataLocation = repoLoc,
+                eng = engine, 
+                sampleNumber = samplesList,
+                metricNames = simConfig.metricNames,
+                figFolderLoc=figFolder,
+                procNum = 0)
 
 #### Load the mother sample for comparison:
 """
@@ -252,23 +258,17 @@ while currentBudget > 0:
     """
     for idx, sample in enumerate(formattedFoundPoints):
         runSinglePoint(sampleDict = sample,
-                        dFolder = dataFolder,
-                        remoteRepo = repoLoc,
-                        simConfig= simConfig,
-                        sampleNumber = nextSamples[idx],
-                        modelUnderTest=mut)
+                    dFolder = dataFolder,
+                    remoteRepo = repoLoc,
+                    simConfig= simConfig,
+                    sampleNumber = nextSamples[idx],
+                    modelUnderTest=mut)
     # Evaluating the newly simulated samples using MATLAB engine:
-    # getMetricsResults(dataLocation = repoLoc, 
-    #                 eng = matlabEngine,
-    #                 sampleNumber = nextSamples[idx],
-    #                 metricNames = simConfig.metricNames,
-    #                 figFolderLoc=figFolder)
     runMetricsBatch(dataLocation=repoLoc,
-                sampleGroup=nextSamples,
-                configFile=simConfig,
-                figureFolder=figFolder,
-                processNumber=4)
-    
+                    sampleGroup=nextSamples,
+                    configFile=simConfig,
+                    figureFolder=figFolder,
+                    PN_suggest=2)
     
     # Updating the classifier and checking the change measure:
     dataset,labels = readDataset(repoLoc, dimNames= dimNames)
@@ -289,7 +289,7 @@ while currentBudget > 0:
     sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_Labeled'
     plotSpace(designSpace,
             figsize = figSize,
-            meshRes = 100,
+            meshRes = 80,
             classifier = clf,
             gridRes = gridRes,
             showPlot=False,
