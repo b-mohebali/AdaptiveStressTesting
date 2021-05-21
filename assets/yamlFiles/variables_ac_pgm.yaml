@@ -7,8 +7,10 @@ description: "No influence factor"
 ---
 name: QXUfro
 type: timeIndep
-initialState: 0.1
+initialState: 0.06
 description: "Pulse load frequency"
+upperLimit: 0.085
+lowerLimit: 0.025
 
 ---
 name: QXUPro
@@ -21,11 +23,12 @@ name: QXUfrr
 type: timeIndep
 initialState: 0.8
 description: "Pulse load ramp rate"
+lowerLimit: 0.4
 
 ---
 name: QXUPrb
 type: timeIndep
-initialState: 2
+initialState: 1.5
 description: "Steady State load P"
 
 ---

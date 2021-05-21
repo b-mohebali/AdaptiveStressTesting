@@ -110,7 +110,6 @@ class SampleSpace():
             return np.min(np.linalg.norm(self.samples - X, axis=1))
         return np.min(np.linalg.norm(samplesList - X, axis=1))
 
-
 """
     NOTE: The initial classifier used here is SVM. The necessity for any other type of 
     classifier was not felt at this point.

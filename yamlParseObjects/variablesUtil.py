@@ -194,8 +194,10 @@ def getFFHMatrix(vars, res4 = False, dtype = float):
     if res4:
         h = np.concatenate((h,-h),axis = 0)
     for idx,var in enumerate(vars):
-        varLow = max(var.initialState * (1-variableSpan), var.lowerLimit)
-        varHigh = min(var.initialState * (1+variableSpan), var.upperLimit)
+        # varLow = max(var.initialState * (1-variableSpan), var.lowerLimit)
+        # varHigh = min(var.initialState * (1+variableSpan), var.upperLimit)
+        varLow = var.lowerLimit
+        varHigh = var.upperLimit
         h[h[:,idx+1]==1,idx+1] = varHigh
         h[h[:,idx+1]==-1,idx+1] = varLow
     return h[:,1:k+1] # Only returning the part of the H matrix that is used as simulation parameters.

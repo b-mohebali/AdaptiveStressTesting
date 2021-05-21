@@ -1,7 +1,14 @@
 import os
 import platform
+from yamlParseObjects.yamlObjects import simulationConfig
+import sys 
 
 if platform.system()=="Linux":
+    simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
+    print(simConfig.name)
+    for p in simConfig.codeBase:
+        sys.path.insert(0,p)
+        print(p + ' has been added to the path.')
     import case_Setup
     dataFolder = case_Setup.LOGGER_OUTPUT
 
@@ -196,23 +203,36 @@ remoteRepo80 = localRepo + 'sample80'
 # Same as 77 but on Rack 17:
 remoteRepo81 = localRepo + 'sample81'
 
-# First adaptive sampling repo. Test: initial sample + metrics evaluation + initial classifier training and visualization.
-adaptRepo1 = adaptiveSamplingLoc + 'adaptiveRepo1'
 # test repo:
 remoteRepo83 = localRepo + 'sample83'
 
-# A large sample that will act as the benchmark for the algorithm (2500 samples):
-motherSample = adaptiveSamplingLoc + 'motherSample'
-# A larger sample that will act as a benchmark for the algorithm (5000 samples lhs):
-# NOTE: reason for use of LHS over CVT is that we can add to this sample 
-#   later but not to the CVT sample. 
-motherSample2 = adaptiveSamplingLoc + 'motherSample2'
+# FFD Sample with span = 0.5 after droop was turned off on the AC PGM model:
+remoteRepo84 = localRepo + 'sample84'
+# FFD Sample with span = 0.65 after droop was turned off on the AC PGM model:
+remoteRepo85 = localRepo + 'sample85'
+# FFD with the model stabilization time span extended to 25s from 10s.
+remoteRepo86 = localRepo + 'sample86'
+# FFD sample after applying the constraints on the frequency and power of the pulse load:
+remoteRepo87 = localRepo + 'sample87'
+# Sample 87 was incorrect due to the limit setting that was done in the sampling process. 
+#   Sample 88 does the same thing with the limit setting corrected: 
+remoteRepo88 = localRepo + 'sample88'
+# Same as sample 88 but the pulse is enabled after 15 seconds 
+remoteRepo89 = localRepo + 'sample89'
 
 """
     Adaptive Samples notation: 
     sample {Total sample size}({Initial sample size})-{Batch size}
     Example : 400(80)-1 -> A sample of 400 simulations with 80 samples taken initially and batches of size 1.
 """
+# First adaptive sampling repo. Test: initial sample + metrics evaluation + initial classifier training and visualization.
+adaptRepo1 = adaptiveSamplingLoc + 'adaptiveRepo1'
+# A large sample that will act as the benchmark for the algorithm (2500 samples):
+motherSample = adaptiveSamplingLoc + 'motherSample'
+# A larger sample that will act as a benchmark for the algorithm (5000 samples lhs):
+# NOTE: reason for use of LHS over CVT is that we can add to this sample 
+#   later but not to the CVT sample. 
+motherSample2 = adaptiveSamplingLoc + 'motherSample2'
 
 # Adaptive Sampling 300(80)-1
 adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'
@@ -222,6 +242,8 @@ adaptRepo3 = adaptiveSamplingLoc + 'adaptiveRepo3'
 monteCarlo400 = adaptiveSamplingLoc + 'monteCarlo400'
 # Adaptive Sampling 400(80)-1 Droop control disengaged. 
 adaptRepo4 = adaptiveSamplingLoc + 'adaptiveRepo4'
+
+
 
 
 
