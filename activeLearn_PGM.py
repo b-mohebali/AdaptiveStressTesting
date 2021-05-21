@@ -20,7 +20,7 @@ import time
 from ActiveLearning.Sampling import *
 from ActiveLearning.dataHandling import *
 from ActiveLearning.visualization import * 
-from ActiveLearning.optimizationHelper import GeneticAlgorithmExploiter
+from ActiveLearning.optimizationHelper import GA_Exploiter
 from ActiveLearning.benchmarks import TrainedSvmClassifier
 from sklearn import svm
 from copy import copy
@@ -172,8 +172,8 @@ changeMeasure = [convergenceSample.getChangeMeasure(percent = True,
                             updateLabels=True)]
 samplesNumber = [initialSampleSize]
 
-# Defining the optimizer object:
-optimizer = GeneticAlgorithmExploiter(space = designSpace,
+# Defining the exploiter object:
+exploiter = GA_Exploiter(space = designSpace,
                                     epsilon = 0.03,
                                     batchSize = batchSize,
                                     convergence_curve = False,
@@ -232,9 +232,17 @@ while currentBudget > 0:
     iterReport = IterationReport(dimNames, batchSize = batchSize)
     iterReport.setStart()
     print('Current budget: ', currentBudget, ' samples.')
-    # Finding new points using the optimizer
-    newPointsFound = optimizer.findNextPoints(clf,
-                                        min(currentBudget, batchSize))
+    # Finding new points using the exploiter
+    # exploiter = GA_Exploiter(space = designSpace,
+    #                                 epsilon = 0.03,
+    #                                 clf = clf,
+    #                                 batchSize = batchSize,
+    #                                 convergence_curve = False,
+    #                                 progress_bar = True)
+    
+    # Upodating the exploiter object classifier at each iteration. 
+    exploiter.clf = clf
+    newPointsFound = exploiter.findNextPoints(min(currentBudget, batchSize))
     # Updating the remaining budget:
     currentBudget -= len(newPointsFound)
     # formatting the samples for simulation:

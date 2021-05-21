@@ -1,20 +1,16 @@
 from geneticalgorithm import geneticalgorithm as ga
-from .Sampling import Space
+from .Sampling import SampleSpace
 import numpy as np
 from abc import ABC, abstractmethod
 from ActiveLearning.benchmarks import Benchmark
+from scipy.linalg import norm
+from math import *
 
 # TODO: This is going to be the parent class for all the optimizers used for selecting a point in a 
 #   design space. 
-class Optimizer(ABC):
-    pass
-
-
-# The wrapper class for the genetic algorithm that solves the exploitation problem:
-class GeneticAlgorithmExploiter():
+class GA_Optimizer(ABC):
     def __init__(self, 
-                space: Space, 
-                epsilon: float, 
+                space: SampleSpace, 
                 batchSize: int = 1, 
                 convergence_curve = True, 
                 progress_bar = True):
@@ -22,7 +18,6 @@ class GeneticAlgorithmExploiter():
         self.clf = None 
         self.convergence_curve = convergence_curve
         self.progress_bar = progress_bar
-        self.epsilon = epsilon
         self.batchSize = batchSize
         self.currentSpaceSamples = None
     
@@ -33,13 +28,9 @@ class GeneticAlgorithmExploiter():
         return self._batchSize
     batchSize = property(getBatchSize, setBatchSize)
 
+    @abstractmethod
     def objFunction(self, X):
-        dist = self.space.nearestPointDistance(X, self.currentSpaceSamples)
-        pen = 0
-        df = self.clf.decision_function(X.reshape(1,len(X)))
-        if abs(df) > self.epsilon:
-            pen = abs(df) *100
-        return -1 * dist + pen 
+        pass
     
     def getModel(self):
         algoParam = {'max_num_iteration': 40,
@@ -59,8 +50,8 @@ class GeneticAlgorithmExploiter():
                         progress_bar=self.progress_bar)
         return gaModel
 
-    def findNextPoints(self, clf,pointNum):
-        self.clf = clf
+    def findNextPoints(self,pointNum=None):
+        pointNum = self.batchSize if pointNum is None else pointNum
         newPointsFound = []
         self.currentSpaceSamples = self.space.samples
         for _ in range(pointNum):
@@ -75,3 +66,46 @@ class GeneticAlgorithmExploiter():
         self.currentSpaceSamples = np.append(self.currentSpaceSamples, point.reshape(1,len(point)),axis=0)    
 
 
+# The wrapper class for the genetic algorithm that solves the exploitation problem:
+class GA_Exploiter(GA_Optimizer):
+    def __init__(self, 
+                space: SampleSpace, 
+                epsilon: float, 
+                clf,
+                batchSize: int = 1, 
+                convergence_curve = True, 
+                progress_bar = True):
+        GA_Optimizer.__init__(self, 
+                    space = space,
+                    batchSize=batchSize,
+                    convergence_curve=convergence_curve, 
+                    progress_bar=progress_bar)
+        self.epsilon = epsilon                   
+        self.clf = clf
+    
+    def objFunction(self, X):
+        dist = self.space.nearestPointDistance(X, self.currentSpaceSamples)
+        pen = 0
+        df = self.clf.decision_function(X.reshape(1,len(X)))
+        if abs(df) > self.epsilon:
+            pen = abs(df) *100
+        return -1 * dist + pen 
+
+class GA_Explorer(GA_Optimizer):
+    def __init__(self, space: SampleSpace, 
+                batchSize: int = 1, 
+                convergence_curve = True, 
+                progress_bar = True,
+                beta:float = 100):
+        GA_Optimizer.__init__(self, 
+                        space = space, 
+                        batchSize=batchSize, 
+                        convergence_curve=convergence_curve, 
+                        progress_bar=progress_bar)
+        self.beta = beta 
+
+    def objFunction(self, X):
+        return sum([exp(-self.beta * norm(p-X)) for p in self.currentSpaceSamples])
+
+
+         

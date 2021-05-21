@@ -12,3 +12,4 @@ variableValues.yaml
 */*.csv
 *.txt
 .ipynb_checkpoints
+crs_test.py
