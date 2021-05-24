@@ -1,0 +1,805 @@
+!!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 25
+budgetRemaining: 95
+changeMeasure: 7.04
+elapsedTimeSeconds: 0.6686077117919922
+iterationNumber: 0
+metricResults:
+  1: 0
+  2: 0
+  3: 0
+  4: 0
+  5: 0
+  6: 0
+  7: 0
+  8: 0
+  9: 0
+  10: 1
+  11: 0
+  12: 0
+  13: 0
+  14: 0
+  15: 0
+  16: 0
+  17: 0
+  18: 0
+  19: 0
+  20: 0
+  21: 0
+  22: 0
+  23: 0
+  24: 0
+  25: 0
+samples:
+  1:
+    x1: -3.546656123170435
+    x2: -1.7588385930952177
+  2:
+    x1: 4.5691275871589205
+    x2: 3.9592949588685045
+  3:
+    x1: -3.1892148560200213
+    x2: 15.932180508937755
+  4:
+    x1: 2.0694885478566123
+    x2: -3.475503746884793
+  5:
+    x1: -0.052518401632437595
+    x2: 0.17619659830210477
+  6:
+    x1: 10.59179065561769
+    x2: 7.576607550715863
+  7:
+    x1: 5.375508311216112
+    x2: 13.471724419022653
+  8:
+    x1: 0.8934998640454914
+    x2: 12.748131032522728
+  9:
+    x1: 2.36332186890865
+    x2: 7.995075326318448
+  10:
+    x1: -2.8385988996348757
+    x2: 10.114022903239558
+  11:
+    x1: 8.457905874487876
+    x2: -2.1328091409685954
+  12:
+    x1: -1.442130776912955
+    x2: 4.564231613636689
+  13:
+    x1: 5.9259050575311125
+    x2: -2.3373461685438235
+  14:
+    x1: 1.909434983381943
+    x2: 2.1084369447744145
+  15:
+    x1: 10.530663374234065
+    x2: -0.41720330111804316
+  16:
+    x1: 10.277113509040118
+    x2: 12.44854966446269
+  17:
+    x1: 0.1329166763821652
+    x2: 17.820433642501715
+  18:
+    x1: 9.527756059512415
+    x2: 17.528489292841943
+  19:
+    x1: 10.822274214891337
+    x2: 3.9448082228016794
+  20:
+    x1: 4.436334473357888
+    x2: 17.71658565476088
+  21:
+    x1: -1.0797935489510953
+    x2: -2.899367259317511
+  22:
+    x1: 7.88319025767025
+    x2: 5.036088486888589
+  23:
+    x1: -3.991557124860523
+    x2: 5.29191691998254
+  24:
+    x1: 4.144701506958416
+    x2: -0.7915305616118591
+  25:
+    x1: 6.876135320383398
+    x2: 9.806027974048467
+startTime: 2021-05-21 14:55:59.706595
+stopTime: 2021-05-21 14:56:00.375202
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 91
+changeMeasure: 2.92
+elapsedTimeSeconds: 24.00963807106018
+iterationNumber: 1
+metricResults:
+  1: 0
+  2: 0
+  3: 0
+  4: 0
+samples:
+  1:
+    x1: -0.7732201193727772
+    x2: 7.73320935728759
+  2:
+    x1: -2.0042396167138885
+    x2: 13.450563947696793
+  3:
+    x1: 0.10611197120222737
+    x2: 10.231405305647986
+  4:
+    x1: -2.809937092045383
+    x2: 7.069630199068657
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 14:56:24.408862
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 87
+changeMeasure: 1.24
+elapsedTimeSeconds: 23.735029220581055
+iterationNumber: 2
+metricResults:
+  1: 0
+  2: 0
+  3: 0
+  4: 0
+samples:
+  1:
+    x1: -4.66342341881614
+    x2: 13.73905647757051
+  2:
+    x1: -4.734895820666918
+    x2: 7.515719588309221
+  3:
+    x1: -1.4013487082645306
+    x2: 9.3833558736631
+  4:
+    x1: -1.4539330076328056
+    x2: 11.457635538848352
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 14:56:48.150898
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 83
+changeMeasure: 0.72
+elapsedTimeSeconds: 24.297846794128418
+iterationNumber: 3
+metricResults:
+  1: 0
+  2: 1
+  3: 0
+  4: 1
+samples:
+  1:
+    x1: -2.810672561879991
+    x2: 8.577210761326425
+  2:
+    x1: -3.2696611066718857
+    x2: 12.636282707110734
+  3:
+    x1: -3.8129987960725398
+    x2: 8.151884999286366
+  4:
+    x1: -1.8928677807447207
+    x2: 10.480964554081611
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 14:57:12.456753
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 79
+changeMeasure: 0.24
+elapsedTimeSeconds: 24.551297187805176
+iterationNumber: 4
+metricResults:
+  1: 0
+  2: 0
+  3: 1
+  4: 1
+samples:
+  1:
+    x1: -2.1004108348344017
+    x2: 11.950591872480729
+  2:
+    x1: -4.5644783808909395
+    x2: 8.928787947110141
+  3:
+    x1: -3.845756426326815
+    x2: 13.256520415646442
+  4:
+    x1: -2.2057138063575437
+    x2: 9.167675692591096
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 14:57:37.020061
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 75
+changeMeasure: 1.5599999999999998
+elapsedTimeSeconds: 24.842876195907593
+iterationNumber: 5
+metricResults:
+  1: 1
+  2: 0
+  3: 0
+  4: 0
+samples:
+  1:
+    x1: -2.5784174259394206
+    x2: 12.471861543621834
+  2:
+    x1: -3.4586475210464163
+    x2: 8.878230027567504
+  3:
+    x1: -1.5909411902401556
+    x2: 9.926816724799426
+  4:
+    x1: -1.6616920733345215
+    x2: 10.955340950978977
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 14:58:01.873956
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 71
+changeMeasure: 0.6
+elapsedTimeSeconds: 24.776084899902344
+iterationNumber: 6
+metricResults:
+  1: 0
+  2: 0
+  3: 1
+  4: 1
+samples:
+  1:
+    x1: -4.717466802066031
+    x2: 11.780990107091085
+  2:
+    x1: -4.232949814834538
+    x2: 10.281287096933676
+  3:
+    x1: -3.01074777591508
+    x2: 13.85115268682124
+  4:
+    x1: -2.8133716367016124
+    x2: 9.166296293364747
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 14:58:26.664053
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 67
+changeMeasure: 0.8
+elapsedTimeSeconds: 24.413453340530396
+iterationNumber: 7
+metricResults:
+  1: 1
+  2: 0
+  3: 0
+  4: 1
+samples:
+  1:
+    x1: -3.9618538548568707
+    x2: 14.747018703838716
+  2:
+    x1: -3.5106920008566758
+    x2: 9.682891483858382
+  3:
+    x1: -2.9203201356744604
+    x2: 14.861962804499099
+  4:
+    x1: -3.5047919916080206
+    x2: 15.139947136498389
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 14:58:51.092519
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 63
+changeMeasure: 1.1199999999999999
+elapsedTimeSeconds: 24.963900089263916
+iterationNumber: 8
+metricResults:
+  1: 1
+  2: 0
+  3: 0
+  4: 0
+samples:
+  1:
+    x1: -4.069508202333779
+    x2: 15.899640197688086
+  2:
+    x1: -4.297347937198795
+    x2: 12.245042846344784
+  3:
+    x1: -4.474236223559193
+    x2: 13.061446108275344
+  4:
+    x1: -3.968548167943449
+    x2: 11.151239699460032
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 14:59:16.072433
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 59
+changeMeasure: 0.9199999999999999
+elapsedTimeSeconds: 24.16055130958557
+iterationNumber: 9
+metricResults:
+  1: 0
+  2: 1
+  3: 0
+  4: 0
+samples:
+  1:
+    x1: -4.819024783308379
+    x2: 17.914867262093328
+  2:
+    x1: -3.393885041418381
+    x2: 10.238199169789965
+  3:
+    x1: -4.9571709821188765
+    x2: 16.03821985111715
+  4:
+    x1: -4.6960953275064234
+    x2: 14.937723508507307
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 14:59:40.250000
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 55
+changeMeasure: 0.84
+elapsedTimeSeconds: 25.343008518218994
+iterationNumber: 10
+metricResults:
+  1: 0
+  2: 0
+  3: 0
+  4: 0
+samples:
+  1:
+    x1: -2.2436280056269498
+    x2: 8.132085088282151
+  2:
+    x1: -4.4567172717558465
+    x2: 14.348386760043123
+  3:
+    x1: -3.928597534100656
+    x2: 16.558534957831643
+  4:
+    x1: -1.7993739855599906
+    x2: 8.712274888660344
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:00:05.611024
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 51
+changeMeasure: 0.32
+elapsedTimeSeconds: 26.185222387313843
+iterationNumber: 11
+metricResults:
+  1: 0
+  2: 1
+  3: 0
+  4: 0
+samples:
+  1:
+    x1: -3.888891688251822
+    x2: 11.787053745933022
+  2:
+    x1: -4.2612142148138075
+    x2: 15.246074909644797
+  3:
+    x1: -2.213688854908072
+    x2: 12.867633666069903
+  4:
+    x1: -3.5780805116127015
+    x2: 10.752486037731405
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:00:31.817266
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 47
+changeMeasure: 0.6
+elapsedTimeSeconds: 24.983391523361206
+iterationNumber: 12
+metricResults:
+  1: 0
+  2: 1
+  3: 1
+  4: 0
+samples:
+  1:
+    x1: -2.560905506857048
+    x2: 13.556464414853805
+  2:
+    x1: -2.1494214530968656
+    x2: 9.781314298887516
+  3:
+    x1: -2.9060934723369876
+    x2: 9.643283523698637
+  4:
+    x1: -2.7893315093632216
+    x2: 14.343606059956098
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:00:56.822669
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 43
+changeMeasure: 0.36
+elapsedTimeSeconds: 24.55993366241455
+iterationNumber: 13
+metricResults:
+  1: 1
+  2: 1
+  3: 1
+  4: 1
+samples:
+  1:
+    x1: -2.0758781412856786
+    x2: 11.383910200163314
+  2:
+    x1: -3.9879624592772904
+    x2: 12.537898278223013
+  3:
+    x1: -4.209147232508691
+    x2: 13.57163087251234
+  4:
+    x1: -1.8532575519642718
+    x2: 9.434087135967063
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:01:21.404623
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 39
+changeMeasure: 0.27999999999999997
+elapsedTimeSeconds: 24.493396282196045
+iterationNumber: 14
+metricResults:
+  1: 1
+  2: 1
+  3: 1
+  4: 0
+samples:
+  1:
+    x1: -4.4660318847059495
+    x2: 15.690993476908787
+  2:
+    x1: -2.453444287577492
+    x2: 8.817991658177315
+  3:
+    x1: -2.6069672532522308
+    x2: 13.196090871680136
+  4:
+    x1: -4.157421789213903
+    x2: 12.885627188285248
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:01:45.922041
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 35
+changeMeasure: 0.4
+elapsedTimeSeconds: 24.605072259902954
+iterationNumber: 15
+metricResults:
+  1: 1
+  2: 1
+  3: 0
+  4: 0
+samples:
+  1:
+    x1: -3.4620245957467635
+    x2: 15.513861237598718
+  2:
+    x1: -1.869952253644576
+    x2: 9.032141927379765
+  3:
+    x1: -4.566500924311323
+    x2: 15.35126612059937
+  4:
+    x1: -2.18115397034028
+    x2: 12.378060316765213
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:02:10.553146
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 31
+changeMeasure: 0.72
+elapsedTimeSeconds: 25.297853469848633
+iterationNumber: 16
+metricResults:
+  1: 1
+  2: 0
+  3: 1
+  4: 1
+samples:
+  1:
+    x1: -2.441761338296173
+    x2: 8.4399628840046
+  2:
+    x1: -4.471096437028179
+    x2: 16.255259340980455
+  3:
+    x1: -1.944348399730558
+    x2: 8.360119169189526
+  4:
+    x1: -3.7290504154075608
+    x2: 16.1509240369412
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:02:35.878023
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 27
+changeMeasure: 0.6799999999999999
+elapsedTimeSeconds: 25.116336584091187
+iterationNumber: 17
+metricResults:
+  1: 0
+  2: 0
+  3: 0
+  4: 0
+samples:
+  1:
+    x1: -1.4653192989517088
+    x2: 6.839975454090904
+  2:
+    x1: -2.15136749421205
+    x2: 6.926572607175151
+  3:
+    x1: -2.7807239319767465
+    x2: 7.916555759991585
+  4:
+    x1: -1.2990044868986586
+    x2: 8.387361029567765
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:03:01.022393
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 23
+changeMeasure: 0.2
+elapsedTimeSeconds: 25.17820715904236
+iterationNumber: 18
+metricResults:
+  1: 0
+  2: 0
+  3: 0
+  4: 0
+samples:
+  1:
+    x1: -3.1968082852117985
+    x2: 9.34405077933459
+  2:
+    x1: -1.731721845805526
+    x2: 10.209485150489346
+  3:
+    x1: -3.8044103455401928
+    x2: 11.40133656119848
+  4:
+    x1: -2.9404201751563086
+    x2: 8.835794654540928
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:03:26.229636
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 19
+changeMeasure: 1.04
+elapsedTimeSeconds: 25.749347448349
+iterationNumber: 19
+metricResults:
+  1: 1
+  2: 0
+  3: 1
+  4: 1
+samples:
+  1:
+    x1: -3.6402126231833973
+    x2: 11.079663468738325
+  2:
+    x1: -3.9662424923490414
+    x2: 12.219025697068805
+  3:
+    x1: -3.582884473911026
+    x2: 15.831525350509395
+  4:
+    x1: -1.9870602005710742
+    x2: 10.924245837848755
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:03:52.010010
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 15
+changeMeasure: 0.88
+elapsedTimeSeconds: 25.653875827789307
+iterationNumber: 20
+metricResults:
+  1: 0
+  2: 0
+  3: 0
+  4: 1
+samples:
+  1:
+    x1: -4.588813205797667
+    x2: 17.152765551136294
+  2:
+    x1: -3.8584949664166803
+    x2: 17.467165370564757
+  3:
+    x1: -3.3861607403437097
+    x2: 16.684831311308226
+  4:
+    x1: -4.372893048460826
+    x2: 14.6697650361906
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:04:17.696919
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 11
+changeMeasure: 0.27999999999999997
+elapsedTimeSeconds: 25.49514412879944
+iterationNumber: 21
+metricResults:
+  1: 0
+  2: 1
+  3: 0
+  4: 0
+samples:
+  1:
+    x1: -3.041615553045716
+    x2: 15.18383237472623
+  2:
+    x1: -4.275509359121021
+    x2: 16.56804734112524
+  3:
+    x1: -3.2694467440102333
+    x2: 9.837250395970631
+  4:
+    x1: -2.6411927461727123
+    x2: 13.92018576950607
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:04:43.226094
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 7
+changeMeasure: 0.2
+elapsedTimeSeconds: 24.784493923187256
+iterationNumber: 22
+metricResults:
+  1: 0
+  2: 0
+  3: 0
+  4: 1
+samples:
+  1:
+    x1: -1.606662166407809
+    x2: 9.127141071308177
+  2:
+    x1: -4.3996931028686195
+    x2: 13.891086061768952
+  3:
+    x1: -1.7295096576395919
+    x2: 8.466823811465273
+  4:
+    x1: -2.503038799220817
+    x2: 12.925611934557514
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:05:08.045621
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 3
+changeMeasure: 0.6799999999999999
+elapsedTimeSeconds: 25.179431438446045
+iterationNumber: 23
+metricResults:
+  1: 0
+  2: 0
+  3: 1
+  4: 1
+samples:
+  1:
+    x1: -4.541523909398291
+    x2: 16.007650801958746
+  2:
+    x1: -1.8503621127940941
+    x2: 10.677588119812158
+  3:
+    x1: -2.1218363414444292
+    x2: 8.764753584228263
+  4:
+    x1: -2.9909530455569335
+    x2: 14.573342032821017
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:05:33.262096
+variableNames:
+- x1
+- x2
+--- !!python/object:yamlParseObjects.yamlObjects.IterationReport
+batchSize: 4
+budgetRemaining: 0
+changeMeasure: 0.24
+elapsedTimeSeconds: 19.254295349121094
+iterationNumber: 24
+metricResults:
+  1: 0
+  2: 1
+  3: 1
+samples:
+  1:
+    x1: -3.2190201496971316
+    x2: 15.596638614443673
+  2:
+    x1: -2.132284034174078
+    x2: 11.675640291324022
+  3:
+    x1: -3.152800147502435
+    x2: 9.580019029860498
+startTime: 2021-05-21 14:55:58.947906
+stopTime: 2021-05-21 15:05:52.554435
+variableNames:
+- x1
+- x2

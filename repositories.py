@@ -219,6 +219,8 @@ remoteRepo87 = localRepo + 'sample87'
 remoteRepo88 = localRepo + 'sample88'
 # Same as sample 88 but the pulse is enabled after 15 seconds 
 remoteRepo89 = localRepo + 'sample89'
+# Drastically increased the range of variation for the variables. Especially the pulse load ramp rate and its frequency
+remoteRepo90 = localRepo + 'sample90'
 
 """
     Adaptive Samples notation: 
