@@ -3,7 +3,7 @@ from yamlParseObjects.variablesUtil import *
 import logging
 import os,sys
 import subprocess
-from ActiveLearning.benchmarks import DistanceFromCenter, Branin, Benchmark
+from ActiveLearning.benchmarks import DistanceFromCenter, Branin, Benchmark, Hosaki
 from ActiveLearning.Sampling import *
 import platform
 import shutil
@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from enum import Enum
 from sklearn import svm
 from geneticalgorithm import geneticalgorithm as ga
-from ActiveLearning.optimizationHelper import GA_Exploiter as gaSolver
+from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Explorer
 from copy import copy
 
 from ActiveLearning.visualization import *
@@ -29,12 +29,18 @@ budget = simConfig.sampleBudget
 batchSize = simConfig.batchSize
 initialSampleSize = simConfig.initialSampleSize
 
+# Individual budgets. Will be replaced by dynamic resource allocator:
+exploitationBudget = 3
+explorationBudget = batchSize - exploitationBudget
+
 # Defining the design space based on the variables config file: 
 mySpace = SampleSpace(variableList=variables)
 dimNames = mySpace.getAllDimensionNames()
 initialReport = IterationReport(dimNames)
 # Defining the benchmark:
-myBench = DistanceFromCenter(threshold=1.5, inputDim=mySpace.dNum, center = [4] * mySpace.dNum)
+# myBench = DistanceFromCenter(threshold=1.5, inputDim=mySpace.dNum, center = [4] * mySpace.dNum)
+# myBench = Branin(threshold=8)
+myBench = Hosaki(threshold = -1)
 # Generating the initial sample. This step is pure exploration MC sampling:
 
 # Starting time:
@@ -71,12 +77,20 @@ plt.close()
 # Finishing time
 initialReport.stopTime = datetime.now()
 initialReport.setStop()
-# Defining the optimizer: 
-optimizer = gaSolver(space = mySpace, 
+# Defining the exploiter: 
+exploiter = GA_Exploiter(space = mySpace, 
                     epsilon = 0.05,
                     batchSize = simConfig.batchSize,
                     convergence_curve=False,
-                    progress_bar=False)
+                    progress_bar=False,
+                    clf = clf)
+
+# Defining the explorer object:
+explorer = GA_Explorer(space = mySpace, 
+                    batchSize = simConfig.batchSize,
+                    convergence_curve=False, 
+                    progress_bar=False, 
+                    beta = 100)
 
 # Defining the convergence sample that implementes the change measure as well as
 #   the performance metrics for the process. 
@@ -117,9 +131,11 @@ while currentBudget > 0:
     iterReport = IterationReport(dimNames, batchSize=batchSize)
     iterReport.setStart()
     print('Current budget: ', currentBudget, ' samples')
-    # Finding new points using the optimizer object:
-    # NOTE: The classifier has to be passed everytime to the optimizer for update.
-    newPointsfound = optimizer.findNextPoints(clf, min(currentBudget, batchSize))
+    # Finding new points using the exploiter object:
+    # NOTE: The classifier has to be passed everytime to the exploiter for update.
+    # exploiterPoints = exploiter.findNextPoints(min(currentBudget, batchSize))
+    exploiterPoints = exploiter.findNextPoints(pointNum=exploitationBudget)
+    explorerPoints = explorer.findNextPoints(pointNum=explorationBudget)
     # Updating the remaining budget:
     currentBudget -= min(currentBudget, batchSize) 
     # Visualization and saving the results:
@@ -130,16 +146,20 @@ while currentBudget > 0:
         showPlot=False, 
         classifier = clf,
         saveInfo=sInfo,
-        newPoint=newPointsfound,
+        newPoints=exploiterPoints,
+        explorePoints=explorerPoints,
         benchmark = myBench)
     plt.close()
     # Evaluating the newly found samples: 
-    newLabels = myBench.getLabelVec(newPointsfound)
+    newLabels = myBench.getLabelVec(exploiterPoints)
+    exploreLabels = myBench.getLabelVec(explorerPoints)
     # Adding the newly evaluated samples to the dataset:
-    mySpace.addSamples(newPointsfound, newLabels)
+    mySpace.addSamples(exploiterPoints, newLabels)
+    mySpace.addSamples(explorerPoints, exploreLabels)
     # Training the next iteration of the classifier:
     clf = svm.SVC(kernel = 'rbf', C=1000)
     clf.fit(mySpace.samples, mySpace.eval_labels)
+    exploiter.clf = clf
     # Calculation of the new measure of change and accuracy after training:
     newChangeMeasure = convergenceSample.getChangeMeasure(percent = True, 
                                             classifier = clf, 
@@ -160,7 +180,7 @@ while currentBudget > 0:
         legend = True,
         classifier = clf, 
         benchmark = myBench,
-        newPoint=None,
+        newPoints=None,
         saveInfo=sInfo,
         showPlot=False)
     plt.close()
@@ -169,13 +189,14 @@ while currentBudget > 0:
     iterReport.budgetRemaining = currentBudget
     iterReport.iterationNumber = iterationNum
     iterReport.setMetricResults(newLabels)
-    iterReport.setSamples(newPointsfound)
+    iterReport.setExploitatives(exploiterPoints)
+    iterReport.setExplorers(explorerPoints)
     iterReport.setChangeMeasure(newChangeMeasure)
     iterationReports.append(iterReport)
     saveIterationReport(iterationReports, iterationReportFile)
 
 # Final visualization of the results: 
-plotSpace(space = mySpace, figsize=(10,8), legend = True, newPoint = None, 
+plotSpace(space = mySpace, figsize=(10,8), legend = True,
                         saveInfo=sInfo, showPlot=True, classifier = clf, 
                         benchmark = myBench)
 

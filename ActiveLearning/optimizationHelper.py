@@ -108,4 +108,6 @@ class GA_Explorer(GA_Optimizer):
         return sum([exp(-self.beta * norm(p-X)) for p in self.currentSpaceSamples])
 
 
-         
+class ResourceAllocator:
+    def __init__(self) -> None:
+        pass         

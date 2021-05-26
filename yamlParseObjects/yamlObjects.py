@@ -149,6 +149,14 @@ class IterationReport():
     #       variable values are distinguishable in the report.
     def setSamples(self,samples):
         self.samples = dict((i1+1, dict((self.variableNames[_], float(sample[_])) for _ in range(len(sample)))) for i1, sample in enumerate(samples))
+    
+    def setExploitatives(self,exploiters):
+        self.Exploitation = dict((i1+1, dict((self.variableNames[_], float(sample[_])) for _ in range(len(sample)))) for i1, sample in enumerate(exploiters))
+    def setExplorers(self,explorers):
+        self.Exploration = dict((i1+1, dict((self.variableNames[_], float(sample[_])) for _ in range(len(sample)))) for i1, sample in enumerate(explorers))
+    
+
+    
     def setChangeMeasure(self, changeMeasure):
         self.changeMeasure = float(changeMeasure)
     # Making a dictionary with sample index as key and its corresponding label as values.

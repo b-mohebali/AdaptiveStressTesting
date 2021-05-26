@@ -35,13 +35,14 @@ def plotSpace(space: SampleSpace,
               classifier = None, 
               benchmark:Benchmark = None,
               legend = True,
-              newPoint = None,
+              newPoints = None,
+              explorePoints = None,
               saveInfo: SaveInformation = None,
               showPlot = True,
               insigDimensions = None, 
               gridRes = None,
               prev_classifier =None,
-              ocmparison_classifier = None) -> None:
+              comparison_classifier = None) -> None:
     """This function plots the samples in a Space object.
     - Options: 3D and 2D spaces. (4D coming up)
     - TO-DO: Higher dimensions implementation by generating a set 
@@ -57,6 +58,7 @@ def plotSpace(space: SampleSpace,
         - fDim_values: The set of values at which the forth dimension factor 
             is fixed in each plot. Only for spaces with d>3.
     """
+    # Three options for the dimension of the design space are available: 
     if space.dNum ==2:
         _plotSpace2D(space = space, 
                     figsize = figsize, 
@@ -64,9 +66,10 @@ def plotSpace(space: SampleSpace,
                     meshRes = meshRes, 
                     legend = legend,
                     benchmark = benchmark,
-                    newPoint = newPoint,
+                    newPoints = newPoints,
                     saveInfo = saveInfo,
-                    showPlot = showPlot)
+                    showPlot = showPlot,
+                    explorePoints = explorePoints)
     elif space.dNum == 3: 
         _plotSpace3D(space = space,
                     showPlot= showPlot,
@@ -75,7 +78,8 @@ def plotSpace(space: SampleSpace,
                     benchmark = benchmark,
                     meshRes = meshRes,
                     legend = legend,
-                    newPoint = newPoint,
+                    newPoints = newPoints,
+                    explorePoints = explorePoints,
                     saveInfo=saveInfo)
     elif space.dNum == 4:
         _plotSpace4D(space = space, 
@@ -233,7 +237,8 @@ def _plotSpace3D(space: SampleSpace,
                 benchmark = None,
                 meshRes = 100,
                 saveInfo:SaveInformation = None,
-                newPoint = None):
+                newPoints = None,
+                explorePoints = None):
     
     clf = classifier if classifier is not None else space.clf
     labels = space.eval_labels
@@ -296,11 +301,17 @@ def _plotSpace3D(space: SampleSpace,
         plt.legend(loc = 'upper left',bbox_to_anchor=(1.05, 1.0))
     plt.tight_layout()
 
-    if newPoint is not None:
-        newPoint = np.array(newPoint)
-        newPoint = newPoint.reshape(1,len(newPoint)) if len(newPoint.shape) <2 else newPoint
-        legendLabel = 'Next point' + ('s' if newPoint.shape[0]>1 else '')
-        ax.scatter(newPoint[:,0], newPoint[:,1], newPoint[:,2], marker = 's',s = 20, label = legendLabel, color = 'green' )
+    if newPoints is not None:
+        newPoints = np.array(newPoints)
+        newPoints = newPoints.reshape(1,len(newPoints)) if len(newPoints.shape) <2 else newPoints
+        legendLabel = 'Exploitative points' + ('s' if newPoints.shape[0]>1 else '')
+        ax.scatter(newPoints[:,0], newPoints[:,1], newPoints[:,2], marker = 's',s = 20, label = legendLabel, color = 'm' )
+    if explorePoints is not None:
+        explorePoints = np.array(explorePoints)
+        explorePoints = explorePoints.reshape(1,len(explorePoints)) if len(explorePoints.shape) <2 else explorePoints
+        legendLabel = 'Exploratory point' + ('s' if explorePoints.shape[0]>1 else '')
+        ax.scatter(explorePoints[:,0], explorePoints[:,1], explorePoints[:,2], marker = 's',s = 20, label = legendLabel, color = 'green' )
+    
     if saveInfo is not None:
         saveFigures(saveInfo=saveInfo)
     if showPlot:
@@ -315,7 +326,8 @@ def _plotSpace2D(space: SampleSpace,
                 meshRes=100, 
                 benchmark = None,
                 legend=True,
-                newPoint = None,
+                newPoints = None,
+                explorePoints = None,
                 saveInfo:SaveInformation = None,
                 showPlot = True):
     labels = space.eval_labels
@@ -364,11 +376,16 @@ def _plotSpace2D(space: SampleSpace,
             cs2.collections[i].set_label(csLabels2[i])                 
     
     # If the new point(s) is (are) passed to the function it will be shown differently than the evaluated points:
-    if newPoint is not None:
-        newPoint = np.array(newPoint)
-        newPoint = newPoint.reshape(1,len(newPoint)) if len(newPoint.shape) <2 else newPoint
-        legendLabel = 'Next point' + ('s' if newPoint.shape[0]>1 else '')
-        ax.scatter(newPoint[:,0], newPoint[:,1], marker = 's',s = 20, label = legendLabel, color = 'm' )
+    if newPoints is not None:
+        newPoints = np.array(newPoints)
+        newPoints = newPoints.reshape(1,len(newPoints)) if len(newPoints.shape) <2 else newPoints
+        legendLabel = 'Exploitative point' + ('s' if newPoints.shape[0]>1 else '')
+        ax.scatter(newPoints[:,0], newPoints[:,1], marker = 's',s = 20, label = legendLabel, color = 'm' )
+    if explorePoints is not None:
+        explorePoints = np.array(explorePoints)
+        explorePoints = explorePoints.reshape(1,len(explorePoints)) if len(explorePoints.shape) <2 else explorePoints
+        legendLabel = 'Exploitative point' + ('s' if explorePoints.shape[0]>1 else '')
+        ax.scatter(explorePoints[:,0], explorePoints[:,1], marker = 's',s = 20, label = legendLabel, color = 'g')
     if legend:
         plt.legend(loc = 'upper left',bbox_to_anchor=(1.05, 1.0))
     plt.tight_layout()
