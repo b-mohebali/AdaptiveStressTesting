@@ -18,7 +18,7 @@ class Dimension():
     def __init__(self, varConfig: variableConfig):
         self.name = varConfig.name
         self.bounds = [varConfig.lowerLimit, varConfig.upperLimit]
-        self.range = self.bounds[1] - self.bounds[0]
+        self.range = abs(self.bounds[1] - self.bounds[0])
         self.description = varConfig.description
 
 
@@ -81,7 +81,12 @@ class SampleSpace():
     def getAllDimensionDescriptions(self):
         return [dim.description for dim in self.dimensions]
     
+    def getAllDimensionsRanges(self):
+        # Returns a d-dimensional array of the ranges of the dimensions in the space.
+        return np.array([dim.range for dim in self.dimensions])
+   
     def getAllDimensionBounds(self):
+        # Returns a d x 2 vector of the upper bound and lower bound of each dimension in the space.
         return np.array([dim.bounds for dim in self.dimensions])
     
     def getSamplesNum(self):
