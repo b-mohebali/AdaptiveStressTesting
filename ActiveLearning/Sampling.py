@@ -1,4 +1,4 @@
-from yamlParseObjects.yamlObjects import variableConfig
+from ..yamlParseObjects.yamlObjects import variableConfig
 from typing import List
 from samply.hypercube import cvt, lhs
 from enum import Enum

@@ -135,9 +135,6 @@ class GA_Voronoi_Explorer(GA_Optimizer):
     def objFunction(self, X):
         return -1 * np.min(np.linalg.norm(np.divide(self.currentSpaceSamples - X, self.ranges), axis = 1))
 
-
-
-
 def allocateResources(mainSamples,
                     mainLabels,
                     exploitSamples,
