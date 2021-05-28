@@ -2,10 +2,16 @@ from geneticalgorithm import geneticalgorithm as ga
 from .Sampling import ConvergenceSample, SampleSpace
 import numpy as np
 from abc import ABC, abstractmethod
-from ActiveLearning.benchmarks import Benchmark
+from .benchmarks import Benchmark
 from scipy.linalg import norm
 from math import *
 from sklearn import svm
+from enum import Enum
+
+class Exploration_Type:
+    VORONOI = 0
+    RBF = 1
+
 
 
 # TODO: This is going to be the parent class for all the optimizers used for selecting a point in a 
@@ -84,11 +90,10 @@ class GA_Exploiter(GA_Optimizer):
                     progress_bar=progress_bar)
         self.epsilon = epsilon                   
         self.clf = clf
+        self.ranges = space.getAllDimensionsRanges()
     
     def objFunction(self, X):
-        # TODO: implement this part of the algorithm inside this class so that there is more control 
-        #   over the normalization of the dimensions.
-        dist = self.space.nearestPointDistance(X, self.currentSpaceSamples)
+        dist = self.space.nearestPointDistance(X, self.currentSpaceSamples, normalize=True)
         pen = 0
         df = self.clf.decision_function(X.reshape(1,len(X)))
         if abs(df) > self.epsilon:
@@ -107,13 +112,31 @@ class GA_Explorer(GA_Optimizer):
                         convergence_curve=convergence_curve, 
                         progress_bar=progress_bar)
         self.beta = beta 
-        self.ranges = space.getAllDimensionsRanges()
-
+    
     # The scale of the dimensions are normalized so that it does not affect the 
     # relative distance between the points of the dataset and the prospective 
     # solutions.
     def objFunction(self, X):
         return sum([exp(-self.beta*norm(np.divide(p-X,self.ranges))**2) for p in self.currentSpaceSamples])
+
+class GA_Voronoi_Explorer(GA_Optimizer):
+    def __init__(self, 
+            space: SampleSpace, 
+            batchSize: int = 1, 
+            convergence_curve = True, 
+            progress_bar = True):
+        GA_Optimizer.__init__(self, 
+                        space = space, 
+                        batchSize=batchSize, 
+                        convergence_curve=convergence_curve, 
+                        progress_bar=progress_bar)
+        self.ranges = space.getAllDimensionsRanges()
+    
+    def objFunction(self, X):
+        return -1 * np.min(np.linalg.norm(np.divide(self.currentSpaceSamples - X, self.ranges), axis = 1))
+
+
+
 
 def allocateResources(mainSamples,
                     mainLabels,

@@ -59,6 +59,8 @@ class SampleSpace():
             self.convPointsNum = 100 * 5 ** self.dNum 
             self._samples = []
             self._eval_labels = []
+        self.ranges = self.getAllDimensionsRanges()
+        self.ones = np.ones(shape = (self.dNum,))
     
     # Defining the samples and labels as private fields with the type list 
     # Upon retrive, they are turned into numpy arrays. 
@@ -110,11 +112,18 @@ class SampleSpace():
 
     # Nearest point from the dataset:
     # NOTE: This is copied from the old implementation of the space class.
-    def nearestPointDistance(self, X, samplesList = None):
+    def nearestPointDistance(self, X, samplesList = None, normalize = False):
+        if normalize:
+            r = self.ranges
+        else:
+            r = self.ones
         if samplesList is None:
-            return np.min(np.linalg.norm(self.samples - X, axis=1))
-        return np.min(np.linalg.norm(samplesList - X, axis=1))
-
+        #     return np.min(np.linalg.norm(self.samples - X, axis=1))
+        # return np.min(np.linalg.norm(samplesList - X, axis=1))
+            result = np.min(np.linalg.norm(np.divide(self.samples-X,r),axis=1))
+        else:
+            result = np.min(np.linalg.norm(np.divide(samplesList-X,r),axis=1))
+        return result
 """
     NOTE: The initial classifier used here is SVM. The necessity for any other type of 
     classifier was not felt at this point.
