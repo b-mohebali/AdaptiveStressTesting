@@ -1,14 +1,14 @@
 from geneticalgorithm import geneticalgorithm as ga
-from .Sampling import ConvergenceSample, SampleSpace
+# from .Sampling import ConvergenceSample, SampleSpace
+from ActiveLearning.Sampling import ConvergenceSample, SampleSpace
 import numpy as np
 from abc import ABC, abstractmethod
-from .benchmarks import Benchmark
 from scipy.linalg import norm
 from math import *
 from sklearn import svm
 from enum import Enum
 
-class Exploration_Type:
+class Exploration_Type(Enum):
     VORONOI = 0
     RBF = 1
 

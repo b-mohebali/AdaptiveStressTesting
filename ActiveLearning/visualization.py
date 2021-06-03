@@ -39,7 +39,7 @@ def plotSpace(space: SampleSpace,
               explorePoints = None,
               saveInfo: SaveInformation = None,
               showPlot = True,
-              insigDimensions = None, 
+              insigDimensions = [2,3], 
               gridRes = None,
               prev_classifier =None,
               comparison_classifier = None) -> None:
