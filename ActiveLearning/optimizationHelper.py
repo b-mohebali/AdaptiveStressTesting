@@ -1,3 +1,4 @@
+from yamlParseObjects.yamlObjects import simulationConfig
 from geneticalgorithm import geneticalgorithm as ga
 # from .Sampling import ConvergenceSample, SampleSpace
 from ActiveLearning.Sampling import ConvergenceSample, SampleSpace
@@ -134,6 +135,60 @@ class GA_Voronoi_Explorer(GA_Optimizer):
     
     def objFunction(self, X):
         return -1 * np.min(np.linalg.norm(np.divide(self.currentSpaceSamples - X, self.ranges), axis = 1))
+
+class ResourceAllocator:
+    def __init__(self,
+            space: SampleSpace,
+            convSample: ConvergenceSample,
+            l:float,
+            epsilon: float,
+            simConfig:simulationConfig):
+        self.space = space
+        self.convSample = convSample
+        self.l = l
+        if epsilon > 0.5:
+            raise ValueError('The value of epsilon is invalid.')
+        self.epsilon = epsilon
+        self.budget = simConfig.sampleBudget
+        self.batchSize = simConfig.batchSize
+    
+    # The function that drives the calculation algorithm:
+    def allocateResources(self):
+        pass
+
+    
+
+    # Step 3A:
+    def _exprBounds(self, currentBudget: int):
+        budgetRatio = currentBudget / self.budget
+        lowerBound = self.epsilon * (1 - budgetRatio)
+        upperBound = (1-self.epsilon) * (1 - budgetRatio)
+        return lowerBound, upperBound
+
+    # Step 3B:
+    def _exptBounds(self, currentBudget:int):
+        budgetRatio = currentBudget / self.budget
+        lowerBound = budgetRatio + self.epsilon * (1 - budgetRatio)
+        upperBound = 1 - self.epsilon*(1 - budgetRatio)
+        return lowerBound, upperBound
+
+    # Step 4:
+    def _calTendency(self, dynamicTendency, lowerBound, upperBound):
+        return max(min(dynamicTendency, upperBound), lowerBound)
+
+    # Step 5:
+    def _calSampleNumbers(self, exprTen, exptTen):
+        # Calculating resource allocation coefficients:
+        R_expr = exprTen / (exprTen + exptTen)
+        R_expt = exptTen / (exprTen + exptTen)
+
+        # Calculating how many samples will be spent on each type:
+        expr_samples = round(R_expr * self.batchSize)
+        expt_samples = round(R_expt * self.batchSize)
+
+        # Returning the results:
+        return expr_samples, expt_samples
+
 
 def allocateResources(mainSamples,
                     mainLabels,
