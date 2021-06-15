@@ -236,7 +236,7 @@ def runSampleFrom(caseLocation, sampleDictList, remoteRepo = None, fromSample = 
     return
 
 def runSinglePoint(caseLocation: str,
-                sampleDict: Dict[str, float],
+                sampleDict,
                 remoteRepo: str,
                 sampleNumber: int):
     dFolder = repositories.outputLocation.mounted

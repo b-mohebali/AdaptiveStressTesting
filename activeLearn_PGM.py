@@ -1,44 +1,26 @@
 #! /usr/bin/python
 
-from multiprocessing import process
 from yamlParseObjects.yamlObjects import *
 from yamlParseObjects.variablesUtil import *
-import logging 
-import os, sys
-import subprocess
+import os
 from profileExample.profileBuilder import * 
-import platform
 from eventManager.eventsLogger import * 
-import csv
-import platform
-import shutil
-import numpy as np
 from scipy.linalg import hadamard
 import matplotlib.pyplot as plt
-from enum import Enum
-import time
 from ActiveLearning.Sampling import *
 from ActiveLearning.dataHandling import *
 from ActiveLearning.visualization import * 
-from ActiveLearning.optimizationHelper import GA_Exploiter
+from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Explorer
 from ActiveLearning.benchmarks import TrainedSvmClassifier
 from sklearn import svm
-from copy import copy
 simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
 print(simConfig.name)
-for p in simConfig.codeBase:
-    sys.path.insert(0,p)
-    print(p + ' has been added to the path.')
+modelLoc = repositories.cefLoc + simConfig.modelLocation
 
 
-from ActiveLearning.simulationHelper import * 
-from autoRTDS import Trial
-from controls import Control, InternalControl
-import case_Setup
-from rscad import rtds
+# from ActiveLearning.simulationHelper import * 
+from ActiveLearning.simInterface import *
 from repositories import *
-import simulation
-
 from metricsRunTest import * 
 
 """
@@ -48,12 +30,6 @@ from metricsRunTest import *
     that runs the matlab metrics.
 """
 matlabEngine = setUpMatlab(simConfig=simConfig)
-"""
-    Defining the PGM model object as a global variable so that it does not
-        have to be instantiated every time.
-"""
-# Model under test:
-mut = PGM_control('','./', configFile=simConfig)
 
 """
 Steps of checks for correctness: 
@@ -97,29 +73,26 @@ initialReport.setStart()
 
 #-------------------CREATING SAMPLES BEFORE SIMULATION----------------
 # # Taking the initial sample based on the parameters of the process. 
-# initialSamples = generateInitialSample(space = designSpace,
-#                                         sampleSize=initialSampleSize,
-#                                         method = InitialSampleMethod.CVT,
-#                                         checkForEmptiness=False)
+initialSamples = generateInitialSample(space = designSpace,
+                                        sampleSize=initialSampleSize,
+                                        method = InitialSampleMethod.CVT,
+                                        checkForEmptiness=False)
 
 ### Preparing and running the initial sample: 
-# formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
-# saveSampleToTxtFile(formattedSample, sampleSaveFile)
-# runSample(sampleDictList=formattedSample, 
-#             dFolder = dataFolder,
-#             remoteRepo=repoLoc,
-#             simConfig=simConfig)
-
+formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
+saveSampleToTxtFile(formattedSample, sampleSaveFile)
+runSample(caseLocation=modelLoc,
+            sampleDictList=formattedSample,
+            remoteRepo=repoLoc)
 
 #-------------------LOADING SAMPLES----------------------------------
 ## Loading sample from a pregenerated file in case of interruption:
-print(currentDir)
-formattedSample = loadSampleFromTxtFile(sampleSaveFile)
+# print(currentDir)
+# formattedSample = loadSampleFromTxtFile(sampleSaveFile)
 
-# runSample(formattedSample, dFolder = dataFolder, 
-#                 remoteRepo=repoLoc,
-#                 simConfig=simConfig,
-#                 sampleGroup=[80])
+# runSample(caseLocation=modelLoc,
+#             sampleDictList=formattedSample,
+#             remoteRepo=repoLoc)
 #--------------------------------------------------------------------
 
 #### Running the metrics on the first sample: 
@@ -127,18 +100,19 @@ formattedSample = loadSampleFromTxtFile(sampleSaveFile)
 samplesList = list(range(1, initialSampleSize+1))
 ### Calling the metrics function on all the samples:
 # Using the parallelized metrics evaluation part. 
-# runMetricsBatch(dataLocation=repoLoc,
-#                 sampleGroup=samplesList,
-#                 configFile=simConfig,
-#                 figureFolder=figFolder,
-#                 PN_suggest=2)
-engine = setUpMatlab(simConfig=simConfig)
-getMetricsResults(dataLocation = repoLoc,
-                eng = engine, 
-                sampleNumber = samplesList,
-                metricNames = simConfig.metricNames,
-                figFolderLoc=figFolder,
-                procNum = 0)
+runMetricsBatch(dataLocation=repoLoc,
+                sampleGroup=samplesList,
+                configFile=simConfig,
+                figureFolder=figFolder,
+                PN_suggest=2)
+
+# engine = setUpMatlab(simConfig=simConfig)
+# getMetricsResults(dataLocation = repoLoc,
+#                 eng = engine, 
+#                 sampleNumber = samplesList,
+#                 metricNames = simConfig.metricNames,
+#                 figFolderLoc=figFolder,
+#                 procNum = 0)
 
 #### Load the mother sample for comparison:
 """
@@ -174,16 +148,23 @@ currentBudget = budget - initialSampleSize
 
 convergenceSample = ConvergenceSample(designSpace)
 changeMeasure = [convergenceSample.getChangeMeasure(percent = True,
-                            classifier = clf,
-                            updateLabels=True)]
+                        classifier = clf,
+                        updateLabels=True)]
 samplesNumber = [initialSampleSize]
 
 # Defining the exploiter object:
 exploiter = GA_Exploiter(space = designSpace,
-                                    epsilon = 0.03,
-                                    batchSize = batchSize,
-                                    convergence_curve = False,
-                                    progress_bar = True)
+                        epsilon = 0.03,
+                        batchSize = batchSize,
+                        convergence_curve = False,
+                        progress_bar = True)
+
+# Defining the explorer object for future use: 
+explorer = GA_Explorer(space = designSpace,
+                        batchSize=batchSize, 
+                        convergence_curve=False,
+                        progress_bar=True,
+                        beta = 100)
 
 iterationReports = []
 # Creating the report object:
@@ -231,6 +212,8 @@ plotSpace(designSpace,
             benchmark = classifierBench) 
 plt.close()
 
+
+
 ## Adaptive Sampling loop:
 while currentBudget > 0:
     # Setting up the iteration number:
@@ -238,13 +221,6 @@ while currentBudget > 0:
     iterReport = IterationReport(dimNames, batchSize = batchSize)
     iterReport.setStart()
     print('Current budget: ', currentBudget, ' samples.')
-    # Finding new points using the exploiter
-    # exploiter = GA_Exploiter(space = designSpace,
-    #                                 epsilon = 0.03,
-    #                                 clf = clf,
-    #                                 batchSize = batchSize,
-    #                                 convergence_curve = False,
-    #                                 progress_bar = True)
     
     # Upodating the exploiter object classifier at each iteration. 
     exploiter.clf = clf
@@ -265,12 +241,18 @@ while currentBudget > 0:
             timing is in the MATLAB metrics calculations. 
     """
     for idx, sample in enumerate(formattedFoundPoints):
-        runSinglePoint(sampleDict = sample,
-                    dFolder = dataFolder,
-                    remoteRepo = repoLoc,
-                    simConfig= simConfig,
-                    sampleNumber = nextSamples[idx],
-                    modelUnderTest=mut)
+        # runSinglePoint(sampleDict = sample,
+        #             dFolder = dataFolder,
+        #             remoteRepo = repoLoc,
+        #             simConfig= simConfig,
+        #             sampleNumber = nextSamples[idx],
+        #             modelUnderTest=mut)
+        ### The new procedure that uses the plasma codebase to run samples:
+        runSinglePoint(caseLocation=modelLoc,
+                        sampleDict= sample,
+                        remoteRepo = repoLoc,
+                        sampleNumber = nextSamples[idx])
+
     # Evaluating the newly simulated samples using MATLAB engine:
     runMetricsBatch(dataLocation=repoLoc,
                     sampleGroup=nextSamples,

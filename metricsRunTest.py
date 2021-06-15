@@ -2,11 +2,9 @@
 
 from yamlParseObjects.yamlObjects import * 
 import os,sys
-import string
 import time
 import yaml 
 import matlab.engine
-import math
 from multiprocessing import Process
 from ActiveLearning.dataHandling import resultFileName
 
@@ -17,7 +15,6 @@ for p in simConfig.codeBase:
     print(p + ' has been added to the path.')
 
 from repositories import *
-
 
 """
     NOTE: MATLAB engine is started by and passed to the script that needs the MATLAB engine for anything. The script keeps the engine alive for as long as it needs it. Global definition of MATLAB in this script was tried but did not work.
@@ -152,7 +149,7 @@ def runMetricsBatch(dataLocation: str,
     sampleGroups = []
     # Dividing the samples into groups, one for each process:
     for proc in range(processNumber): 
-        sInd = range(proc, len(sampleGroup), processNumber)
+        sInd = range(start=proc, stop=len(sampleGroup), step=processNumber)
         sg = [sampleGroup[ind] for ind in sInd]
         print(f'Process# {proc+1} sample numbers: {sg}')
         sampleGroups.append(sg)
