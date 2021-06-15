@@ -1,22 +1,27 @@
 import os
-import platform
 from yamlParseObjects.yamlObjects import simulationConfig
-import sys 
 
-if platform.system()=="Linux":
-    simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
-    print(simConfig.name)
-    for p in simConfig.codeBase:
-        sys.path.insert(0,p)
-        print(p + ' has been added to the path.')
-    import case_Setup
-    dataFolder = case_Setup.LOGGER_OUTPUT
+dataFolder = '/home/caps/.wine/drive_c/SCRATCH/Mohebali/Data/AC_PGM_LogFiles'
 
+# This is the number of the rack that will be used for the simulation: 
+rackNum = 18
 ##_______________________________________________________
 # Location of the assets local to the codebase:
 assetsLoc = './assets/'
 yamlFilesLoc = assetsLoc + 'yamlFiles/'
 picklesLoc = assetsLoc + 'pickles/'
+experimentsLoc = assetsLoc + 'experiments/'
+
+##_______________________________________________________
+# Assets on Plasma:
+
+plasmaLoc = '/home/caps/.wine/drive_c/'
+cefLoc = plasmaLoc + 'cef/'
+
+class outputLocation:
+    mounted = '/home/caps/.wine/drive_c/SCRATCH/Mohebali/Data/AC_PGM_LogFiles'
+    absolute = r'\\plasma.caps.fsu.edu\SCRATCH\Mohebali\Data\AC_PGM_LogFiles'
+
 
 
 ##_______________________________________________________
@@ -27,6 +32,7 @@ dataRepo = '/home/caps/.wine/drive_c/SCRATCH/mohebali/Data/SensAnalysis/'
 repoRoot = 'caps@10.146.64.68:/home/caps/SensAnalysis/'
 repoRoot2 = 'caps@10.146.64.69:/home/caps/SensAnalysis/'
 localRepo = '/home/caps/SenseAnalysisTemp/'
+newLocalRepo = '/home/caps/Data/SensAnalysis/'
 adaptiveSamplingLoc = '/home/caps/AdaptiveSamplingRepo/'
 
 # New FFD sample with larger variable list. 
@@ -221,6 +227,21 @@ remoteRepo88 = localRepo + 'sample88'
 remoteRepo89 = localRepo + 'sample89'
 # Drastically increased the range of variation for the variables. Especially the pulse load ramp rate and its frequency
 remoteRepo90 = localRepo + 'sample90'
+
+# Testing the new code base for the automation:
+remoteRepo91 = newLocalRepo + 'sample91'
+# Same as 91 but the vars with init=0 omitted:
+remoteRepo92 = newLocalRepo + 'sample92'
+remoteRepo93 = newLocalRepo + 'sample93'
+remoteRepo94 = newLocalRepo + 'sample94'
+remoteRepo95 = newLocalRepo + 'sample95'
+remoteRepo96 = newLocalRepo + 'sample96'
+
+# Monte Carlo sample using CVT sampling method:
+remoteRepo97 = newLocalRepo + 'sample97'
+
+
+
 
 """
     Adaptive Samples notation: 

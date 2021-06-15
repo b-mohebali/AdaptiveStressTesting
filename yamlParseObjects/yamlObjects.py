@@ -57,7 +57,7 @@ class simulationConfig():
             Platfor: {self.platform}'''
         return descriptor.__str__()
 
-class variableConfig():
+class VariableConfig():
 
     def __init__(self, name, initial, varType, lowerLimit, upperLimit, mappedName, description, risingRateLimit = float('inf'), fallingRateLimit = float('inf')):
         self.name = name
@@ -96,7 +96,7 @@ def getAllVariableConfigs(yamlFileAddress, span:float = variableSpan, scalingSch
             upperLimit = yamlVar['upperLimit'] if 'upperLimit' in yamlVar else max(scales) 
         mappedName = yamlVar['mappedName'] if 'mappedName' in yamlVar else name
         desc  = yamlVar['description'] if 'description' in yamlVar else name
-        variableCon = variableConfig(name = name, 
+        variableCon = VariableConfig(name = name, 
                                     initial=initialState, 
                                     varType=t,
                                     mappedName = mappedName,

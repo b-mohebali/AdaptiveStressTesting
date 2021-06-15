@@ -10,7 +10,8 @@ import subprocess
 from scipy.linalg import hadamard
 import ast
 import random
-
+from typing import List 
+from samply.hypercube import cvt, lhs
 
 
 def trunkatedExponential(u, a,b):
@@ -76,7 +77,20 @@ def randomizeVariables(variables):
 # exponential distribution instead of a uniform one. This is needed for the 
 # time when the limits of the variation range are defined as logarithmic instead 
 # of linear. 
-def randomizeVariablesList(variables, sampleNum, subIntervals,scalingScheme = Scale.LINEAR, saveHists=False):
+def randomizeVariablesList(variables: List[VariableConfig], sampleNum, subIntervals,scalingScheme = Scale.LINEAR, saveHists=False):
+    '''
+        Creates a list of random samples for the given variables. Samples are selected from a uniform distro in their range of variation. The selected random value for each variable in a certain sample is independent of the values that other samples take within that sample.
+
+        Inputs: 
+            - variables: A list of variable config objects containing the information about the variables in the analysis.
+            - sampleNum: determines the size of the sample.
+            - subIntervals: Determines the number of sub intervals for stratified sampling of the space.
+            - scalingScheme: determines whether the sacling is logarithmic or linear. 
+            - saveHists: (boolean) determines whether the histogram of the sample for each variable is needed or not.
+
+        Outputs: (List of dictionary) List of the sample points each in the form of a dictionary containing the name of the variables as keys and their values for each sample. 
+            - 
+    '''
     randomLists = {}
     # Making the random lists with stratified 
     for var in variables:
@@ -201,6 +215,23 @@ def getFFHMatrix(vars, res4 = False, dtype = float):
         h[h[:,idx+1]==1,idx+1] = varHigh
         h[h[:,idx+1]==-1,idx+1] = varLow
     return h[:,1:k+1] # Only returning the part of the H matrix that is used as simulation parameters.
+
+# TODO: Monte-Carlo sample generator based on CVT sampling:
+def cvtMonteCarlo(variables: List[VariableConfig], sampleNum: int):
+    processedSamples = []
+    dim = len(variables)
+    rawSamples = cvt(count = sampleNum, dimensionality = dim)
+    for dimIndex, variable in enumerate(variables):
+        varRange = variable.upperLimit - variable.lowerLimit
+        rawSamples[:,dimIndex] *= varRange
+        rawSamples[:,dimIndex] += variable.lowerLimit
+    
+    for sampleIdx in range(len(rawSamples)):
+        sampleDict = {}
+        for varIdx in range(len(variables)):
+            sampleDict[variables[varIdx].name] = rawSamples[sampleIdx,varIdx]
+        processedSamples.append(sampleDict)
+    return processedSamples
 
 
 def getVariablesInitialValueDict(variables):
