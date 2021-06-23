@@ -1,5 +1,6 @@
 import os
 from yamlParseObjects.yamlObjects import simulationConfig
+import sys
 
 dataFolder = '/home/caps/.wine/drive_c/SCRATCH/Mohebali/Data/AC_PGM_LogFiles'
 
@@ -15,6 +16,7 @@ experimentsLoc = assetsLoc + 'experiments/'
 ##_______________________________________________________
 # Assets on Plasma:
 
+
 plasmaLoc = '/home/caps/.wine/drive_c/'
 cefLoc = plasmaLoc + 'cef/'
 
@@ -22,7 +24,11 @@ class outputLocation:
     mounted = '/home/caps/.wine/drive_c/SCRATCH/Mohebali/Data/AC_PGM_LogFiles'
     absolute = r'\\plasma.caps.fsu.edu\SCRATCH\Mohebali\Data\AC_PGM_LogFiles'
 
+codebasePath = plasmaLoc + 'HIL-TB/py'
 
+def addCodeBaseToPath():
+    sys.path.append(codebasePath)
+    return 
 
 ##_______________________________________________________
 # Location of the Linux machine assets and data files:
@@ -240,8 +246,14 @@ remoteRepo96 = newLocalRepo + 'sample96'
 # Monte Carlo sample using CVT sampling method:
 remoteRepo97 = newLocalRepo + 'sample97'
 
-
-
+# FFD with corrected limits: 
+remoteRepo98 = newLocalRepo + 'sample98'
+# FFD after the frequency reduced to 20 Hz
+remoteRepo99 = newLocalRepo + 'sample99'
+# Increased the upper limit of the steady state load to push the total power out of nominal value
+remoteRepo100 = newLocalRepo + 'sample100'
+# Increased the upper limit for the pulse load power to push the total power out of the nominal bound
+remoteRepo101 = newLocalRepo + 'sample101'
 
 """
     Adaptive Samples notation: 

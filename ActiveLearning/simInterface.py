@@ -1,7 +1,8 @@
 #! /usr/bin/python3
 
 import sys 
-sys.path.append('/home/caps/.wine/drive_c/HIL-TB/py')
+import repositories    
+repositories.addCodeBaseToPath()
 
 import os
 import shutil
@@ -13,7 +14,6 @@ import contextlib
 
 from rscad import *
 import time
-import repositories    
 
 defaultRackNum = 18
 
