@@ -7,6 +7,7 @@ from typing import List
 from yamlParseObjects.yamlObjects import *
 from repositories import * 
 import pickle
+from enum import Enum
 import string
 
 class BadExtention(Exception):
@@ -224,3 +225,88 @@ def loadAccuracy(reportFile: str):
             iterationNumbers.append(report.iterationNumber)
             accuracies.append(report.changeMeasure)
     return iterationNumbers, accuracies
+
+
+# ------------------------------------------------------------------------
+# This part is related to the factor screening analysis and data handling:
+class OutputType(Enum):
+    DICT = 0
+    NPARRAY = 1
+    LIST = 2
+
+def loadMetricValues(dataLoc, metricNames, outType : OutputType = OutputType.DICT):
+    '''
+        This function takes the location of a data repo and loads the metric values for all the evaluated samples into a dictionary.
+        Inputs: 
+            - dataLoc: Location of the repository where the sample folders are.
+            - metricNames: List of strings containing the name by which the values are saved in the report yaml file. 
+            TODO:
+            - outType: The desired type for the output. 
+    '''
+    samples = [int(name) for name in os.listdir(dataLoc) if name.isdigit()]
+    samples.sort()
+    metricVals = {metName:[] for metName in metricNames}
+
+    for sample in samples:
+        reportPath = f'{dataLoc}/{sample}/{resultFileName}'
+        with open(reportPath, 'r') as fp:
+            yamlString = fp.read()
+        yamlObj = yaml.load(yamlString, Loader = yaml.SafeLoader)
+        for metName in metricNames:
+            metricVals[metName].append(yamlObj[metName])
+    return metricVals
+
+def loadVariableValues(dataLoc, varNames):
+    '''
+        This function takes the location of the data repository and the name of the variables in the analysis and loads the values of the variables for all the samples. The values are then used for reconstructing the design matrix.
+        Inputs:
+            - dataLoc: Location of the repository where the sample folders are.
+            - varNames: List of strings containing the name by which the variable values are saved within the report yaml file.
+        
+        Output:
+            - Dictionary with variable names as the keys and the list of their values as the values. The order of the values in each list is the same as the order of the samples.
+    '''
+    samples = [int(name) for name in os.listdir(dataLoc) if name.isdigit()]
+    samples.sort()
+    varValues = {varName: [] for varName in varNames}
+
+    for sample in samples:
+        reportPath = f'{dataLoc}/{sample}/{resultFileName}'
+        with open(reportPath, 'r') as fp:
+            yamlString = fp.read()
+        yamlObj = yaml.load(yamlString, Loader = yaml.SafeLoader)
+        variables = yamlObj['variables']
+        for varName in varNames: 
+            varValues[varName].append(variables[varName])
+    return varValues
+
+def reconstructDesignMatrix(variableValues):
+    '''
+        This function takes the dict of lists (coming from the loadVariableValues function) and normalizes it to make the design matrix consisting only of 1 and -1 elements. 
+        Inputs: 
+            - variableVAlues: Dict(string, List[float]) containing the values for the variables used in the analysis.
+        
+        Output:
+            - Design matrix consisting of 1 and -1 elements where 1 is related to the upper limit of the variable and -1 to its lower limit. 
+    '''
+    # Taking the name of the varriables:
+    varNames = list(variableValues.keys())
+    # Taking the number of the samples in the repo:
+    N_s = len(variableValues[varNames[0]])
+    # Number of variables:
+    N_v = len(varNames)
+    # Initializing the design matrix:
+    H = np.zeros(shape = (N_s, N_v + 1))
+    H[:,0] = np.ones(shape = (N_s,))
+    # Filling out the matrix:
+    for idx, var in enumerate(varNames):
+        varVals = np.array(variableValues[var])
+        varMax = max(varVals)
+        varMin = min(varVals)
+        print(varVals, var, varMin,varMax)
+        col = np.zeros(shape = (N_s,), dtype=float)
+        col[varVals==varMax] = 1
+        col[varVals==varMin] = -1
+        print(col)
+        H[:,idx+1] = col
+    return H

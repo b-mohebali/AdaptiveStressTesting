@@ -7,7 +7,6 @@ from yamlParseObjects.yamlObjects import *
 from ActiveLearning.simInterface import * 
 
 
-# sys.path.append('/home/caps/.wine/drive_c/HIL-TB/py')
 repositories.addCodeBaseToPath()
 
 simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')

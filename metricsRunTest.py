@@ -1,4 +1,4 @@
-#! /usr/bin/python
+# #! /usr/bin/python
 
 from yamlParseObjects.yamlObjects import * 
 import os,sys
@@ -28,7 +28,6 @@ def setUpMatlab(simConfig: simulationConfig):
         for p in paths:
             eng.addpath(eng.genpath(p))
             print(f'Directory {p} was added to matlab path.')
-    print(type(eng))
     print('MATLAB engine started.')
     return eng
 
@@ -134,7 +133,7 @@ class MetricsProcess:
         self.engine.quit()
 
 
-def runMetricsBatch(dataLocation: str, 
+def runBatch(dataLocation: str, 
                     sampleGroup: list, 
                     configFile: simulationConfig,
                     figureFolder: str = None, 
@@ -149,7 +148,7 @@ def runMetricsBatch(dataLocation: str,
     sampleGroups = []
     # Dividing the samples into groups, one for each process:
     for proc in range(processNumber): 
-        sInd = range(start=proc, stop=len(sampleGroup), step=processNumber)
+        sInd = range(proc, len(sampleGroup), processNumber)
         sg = [sampleGroup[ind] for ind in sInd]
         print(f'Process# {proc+1} sample numbers: {sg}')
         sampleGroups.append(sg)
@@ -176,19 +175,19 @@ def runMetricsBatch(dataLocation: str,
 # TODO: Get the ranges of the samples from the command line parameters instead of hardcoding it.
 def main():
     # dataLocation = 'E:/Data/monteCarlo400'
-    dataLocation = monteCarlo400
+    dataLocation = 'E:/Data/Sample101/data'
     figFolder = dataLocation + '/figures'
     startingSample = 1
-    finalSample = 4
+    finalSample = 16
     sampleNumbers = list(range(startingSample,finalSample+1))
     matlabConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
-    processNumber = 2
-    runMetricsBatch(dataLocation = dataLocation,
+    processNumber = 4
+    runBatch(dataLocation = dataLocation,
                     sampleGroup=sampleNumbers,
                     configFile=matlabConfig,
                     figureFolder=figFolder,
                     PN_suggest=processNumber)
 
-if __name__=='__main__':
+if __name__=="__main__":
     main()
 

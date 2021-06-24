@@ -36,7 +36,7 @@ def getTimeindepVariablesDict(variables):
 
 def getVariablesDict(variables):
     varMap = {}
-    for var in [v for v in variables if v.varType.lower() != 'timeindep']: 
+    for var in [v for v in variables]: 
         varMap[var.name] = var
     return varMap    
 
@@ -202,14 +202,15 @@ def fractionalFactorialExperiment(timeIndepVariables,res4=False):
         valueList.append(currentSample.copy())
     return valueList
 
-def getFFHMatrix(vars, res4 = False, dtype = float):
+def getFFHMatrix(vars, res4 = False, normalize = False):
     k = len(vars)
     h = hadamard(next_power_of_2(k+1),dtype = float)
     if res4:
         h = np.concatenate((h,-h),axis = 0)
+    # If the normal representation of the design matrix is needed h is returned without processing. Otherwise 1 values will be replaced by upperlimit and -1 values with the lower limit of their corresponding variables. 
+    if normalize:
+        return h
     for idx,var in enumerate(vars):
-        # varLow = max(var.initialState * (1-variableSpan), var.lowerLimit)
-        # varHigh = min(var.initialState * (1+variableSpan), var.upperLimit)
         varLow = var.lowerLimit
         varHigh = var.upperLimit
         h[h[:,idx+1]==1,idx+1] = varHigh

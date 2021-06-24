@@ -1,4 +1,4 @@
-from yamlParseObjects.yamlObjects import variableConfig
+from yamlParseObjects.yamlObjects import VariableConfig
 from typing import List
 from samply.hypercube import cvt, lhs
 from enum import Enum
@@ -15,7 +15,7 @@ class SampleNotEmpty(Exception):
 
 # This class represents a single dimension in the design space:
 class Dimension():
-    def __init__(self, varConfig: variableConfig):
+    def __init__(self, varConfig: VariableConfig):
         self.name = varConfig.name
         self.bounds = [varConfig.lowerLimit, varConfig.upperLimit]
         self.range = abs(self.bounds[1] - self.bounds[0])
@@ -51,7 +51,7 @@ class PerformanceMeasure(Enum):
 """
 class SampleSpace():
     def __init__(self, 
-                variableList: List[variableConfig]):
+                variableList: List[VariableConfig]):
         self.dimensions = []
         for varConfig in variableList:
             self.dimensions.append(Dimension(varConfig=varConfig))
