@@ -57,7 +57,7 @@ def readDataset(repoLoc, dimNames, includeTimes = False, sampleRange = None):
 def readSingleSample(repoLoc,dimNames, sampleNumber):
     """
         This function read the results of a single sample from the repo.
-
+        NOTE: The final report coming from the factor screening may have more dimensions than needed for the adaptive sampling. The extra dimensions will be ignored by this function as the list of the desirable dimensions is passed to it. 
         Inputs:
             - Location of the samples (repoLoc)
             - List of the dimension names (dimNames)

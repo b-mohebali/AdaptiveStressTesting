@@ -67,15 +67,12 @@ def analyseFactorScreening(repoLoc, figFolder, metNames, include_bias = False):
 
 
 def main():
-    repoLoc = 'C:/Data/testSample'
+    # Setting pu the locations: 
+    repoLoc = 'E:/Data/testSample'
     dataLoc = repoLoc + '/data'
     figLoc = repoLoc + '/figures'
     files = glob.glob(dataLoc + '/*.txt')
-    print(files)
     experFile = files[0]
-    variablesFile = './assets/yamlFiles/variables_ac_pgm.yaml'
-    variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR,
-                span = 0.65) 
     simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
     metNames = simConfig.metricNames
 
@@ -93,7 +90,11 @@ def main():
                     PN_suggest=batchSize)
 
     # Analysis of the results:
-    
+    analyseFactorScreening(repoLoc=repoLoc, 
+                        figFolder=figLoc,
+                        metNames = metNames, 
+                        include_bias=False)
+   
 
 def loadVars(varDescFile):
     with open(varDescFile, 'r') as fp:
@@ -110,13 +111,3 @@ def loadVars(varDescFile):
 if __name__=="__main__":
     freeze_support()
     main()
-    
-    repoLoc = 'C:/Data/testSample'
-    simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
-    metNames = simConfig.metricNames
-
-    # analyseFactorScreening(repoLoc=repoLoc, 
-    #                     figFolder=repoLoc + '/figures',
-    #                     metNames = metNames, 
-    #                     include_bias=False)
-                        
