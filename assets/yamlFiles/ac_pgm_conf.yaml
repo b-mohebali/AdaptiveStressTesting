@@ -10,6 +10,7 @@ matlab_path_Windows:
   - "./Matlab"
 matlab_path_Linux:
   - "./Matlab"
+  - "C:/Users/bm12m/Google Drive/codes/CodeBase"
   - "/home/caps/.wine/drive_c/STAFF/langston/MFiles"
   - "/home/caps/.wine/drive_c/cef/MVDC_SPS/AC_PGM_Analysis"
 profileLoc: "./profileExample"

@@ -10,8 +10,6 @@ from yamlParseObjects.yamlObjects import *
 from metricsRunTest import *
 from multiprocessing import freeze_support
 import glob
-import matlab.engine
-import matlab
 import yaml
 from scipy.linalg import solve
 import matplotlib.pyplot as plt
@@ -69,23 +67,22 @@ def analyseFactorScreening(repoLoc, figFolder, metNames, include_bias = False):
 
 
 def main():
-    repoLoc = 'E:/Data/testSample'
+    repoLoc = 'C:/Data/testSample'
     dataLoc = repoLoc + '/data'
     figLoc = repoLoc + '/figures'
     files = glob.glob(dataLoc + '/*.txt')
+    print(files)
     experFile = files[0]
     variablesFile = './assets/yamlFiles/variables_ac_pgm.yaml'
     variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR,
                 span = 0.65) 
     simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
-
-    timeIndepVars = getTimeIndepVars(variables, omitZero=True) 
+    metNames = simConfig.metricNames
 
     exper = loadSampleFromTxtFile(experFile)
     print(exper)
 
     # Normalizing the experiment matrix:
-    designMatrix = getFFHMatrix(vars = timeIndepVars,res4 = True, normalize=True)
     sampleGroup = list(range(1,17))
     batchSize = 4
 
@@ -96,7 +93,7 @@ def main():
                     PN_suggest=batchSize)
 
     # Analysis of the results:
-
+    
 
 def loadVars(varDescFile):
     with open(varDescFile, 'r') as fp:
@@ -111,13 +108,15 @@ def loadVars(varDescFile):
 
 # Since we are using multiprocessing we need to have this here: 
 if __name__=="__main__":
-    # freeze_support()
-    # main()
+    freeze_support()
+    main()
+    
+    repoLoc = 'C:/Data/testSample'
     simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
     metNames = simConfig.metricNames
-    repo = 'E:/Data/testSample'
-    analyseFactorScreening(repoLoc=repo, 
-                        figFolder=repo + '/figures',
-                        metNames = metNames, 
-                        include_bias=False)
+
+    # analyseFactorScreening(repoLoc=repoLoc, 
+    #                     figFolder=repoLoc + '/figures',
+    #                     metNames = metNames, 
+    #                     include_bias=False)
                         
