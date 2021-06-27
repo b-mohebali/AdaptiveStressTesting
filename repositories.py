@@ -39,6 +39,7 @@ repoRoot = 'caps@10.146.64.68:/home/caps/SensAnalysis/'
 repoRoot2 = 'caps@10.146.64.69:/home/caps/SensAnalysis/'
 localRepo = '/home/caps/SenseAnalysisTemp/'
 newLocalRepo = '/home/caps/Data/SensAnalysis/'
+newAdaptiveRepo = '/home/caps/Data/AdaptiveSamplingRepo/'
 adaptiveSamplingLoc = '/home/caps/AdaptiveSamplingRepo/'
 
 # New FFD sample with larger variable list. 
@@ -254,6 +255,8 @@ remoteRepo99 = newLocalRepo + 'sample99'
 remoteRepo100 = newLocalRepo + 'sample100'
 # Increased the upper limit for the pulse load power to push the total power out of the nominal bound
 remoteRepo101 = newLocalRepo + 'sample101'
+# First repo to integrate the analysis and simulation steps into the same script:
+remoteRepo102 = newLocalRepo + 'sample102'
 
 """
     Adaptive Samples notation: 
@@ -276,8 +279,9 @@ adaptRepo3 = adaptiveSamplingLoc + 'adaptiveRepo3'
 # Monte Carlo sample of size 400 taken as the baseline for the adaptive samples of the same size:
 monteCarlo400 = adaptiveSamplingLoc + 'monteCarlo400'
 # Adaptive Sampling 400(80)-1 Droop control disengaged. 
-adaptRepo4 = adaptiveSamplingLoc + 'adaptiveRepo4'
-
+adaptRepo4 = newAdaptiveRepo + 'adaptiveRepo4'
+# Adaptive Sampling 400(80)-1 Droop control engaged again. The range of variation for the variables are changed too.
+adaptRepo5 = newAdaptiveRepo + 'adaptiveRepo5'
 
 
 

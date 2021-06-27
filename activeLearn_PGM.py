@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 
 from yamlParseObjects.yamlObjects import *
 from yamlParseObjects.variablesUtil import *
@@ -13,23 +13,13 @@ from ActiveLearning.visualization import *
 from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Explorer
 from ActiveLearning.benchmarks import TrainedSvmClassifier
 from sklearn import svm
-simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
-print(simConfig.name)
-modelLoc = repositories.cefLoc + simConfig.modelLocation
-
-
-# from ActiveLearning.simulationHelper import * 
 from ActiveLearning.simInterface import *
 from repositories import *
 from metricsRunTest import * 
 
-"""
-    Setting up the matlab engine. 
-    This cannot be done in another file as a global object. So it will be 
-    instantiated here in the driver script and will be passed to the function
-    that runs the matlab metrics.
-"""
-matlabEngine = setUpMatlab(simConfig=simConfig)
+simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
+print(simConfig.name)
+modelLoc = repositories.cefLoc + simConfig.modelLocation
 
 """
 Steps of checks for correctness: 
@@ -59,7 +49,8 @@ variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=S
 # Setting the main files and locations:
 descriptionFile = currentDir + '/assets/yamlFiles/varDescription.yaml'
 sampleSaveFile = currentDir + '/assets/experiments/adaptive_sample-400(80)-1.txt'
-repoLoc = adaptRepo4
+repoLoc = adaptRepo5
+dataLoc = repoLoc + '/data'
 
 # Defining the location of the output files:
 outputFolder = f'{repoLoc}/outputs'
@@ -72,7 +63,7 @@ initialReport = IterationReport(dimNames)
 initialReport.setStart()
 
 #-------------------CREATING SAMPLES BEFORE SIMULATION----------------
-# # Taking the initial sample based on the parameters of the process. 
+# Taking the initial sample based on the parameters of the process. 
 initialSamples = generateInitialSample(space = designSpace,
                                         sampleSize=initialSampleSize,
                                         method = InitialSampleMethod.CVT,
@@ -83,7 +74,7 @@ formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
 saveSampleToTxtFile(formattedSample, sampleSaveFile)
 runSample(caseLocation=modelLoc,
             sampleDictList=formattedSample,
-            remoteRepo=repoLoc)
+            remoteRepo=dataLoc)
 
 #-------------------LOADING SAMPLES----------------------------------
 ## Loading sample from a pregenerated file in case of interruption:
@@ -92,7 +83,7 @@ runSample(caseLocation=modelLoc,
 
 # runSample(caseLocation=modelLoc,
 #             sampleDictList=formattedSample,
-#             remoteRepo=repoLoc)
+#             remoteRepo=dataLoc)
 #--------------------------------------------------------------------
 
 #### Running the metrics on the first sample: 
@@ -100,14 +91,14 @@ runSample(caseLocation=modelLoc,
 samplesList = list(range(1, initialSampleSize+1))
 ### Calling the metrics function on all the samples:
 # Using the parallelized metrics evaluation part. 
-runMetricsBatch(dataLocation=repoLoc,
+runBatch(dataLocation=dataLoc,
                 sampleGroup=samplesList,
                 configFile=simConfig,
                 figureFolder=figFolder,
-                PN_suggest=2)
+                PN_suggest=4)
 
 # engine = setUpMatlab(simConfig=simConfig)
-# getMetricsResults(dataLocation = repoLoc,
+# getMetricsResults(dataLocation = dataLoc,
 #                 eng = engine, 
 #                 sampleNumber = samplesList,
 #                 metricNames = simConfig.metricNames,
@@ -130,7 +121,7 @@ if os.path.exists(motherClfPickle) and os.path.isfile(motherClfPickle):
 
 
 #### Load the results into the dataset and train the initial classifier:
-dataset, labels = readDataset(repoLoc, dimNames=dimNames)
+dataset, labels = readDataset(dataLoc, dimNames=dimNames)
 
 
 # updating the space:
@@ -212,7 +203,7 @@ plotSpace(designSpace,
             benchmark = classifierBench) 
 plt.close()
 
-
+currentSample = formattedSample
 
 ## Adaptive Sampling loop:
 while currentBudget > 0:
@@ -230,8 +221,9 @@ while currentBudget > 0:
     # formatting the samples for simulation:
     # NOTE: this is due to the old setting used for the DOE code in the past.
     formattedFoundPoints = getSamplePointsAsDict(dimNames, newPointsFound)
+    currentSample.extend(formattedFoundPoints)
     # Getting the number of next samples:
-    nextSamples = getNextSampleNumber(repoLoc, 
+    nextSamples = getNextSampleNumber(dataLoc, 
         createFolder=False, 
         count = len(newPointsFound))
     # running the simulation at the points that were just found:
@@ -243,25 +235,25 @@ while currentBudget > 0:
     for idx, sample in enumerate(formattedFoundPoints):
         # runSinglePoint(sampleDict = sample,
         #             dFolder = dataFolder,
-        #             remoteRepo = repoLoc,
+        #             remoteRepo = dataLoc,
         #             simConfig= simConfig,
         #             sampleNumber = nextSamples[idx],
         #             modelUnderTest=mut)
         ### The new procedure that uses the plasma codebase to run samples:
         runSinglePoint(caseLocation=modelLoc,
                         sampleDict= sample,
-                        remoteRepo = repoLoc,
+                        remoteRepo = dataLoc,
                         sampleNumber = nextSamples[idx])
 
     # Evaluating the newly simulated samples using MATLAB engine:
-    runMetricsBatch(dataLocation=repoLoc,
+    runBatch(dataLocation=dataLoc,
                     sampleGroup=nextSamples,
                     configFile=simConfig,
                     figureFolder=figFolder,
                     PN_suggest=2)
     
     # Updating the classifier and checking the change measure:
-    dataset,labels = readDataset(repoLoc, dimNames= dimNames)
+    dataset,labels = readDataset(dataLoc, dimNames= dimNames)
     designSpace._samples, designSpace._eval_labels = dataset, labels
     prevClf = clf
     clf = svm.SVC(kernel = 'rbf', C = 1000)
@@ -299,6 +291,8 @@ while currentBudget > 0:
     iterReport.setChangeMeasure(newChangeMeasure)
     iterationReports.append(iterReport)
     saveIterationReport(iterationReports,iterationReportsFile)
+    # Saving the experiment file: 
+    saveSampleToTxtFile(currentSample, sampleSaveFile)
 
 # Plotting the change measure throughout the process.
 plt.figure(figsize = (8,5))

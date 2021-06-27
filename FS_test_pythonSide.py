@@ -1,9 +1,9 @@
-# #! /usr/bin/python3
+#! /usr/bin/python3
 
 from matplotlib.pyplot import figure
 from ActiveLearning.dataHandling import loadMetricValues, loadVariableValues, reconstructDesignMatrix
-import sys
-
+import repositories
+from ActiveLearning.simInterface import runExperiment
 from yaml.loader import SafeLoader 
 from yamlParseObjects.variablesUtil import * 
 from yamlParseObjects.yamlObjects import * 
@@ -51,7 +51,7 @@ def analyseFactorScreening(repoLoc, figFolder, metNames, include_bias = False):
             if x[idx] < 0 and not negLabel:
                 barlist[_].set_label('Negative effect')
                 negLabel = True
-            elif not posLabel:
+            elif x[idx] > 0 and not posLabel:
                 barlist[_].set_label('Positive effect')
                 posLabel = True
             barlist[_].set_color('r' if x[idx] < 0 else 'b')
@@ -67,29 +67,42 @@ def analyseFactorScreening(repoLoc, figFolder, metNames, include_bias = False):
 
 
 def main():
-    # Setting pu the locations: 
-    repoLoc = 'E:/Data/testSample'
-    dataLoc = repoLoc + '/data'
+    # Simulation phase:
+    repoLoc = repositories.remoteRepo102
+    samplesLoc = repoLoc + '/data'
     figLoc = repoLoc + '/figures'
-    files = glob.glob(dataLoc + '/*.txt')
-    experFile = files[0]
     simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
-    metNames = simConfig.metricNames
+    modelLoc = repositories.cefLoc + simConfig.modelLocation
+    variablesFile = './assets/yamlFiles/variables_ac_pgm.yaml'
+    descFile = './assets/yamlFiles/varDescription.yaml'
+    experFile = './assets/experiments/FFD_new_Framework.txt'
+    variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR,
+                span = 0.65) 
+    for v in variables: 
+        print(f'Variable: {v.name}, mapped name: {v.mappedName}, Initial value: {v.initialState}')
+    timeIndepVars = getTimeIndepVars(variables, omitZero=True) 
+    exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+    saveSampleToTxtFile(samples = exper, fileName = './assets/experiments/FFD_sample.txt')
+    for idx, ex in enumerate(exper): 
+        print(f'{idx+1}: ', ex)
+    runExperiment(modelLoc= modelLoc, 
+                    variables = timeIndepVars, 
+                    simRepo = samplesLoc,
+                    experiment=exper,
+                    experFile=experFile,
+                    descFile= descFile)
 
-    exper = loadSampleFromTxtFile(experFile)
-    print(exper)
-
-    # Normalizing the experiment matrix:
+    # Evaluation of the samples
     sampleGroup = list(range(1,17))
     batchSize = 4
-
-    runBatch(dataLocation=dataLoc,
+    runBatch(dataLocation=samplesLoc,
                     sampleGroup=sampleGroup,
                     configFile=simConfig,
                     figureFolder=figLoc,
                     PN_suggest=batchSize)
 
     # Analysis of the results:
+    metNames = simConfig.metricNames
     analyseFactorScreening(repoLoc=repoLoc, 
                         figFolder=figLoc,
                         metNames = metNames, 
@@ -106,6 +119,7 @@ def loadVars(varDescFile):
         vars.append(var)
         descs[var]= yamlObj[var]
     return vars, descs
+
 
 # Since we are using multiprocessing we need to have this here: 
 if __name__=="__main__":

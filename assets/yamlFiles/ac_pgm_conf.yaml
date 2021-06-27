@@ -8,9 +8,9 @@ codeBase_Linux:
   - "/home/caps/.wine/drive_c/HIL-TB/py"
 matlab_path_Windows:
   - "./Matlab"
+  - "C:/Users/bm12m/Google Drive/codes/CodeBase"
 matlab_path_Linux:
   - "./Matlab"
-  - "C:/Users/bm12m/Google Drive/codes/CodeBase"
   - "/home/caps/.wine/drive_c/STAFF/langston/MFiles"
   - "/home/caps/.wine/drive_c/cef/MVDC_SPS/AC_PGM_Analysis"
 profileLoc: "./profileExample"
@@ -18,7 +18,7 @@ metricNames:
   - "Max dev |V| pu"
   - "Max dev V freq pu"
   - "Voltage L-L unbalance"
-modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM_drp_disb_copy" 
+modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM_draft_vars" 
 outputFolder: './assets/outputReports/'
 sampleRepo: "D:/Data/Sample80/data"
 sampleBudget: 400

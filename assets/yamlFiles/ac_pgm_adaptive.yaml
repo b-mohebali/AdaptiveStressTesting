@@ -1,18 +1,24 @@
 name: QXUfro
 type: timeIndep
-initialState: 0.1
+initialState: 0.5
+lowerLimit: 0.1
+upperLimit: 20
 description: "Pulse load frequency"
 
 ---
 name: QXUPro
 type: timeIndep
-initialState: 1.4
+initialState: 2.0
+lowerLimit: 1
+upperLimit: 3.5
 description: "Pulse load P"
 
 ---
 name: QXUfrr
 type: timeIndep
-initialState: 0.8
+initialState: 100
+lowerLimit: 100
+upperLimit: 200
 description: "Pulse load ramp rate"
 
 ---
