@@ -254,6 +254,9 @@ def loadMetricValues(dataLoc, metricNames, outType : OutputType = OutputType.DIC
         yamlObj = yaml.load(yamlString, Loader = yaml.SafeLoader)
         for metName in metricNames:
             metricVals[metName].append(yamlObj[metName])
+    # Converting the value arrays to numpy arrays:
+    for metName in metricNames:
+        metricVals[metName] = np.array(metricVals[metName])
     return metricVals
 
 def loadVariableValues(dataLoc, varNames):
@@ -278,6 +281,8 @@ def loadVariableValues(dataLoc, varNames):
         variables = yamlObj['variables']
         for varName in varNames: 
             varValues[varName].append(variables[varName])
+    for varName in varNames:
+        varValues[varName] = np.array(varValues[varName])
     return varValues
 
 def reconstructDesignMatrix(variableValues):

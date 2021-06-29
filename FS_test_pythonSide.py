@@ -1,9 +1,8 @@
-#! /usr/bin/python3
+# # ! /usr/bin/python3
 
 from matplotlib.pyplot import figure
 from ActiveLearning.dataHandling import loadMetricValues, loadVariableValues, reconstructDesignMatrix
 import repositories
-from ActiveLearning.simInterface import runExperiment
 from yaml.loader import SafeLoader 
 from yamlParseObjects.variablesUtil import * 
 from yamlParseObjects.yamlObjects import * 
@@ -15,6 +14,17 @@ from scipy.linalg import solve
 import matplotlib.pyplot as plt
 from ActiveLearning.visualization import * 
 
+def loadVars(varDescFile):
+    with open(varDescFile, 'r') as fp:
+        yamlString = fp.read()
+    vars = []
+    descs = {}
+    yamlObj =  yaml.load(yamlString, Loader = SafeLoader)
+    for var in yamlObj:
+        vars.append(var)
+        descs[var]= yamlObj[var]
+    return vars, descs
+
 def analyseFactorScreening(repoLoc, figFolder, metNames, include_bias = False):
     dataLoc = repoLoc + '/data'
     varDescFile = glob.glob(dataLoc + '/*.yaml')[0]
@@ -25,7 +35,33 @@ def analyseFactorScreening(repoLoc, figFolder, metNames, include_bias = False):
     if include_bias:
         varNames.insert(0,'bias')
         descs['bias'] = 'Bias term'
+    # Plotting the dot diagrams for each variable: 
+    for var in varNames:
+        varDesc = descs[var]
+        varFigDir = repoLoc + f'/figures/{var}'
+        if not os.path.isdir(varFigDir):
+            os.mkdir(varFigDir)
+        varVal = varValues[var]
+        varMax = max(varValues[var])
+        varMin = min(varValues[var])
+        for metName in metNames:
+            met = metVals[metName]
+            minMean,maxMean = np.mean(met[varVal==varMin]),np.mean(met[varVal==varMax])
+            plt.figure(figsize = (10,5))
+            plt.scatter(varVal, met, s = 4, label = 'Data points')
+            plt.scatter([varMin, varMax],[minMean, maxMean], color = 'r', s = 20, label='Mean value')
+            plt.plot([varMin, varMax],[minMean, maxMean], color = 'k', label = 'Interpolation')
+            plt.legend(loc='upper center')
+            plt.grid(True)
+            plt.xlabel(varDesc)
+            plt.ylabel(metName)
+            sInfo = SaveInformation(
+                fileName = f'{varFigDir}/{"".join(ch for ch in metName if ch.isalnum())}', savePDF=True, savePNG=True)
+            saveFigures(sInfo)
+            plt.close()
 
+
+    # Calculating the main effect coefficients
     H = reconstructDesignMatrix(varValues)
     for metricName in metNames:
         metVal = metVals[metricName]
@@ -66,9 +102,9 @@ def analyseFactorScreening(repoLoc, figFolder, metNames, include_bias = False):
         plt.close()
 
 
-def main():
+def main(run_exp:bool = True, run_eval:bool=True, run_analysis:bool = True):
     # Simulation phase:
-    repoLoc = repositories.remoteRepo102
+    repoLoc = 'C:/Data/testSample'
     samplesLoc = repoLoc + '/data'
     figLoc = repoLoc + '/figures'
     simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
@@ -80,48 +116,44 @@ def main():
                 span = 0.65) 
     for v in variables: 
         print(f'Variable: {v.name}, mapped name: {v.mappedName}, Initial value: {v.initialState}')
-    timeIndepVars = getTimeIndepVars(variables, omitZero=True) 
-    exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
-    saveSampleToTxtFile(samples = exper, fileName = './assets/experiments/FFD_sample.txt')
-    for idx, ex in enumerate(exper): 
-        print(f'{idx+1}: ', ex)
-    runExperiment(modelLoc= modelLoc, 
-                    variables = timeIndepVars, 
-                    simRepo = samplesLoc,
-                    experiment=exper,
-                    experFile=experFile,
-                    descFile= descFile)
+    if run_exp:
+        from ActiveLearning.simInterface import runExperiment
+        timeIndepVars = getTimeIndepVars(variables, omitZero=True) 
+        exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
+        saveSampleToTxtFile(samples = exper, fileName = './assets/experiments/FFD_sample.txt')
+        for idx, ex in enumerate(exper): 
+            print(f'{idx+1}: ', ex)
+        runExperiment(modelLoc= modelLoc, 
+                        variables = timeIndepVars, 
+                        simRepo = samplesLoc,
+                        experiment=exper,
+                        experFile=experFile,
+                        descFile= descFile)
 
     # Evaluation of the samples
-    sampleGroup = list(range(1,17))
-    batchSize = 4
-    runBatch(dataLocation=samplesLoc,
-                    sampleGroup=sampleGroup,
-                    configFile=simConfig,
-                    figureFolder=figLoc,
-                    PN_suggest=batchSize)
+    if run_eval:
+        sampleGroup = list(range(1,17))
+        batchSize = 4
+        runBatch(dataLocation=samplesLoc,
+                        sampleGroup=sampleGroup,
+                        configFile=simConfig,
+                        figureFolder=figLoc,
+                        PN_suggest=batchSize)
 
     # Analysis of the results:
-    metNames = simConfig.metricNames
-    analyseFactorScreening(repoLoc=repoLoc, 
-                        figFolder=figLoc,
-                        metNames = metNames, 
-                        include_bias=False)
+    if run_analysis:
+        metNames = simConfig.metricNames
+        analyseFactorScreening(repoLoc=repoLoc, 
+                            figFolder=figLoc,
+                            metNames = metNames, 
+                            include_bias=False)
    
 
-def loadVars(varDescFile):
-    with open(varDescFile, 'r') as fp:
-        yamlString = fp.read()
-    vars = []
-    descs = {}
-    yamlObj =  yaml.load(yamlString, Loader = SafeLoader)
-    for var in yamlObj:
-        vars.append(var)
-        descs[var]= yamlObj[var]
-    return vars, descs
+
 
 
 # Since we are using multiprocessing we need to have this here: 
 if __name__=="__main__":
     freeze_support()
-    main()
+    main(run_eval=False, run_exp=False, run_analysis = True)
+    

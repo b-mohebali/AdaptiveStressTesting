@@ -1,14 +1,9 @@
-from matplotlib.pyplot import figure
-from ActiveLearning.dataHandling import loadMetricValues, loadVariableValues, readDataset, reconstructDesignMatrix
-import repositories
-from ActiveLearning.simInterface import runExperiment
-from yaml.loader import SafeLoader 
+from ActiveLearning.dataHandling import readDataset
 from yamlParseObjects.variablesUtil import * 
 from yamlParseObjects.yamlObjects import * 
 from metricsRunTest import *
 from multiprocessing import freeze_support
 import time
-from scipy.linalg import solve
 import matplotlib.pyplot as plt
 from ActiveLearning.visualization import *
 import sys 
@@ -68,4 +63,5 @@ def main():
 
 
 if __name__=='__main__':
+    freeze_support()
     main()
