@@ -35,15 +35,18 @@ function [label,VdevMax,fdevMax, VLLUnbalanceMax] = runMetrics(dataLocation, sam
      
     %% Saving the figures for observation:
     figure(1)
-    figName = sprintf('%s/VoltageMagnitude.png',figFolder);
-    saveas(gcf, figName);
+    figName = sprintf('%s/VoltageMagnitude',figFolder);
+    saveas(gcf,sprintf('%s.png',figName));
+    savefig(gcf,sprintf('%s.fig',figName),'compact')
     figure(2);
-    figName = sprintf('%s/VoltageFrequency.png',figFolder);
-    saveas(gcf, figName);
+    figName = sprintf('%s/VoltageFrequency',figFolder);
+    saveas(gcf,sprintf('%s.png',figName));
+    savefig(gcf,sprintf('%s.fig',figName),'compact')
     figure(3);
-    figName = sprintf('%s/VoltageUnbalance.png',figFolder);
-    saveas(gcf, figName); 
-
+    figName = sprintf('%s/VoltageUnbalance',figFolder);
+    saveas(gcf,sprintf('%s.png',figName));
+    savefig(gcf,sprintf('%s.fig',figName),'compact')
+    
     %% Preparation of the output:
     label = status;
     fdevMax = vals.fdevMax;

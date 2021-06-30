@@ -1,7 +1,6 @@
 # # ! /usr/bin/python3
 
-from matplotlib.pyplot import figure
-from ActiveLearning.dataHandling import loadMetricValues, loadVariableValues, reconstructDesignMatrix
+from ActiveLearning.dataHandling import loadMetricValues, loadVariableValues, readDataset, reconstructDesignMatrix
 import repositories
 from yaml.loader import SafeLoader 
 from yamlParseObjects.variablesUtil import * 
@@ -155,5 +154,13 @@ def main(run_exp:bool = True, run_eval:bool=True, run_analysis:bool = True):
 # Since we are using multiprocessing we need to have this here: 
 if __name__=="__main__":
     freeze_support()
-    main(run_eval=False, run_exp=False, run_analysis = True)
+    repoLoc = 'C:/Data/testSample'
+    dataLoc = repoLoc + '/data'
+    varDescFile = glob.glob(dataLoc + '/*.yaml')[0]
+    varNames, descs = loadVars(varDescFile)
+    print(varNames)
+    data, labels = readDataset(repoLoc = dataLoc, dimNames = varNames)
+    print(labels)
+    print(data)
+    # main(run_eval=True, run_exp=False, run_analysis = True)
     
