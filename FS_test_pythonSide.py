@@ -1,4 +1,4 @@
-# # ! /usr/bin/python3
+#! /usr/bin/python3
 
 from matplotlib.pyplot import figure
 from ActiveLearning.dataHandling import loadMetricValues, loadVariableValues, reconstructDesignMatrix
@@ -13,6 +13,7 @@ import yaml
 from scipy.linalg import solve
 import matplotlib.pyplot as plt
 from ActiveLearning.visualization import * 
+from enum import Enum 
 
 def loadVars(varDescFile):
     with open(varDescFile, 'r') as fp:
@@ -101,28 +102,53 @@ def analyseFactorScreening(repoLoc, figFolder, metNames, include_bias = False):
         saveFigures(sInfo)
         plt.close()
 
+class ExperimentType(Enum):
+    STRICT_OAT = 0
+    STANDARD_OAT = 1
+    FFD = 2
+    VERIFICATION = 3
 
-def main(run_exp:bool = True, run_eval:bool=True, run_analysis:bool = True):
+def main(run_exp:bool = True, 
+        run_eval:bool=True, 
+        run_analysis:bool = True,
+        experType: ExperimentType = ExperimentType.FFD):
     # Simulation phase:
-    repoLoc = 'C:/Data/testSample'
+    # repoLoc = 'C:/Data/testSample'
+    repoLoc = testRepo4
     samplesLoc = repoLoc + '/data'
+    print(samplesLoc)
+    if not os.path.isdir(samplesLoc):
+        os.mkdir(samplesLoc)
     figLoc = repoLoc + '/figures'
     simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
     modelLoc = repositories.cefLoc + simConfig.modelLocation
+
+    # variablesFile = './assets/yamlFiles/test.yaml'
     variablesFile = './assets/yamlFiles/variables_ac_pgm.yaml'
+    
     descFile = './assets/yamlFiles/varDescription.yaml'
     experFile = './assets/experiments/FFD_new_Framework.txt'
     variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR,
                 span = 0.65) 
     for v in variables: 
         print(f'Variable: {v.name}, mapped name: {v.mappedName}, Initial value: {v.initialState}')
-    if run_exp:
         from ActiveLearning.simInterface import runExperiment
-        timeIndepVars = getTimeIndepVars(variables, omitZero=True) 
+    timeIndepVars = getTimeIndepVars(variables, omitZero=True) 
+    # Doing the experiment based on what was asked for. 
+    if experType == ExperimentType.FFD:
         exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
-        saveSampleToTxtFile(samples = exper, fileName = './assets/experiments/FFD_sample.txt')
-        for idx, ex in enumerate(exper): 
-            print(f'{idx+1}: ', ex)
+    elif experType == ExperimentType.VERIFICATION:
+        exper = generateVerifSample(variables=timeIndepVars)
+    elif experType == ExperimentType.STRICT_OAT:
+        exper = strictOATSampleGenerator(variables = timeIndepVars)
+    elif experType == ExperimentType.STANDARD_OAT:
+        exper = standardOATSampleGenerator(variables = timeIndepVars)       
+    
+    saveSampleToTxtFile(samples = exper, fileName = './assets/experiments/FFD_sample.txt')
+    for idx, ex in enumerate(exper): 
+        print(f'{idx+1}: ', ex)
+    if run_exp:
+    
         runExperiment(modelLoc= modelLoc, 
                         variables = timeIndepVars, 
                         simRepo = samplesLoc,
@@ -130,10 +156,10 @@ def main(run_exp:bool = True, run_eval:bool=True, run_analysis:bool = True):
                         experFile=experFile,
                         descFile= descFile)
 
-    # Evaluation of the samples
+    # Evaluation of the samples (parallelized):
     if run_eval:
         sampleGroup = list(range(1,17))
-        batchSize = 4
+        batchSize = 3
         runBatch(dataLocation=samplesLoc,
                         sampleGroup=sampleGroup,
                         configFile=simConfig,
@@ -149,11 +175,11 @@ def main(run_exp:bool = True, run_eval:bool=True, run_analysis:bool = True):
                             include_bias=False)
    
 
-
-
-
 # Since we are using multiprocessing we need to have this here: 
 if __name__=="__main__":
     freeze_support()
-    main(run_eval=False, run_exp=False, run_analysis = True)
+    experType = ExperimentType.FFD
+    main(run_exp=False, run_eval=True, run_analysis = True,
+        experType = experType)
+
     

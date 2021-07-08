@@ -19,7 +19,7 @@ function [label,VdevMax,fdevMax, VLLUnbalanceMax] = runMetrics(dataLocation, sam
     
     %% Extracting the data vectors from the loaded .mat file: 
     timeVec = y.glog_time;
-    Vbase = .45;
+    Vbase = 4.16; % kV
     Fbase = 60;
     Va = y.GA1WA;
     Vb = y.GA1WB;
@@ -35,14 +35,22 @@ function [label,VdevMax,fdevMax, VLLUnbalanceMax] = runMetrics(dataLocation, sam
      
     %% Saving the figures for observation:
     figure(1)
-    figName = sprintf('%s/VoltageMagnitude.png',figFolder);
-    saveas(gcf, figName);
+    figName = 'VoltageMagnitude';
+    title(sprintf('Voltage Magnitude (sample %d)', sampleNum));
+    saveas(gcf,sprintf('%s/%s.png', figFolder, figName));
+    savefig(gcf,sprintf('%s/%s', figFolder, figName));
+
     figure(2);
-    figName = sprintf('%s/VoltageFrequency.png',figFolder);
-    saveas(gcf, figName);
+    figName = 'VoltageFrequency';
+    title(sprintf('Voltage Frequency (sample %d)', sampleNum));
+    saveas(gcf,sprintf('%s/%s.png', figFolder, figName));
+    savefig(gcf,sprintf('%s/%s', figFolder, figName));
+
     figure(3);
-    figName = sprintf('%s/VoltageUnbalance.png',figFolder);
-    saveas(gcf, figName); 
+    figName = 'VoltageUnbalance';
+    title(sprintf('Voltage L-L Imbalance (sample %d)', sampleNum));
+    saveas(gcf,sprintf('%s/%s.png', figFolder, figName));
+    savefig(gcf,sprintf('%s/%s', figFolder, figName));
 
     %% Preparation of the output:
     label = status;

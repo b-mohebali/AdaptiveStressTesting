@@ -1,0 +1,10 @@
+---
+name: QXUPrb
+type: timeIndep
+initialState: 1
+lowerLimit: 0 
+upperLimit: 100
+description: "Steady State load P"
+
+...
+

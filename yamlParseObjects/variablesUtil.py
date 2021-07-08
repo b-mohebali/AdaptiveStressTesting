@@ -136,7 +136,8 @@ def randomizeVariablesList(variables: List[VariableConfig], sampleNum, subInterv
 # The simulation will run the model for the factors at the extremes of their 
 # range. In the sample set, each factor has k simulation when it is at its 
 # minimum and k simulation when it is at its maximum. 
-def strictOATSampleGenerator(varDict, addMiddle = False):
+def strictOATSampleGenerator(variables, addMiddle = False):
+    varDict = dict((var.name, var) for var in variables)
     randValuesList = []
     currentSample = {}
     middleSample = {}
@@ -161,7 +162,8 @@ def strictOATSampleGenerator(varDict, addMiddle = False):
         randValuesList.append(middleSample.copy())
     return randValuesList
 
-def standardOATSampleGenerator(varDict, repeat = False):
+def standardOATSampleGenerator(variables, repeat = False):
+    varDict = dict((var.name, var) for var in variables)
     copyNumber = 2 if repeat else 1
     valuesList = []
     standardSample = {}
@@ -338,11 +340,12 @@ def loadSampleFromTxtFile(fileName):
 # samples (FFD and OAT). The idea is to check the variation of the output
 # around the initial point with logarithmic scales. 
 def generateVerifSample(variables):
+    print('Generating verification samples')
     varInitial = getVariablesInitialValueDict(variables)
     varDict = getTimeindepVariablesDict(variables)
     sampleList = []
     sampleList.append(varInitial.copy())
-    scales = [0.2,0.5,2,5]
+    scales = [0.2, 0.6,2,4]
     lastSample = None
     for key in varInitial:
         var = varDict[key]

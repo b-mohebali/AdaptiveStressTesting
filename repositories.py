@@ -40,6 +40,7 @@ repoRoot2 = 'caps@10.146.64.69:/home/caps/SensAnalysis/'
 localRepo = '/home/caps/SenseAnalysisTemp/'
 newLocalRepo = '/home/caps/Data/SensAnalysis/'
 newAdaptiveRepo = '/home/caps/Data/AdaptiveSamplingRepo/'
+newTestRepo = '/home/caps/Data/Tests/'
 adaptiveSamplingLoc = '/home/caps/AdaptiveSamplingRepo/'
 
 # New FFD sample with larger variable list. 
@@ -257,6 +258,10 @@ remoteRepo100 = newLocalRepo + 'sample100'
 remoteRepo101 = newLocalRepo + 'sample101'
 # First repo to integrate the analysis and simulation steps into the same script:
 remoteRepo102 = newLocalRepo + 'sample102'
+# Sample with the metrics including the modulation
+remoteRepo103 = newLocalRepo + 'sample103'
+
+
 
 """
     Adaptive Samples notation: 
@@ -282,7 +287,26 @@ monteCarlo400 = adaptiveSamplingLoc + 'monteCarlo400'
 adaptRepo4 = newAdaptiveRepo + 'adaptiveRepo4'
 # Adaptive Sampling 400(80)-1 Droop control engaged again. The range of variation for the variables are changed too.
 adaptRepo5 = newAdaptiveRepo + 'adaptiveRepo5'
+# Adaptive Sampling 400(80)-1 Droop control disengaged and voltage modulation added to the metrics. 
+adaptRepo6 = newAdaptiveRepo + 'adaptiveRepo6'
+# The last initial sample had all the points fail the metrics. So I relaxed the bounds for the variables and ran it again. Also changed the time steps to 50 uS
+adaptRepo7 = newAdaptiveRepo + 'adaptiveRepo7'
+# Same problem with the last sample. Changed the range of the variables and tried again. Also changed the L-L RMS voltage to 4160 v
+adaptRepo8 = newAdaptiveRepo + 'adaptiveRepo8'
 
+
+"""
+    Miscellanous tests with different purposes that are not meant for sensitivity analysis or adaptive stress testing. 
+
+"""
+# Test for seeing whether the metrics are calculated correctly. Pulse load disabled here. 
+testRepo1 = newTestRepo + 'test1'
+# Same test with droop disabled: 
+testRepo2 = newTestRepo + 'test2'
+# Same test but the time step was changed to 25 uS because the loggers had some issue with recording at 28.5uS
+testRepo3 = newTestRepo + 'test3'
+# Same but with Vb = 4160v
+testRepo4 = newTestRepo + 'test4'
 
 
 

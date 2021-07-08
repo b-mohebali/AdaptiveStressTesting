@@ -38,6 +38,7 @@ NOTE 1: Use the currentDir variable from repositories to point to the AdaptiveSt
 print('This is the AC PGM sampling test file. ')
 variablesFile = currentDir + '/assets/yamlFiles/ac_pgm_adaptive.yaml'
 
+includeBenchmarkSample = False
 
 # Extracting the hyperparameters of the analysis:
 budget = simConfig.sampleBudget
@@ -49,8 +50,10 @@ variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=S
 # Setting the main files and locations:
 descriptionFile = currentDir + '/assets/yamlFiles/varDescription.yaml'
 sampleSaveFile = currentDir + '/assets/experiments/adaptive_sample-400(80)-1.txt'
-repoLoc = adaptRepo5
+repoLoc = adaptRepo8
 dataLoc = repoLoc + '/data'
+if not os.path.isdir(dataLoc):
+    os.mkdir(dataLoc)
 
 # Defining the location of the output files:
 outputFolder = f'{repoLoc}/outputs'
@@ -89,6 +92,7 @@ runSample(caseLocation=modelLoc,
 #### Running the metrics on the first sample: 
 # Forming the sample list which includes all the initial samples:
 samplesList = list(range(1, initialSampleSize+1))
+
 ### Calling the metrics function on all the samples:
 # Using the parallelized metrics evaluation part. 
 runBatch(dataLocation=dataLoc,
@@ -96,14 +100,6 @@ runBatch(dataLocation=dataLoc,
                 configFile=simConfig,
                 figureFolder=figFolder,
                 PN_suggest=4)
-
-# engine = setUpMatlab(simConfig=simConfig)
-# getMetricsResults(dataLocation = dataLoc,
-#                 eng = engine, 
-#                 sampleNumber = samplesList,
-#                 metricNames = simConfig.metricNames,
-#                 figFolderLoc=figFolder,
-#                 procNum = 0)
 
 #### Load the mother sample for comparison:
 """
@@ -113,7 +109,8 @@ This part loads a pickled classifier that is trained on the Monte-Carlo sample t
 """
 motherClfPickle = picklesLoc + 'mother_clf.pickle'
 classifierBench = None
-if os.path.exists(motherClfPickle) and os.path.isfile(motherClfPickle):
+
+if includeBenchmarkSample and os.path.exists(motherClfPickle) and os.path.isfile(motherClfPickle):
     with open(motherClfPickle,'rb') as pickleIn:
         motherClf = pickle.load(pickleIn)
     threshold = 0.5 if motherClf.probability else 0
