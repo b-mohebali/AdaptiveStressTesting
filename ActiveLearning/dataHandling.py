@@ -58,6 +58,7 @@ def readSingleSample(repoLoc,dimNames, sampleNumber):
     """
         This function read the results of a single sample from the repo.
         NOTE: The final report coming from the factor screening may have more dimensions than needed for the adaptive sampling. The extra dimensions will be ignored by this function as the list of the desirable dimensions is passed to it. 
+
         Inputs:
             - Location of the samples (repoLoc)
             - List of the dimension names (dimNames)
@@ -237,6 +238,7 @@ class OutputType(Enum):
 def loadMetricValues(dataLoc, metricNames, outType : OutputType = OutputType.DICT):
     '''
         This function takes the location of a data repo and loads the metric values for all the evaluated samples into a dictionary.
+
         Inputs: 
             - dataLoc: Location of the repository where the sample folders are.
             - metricNames: List of strings containing the name by which the values are saved in the report yaml file. 
@@ -262,6 +264,7 @@ def loadMetricValues(dataLoc, metricNames, outType : OutputType = OutputType.DIC
 def loadVariableValues(dataLoc, varNames):
     '''
         This function takes the location of the data repository and the name of the variables in the analysis and loads the values of the variables for all the samples. The values are then used for reconstructing the design matrix.
+
         Inputs:
             - dataLoc: Location of the repository where the sample folders are.
             - varNames: List of strings containing the name by which the variable values are saved within the report yaml file.
@@ -281,6 +284,7 @@ def loadVariableValues(dataLoc, varNames):
         variables = yamlObj['variables']
         for varName in varNames: 
             varValues[varName].append(variables[varName])
+    # Converting the value arrays to numpy arrays:
     for varName in varNames:
         varValues[varName] = np.array(varValues[varName])
     return varValues
@@ -288,6 +292,7 @@ def loadVariableValues(dataLoc, varNames):
 def reconstructDesignMatrix(variableValues):
     '''
         This function takes the dict of lists (coming from the loadVariableValues function) and normalizes it to make the design matrix consisting only of 1 and -1 elements. 
+        
         Inputs: 
             - variableVAlues: Dict(string, List[float]) containing the values for the variables used in the analysis.
         
