@@ -345,7 +345,7 @@ def generateVerifSample(variables):
     varDict = getTimeindepVariablesDict(variables)
     sampleList = []
     sampleList.append(varInitial.copy())
-    scales = [0.2, 0.6,2,4]
+    scales = [0.2,0.3,0.4,0.5]
     lastSample = None
     for key in varInitial:
         var = varDict[key]

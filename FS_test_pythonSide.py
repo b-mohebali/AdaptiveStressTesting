@@ -111,12 +111,14 @@ class ExperimentType(Enum):
 def main(run_exp:bool = True, 
         run_eval:bool=True, 
         run_analysis:bool = True,
-        experType: ExperimentType = ExperimentType.FFD):
+        experType: ExperimentType = ExperimentType.FFD,
+        include_bias = False):
     # Simulation phase:
     # repoLoc = 'C:/Data/testSample'
-    repoLoc = testRepo4
+    repoLoc = testRepo7
     samplesLoc = repoLoc + '/data'
     print(samplesLoc)
+    # Creating the data folder if it does not exist:
     if not os.path.isdir(samplesLoc):
         os.mkdir(samplesLoc)
     figLoc = repoLoc + '/figures'
@@ -144,7 +146,7 @@ def main(run_exp:bool = True,
     elif experType == ExperimentType.STANDARD_OAT:
         exper = standardOATSampleGenerator(variables = timeIndepVars)       
     
-    saveSampleToTxtFile(samples = exper, fileName = './assets/experiments/FFD_sample.txt')
+    saveSampleToTxtFile(samples = exper, fileName = './assets/experiments/test_sample.txt')
     for idx, ex in enumerate(exper): 
         print(f'{idx+1}: ', ex)
     if run_exp:
@@ -170,16 +172,16 @@ def main(run_exp:bool = True,
     if run_analysis:
         metNames = simConfig.metricNames
         analyseFactorScreening(repoLoc=repoLoc, 
-                            figFolder=figLoc,
-                            metNames = metNames, 
-                            include_bias=False)
+                        figFolder=figLoc,
+                        metNames = metNames, 
+                        include_bias=include_bias)
    
 
 # Since we are using multiprocessing we need to have this here: 
 if __name__=="__main__":
     freeze_support()
     experType = ExperimentType.FFD
-    main(run_exp=False, run_eval=True, run_analysis = True,
-        experType = experType)
+    main(run_exp=True, run_eval=True, run_analysis = True,
+        experType = experType, include_bias = False)
 
     

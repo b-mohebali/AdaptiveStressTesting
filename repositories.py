@@ -307,8 +307,12 @@ testRepo2 = newTestRepo + 'test2'
 testRepo3 = newTestRepo + 'test3'
 # Same but with Vb = 4160v
 testRepo4 = newTestRepo + 'test4'
-
-
+# To find a point of feasibility in the whole space.
+testRepo5 = newTestRepo + 'test5'
+# Adding more variables to the verification test:
+testRepo6 = newTestRepo + 'test6'
+# Adding all the variables of the model
+testRepo7 = newTestRepo + 'test7'
 
 currentDir = os.getcwd()
 isRepoRemote = True

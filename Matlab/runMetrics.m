@@ -34,8 +34,7 @@ function [label,VdevMax,fdevMax, VLLUnbalanceMax] = runMetrics(dataLocation, sam
         'Vbase',Vbase,'Fbase',Fbase,'plot',1,'Nfig',1);
      
     %% Saving the figures for observation:
-    figure(1)
-<<<<<<< HEAD
+    figure(1);
     figName = 'VoltageMagnitude';
     title(sprintf('Voltage Magnitude (sample %d)', sampleNum));
     saveas(gcf,sprintf('%s/%s.png', figFolder, figName));
@@ -53,20 +52,6 @@ function [label,VdevMax,fdevMax, VLLUnbalanceMax] = runMetrics(dataLocation, sam
     saveas(gcf,sprintf('%s/%s.png', figFolder, figName));
     savefig(gcf,sprintf('%s/%s', figFolder, figName));
 
-=======
-    figName = sprintf('%s/VoltageMagnitude',figFolder);
-    saveas(gcf,sprintf('%s.png',figName));
-    savefig(gcf,sprintf('%s.fig',figName),'compact')
-    figure(2);
-    figName = sprintf('%s/VoltageFrequency',figFolder);
-    saveas(gcf,sprintf('%s.png',figName));
-    savefig(gcf,sprintf('%s.fig',figName),'compact')
-    figure(3);
-    figName = sprintf('%s/VoltageUnbalance',figFolder);
-    saveas(gcf,sprintf('%s.png',figName));
-    savefig(gcf,sprintf('%s.fig',figName),'compact')
-    
->>>>>>> c60acd9bc91d6c840164521e69c7352a5c168063
     %% Preparation of the output:
     label = status;
     fdevMax = vals.fdevMax;

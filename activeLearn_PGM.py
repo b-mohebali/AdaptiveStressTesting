@@ -39,6 +39,8 @@ print('This is the AC PGM sampling test file. ')
 variablesFile = currentDir + '/assets/yamlFiles/ac_pgm_adaptive.yaml'
 
 includeBenchmarkSample = False
+loadInitialSample = True 
+runInitialSample = False 
 
 # Extracting the hyperparameters of the analysis:
 budget = simConfig.sampleBudget
@@ -67,26 +69,28 @@ initialReport.setStart()
 
 #-------------------CREATING SAMPLES BEFORE SIMULATION----------------
 # Taking the initial sample based on the parameters of the process. 
-initialSamples = generateInitialSample(space = designSpace,
-                                        sampleSize=initialSampleSize,
-                                        method = InitialSampleMethod.CVT,
-                                        checkForEmptiness=False)
+if not loadInitialSample:
+    initialSamples = generateInitialSample(space = designSpace,
+                                            sampleSize=initialSampleSize,
+                                            method = InitialSampleMethod.CVT,
+                                            checkForEmptiness=False)
 
-### Preparing and running the initial sample: 
-formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
-saveSampleToTxtFile(formattedSample, sampleSaveFile)
-runSample(caseLocation=modelLoc,
-            sampleDictList=formattedSample,
-            remoteRepo=dataLoc)
+    ### Preparing and running the initial sample: 
+    formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
+    saveSampleToTxtFile(formattedSample, sampleSaveFile)
+    # runSample(caseLocation=modelLoc,
+    #             sampleDictList=formattedSample,
+    #             remoteRepo=dataLoc)
 
 #-------------------LOADING SAMPLES----------------------------------
 ## Loading sample from a pregenerated file in case of interruption:
-# print(currentDir)
-# formattedSample = loadSampleFromTxtFile(sampleSaveFile)
-
-# runSample(caseLocation=modelLoc,
-#             sampleDictList=formattedSample,
-#             remoteRepo=dataLoc)
+else: 
+    print(currentDir)
+    formattedSample = loadSampleFromTxtFile(sampleSaveFile)
+if runInitialSample: 
+    runSample(caseLocation=modelLoc,
+                sampleDictList=formattedSample,
+                remoteRepo=dataLoc)
 #--------------------------------------------------------------------
 
 #### Running the metrics on the first sample: 
