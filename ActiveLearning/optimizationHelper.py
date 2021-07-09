@@ -29,7 +29,8 @@ class GA_Optimizer(ABC):
         self.progress_bar = progress_bar
         self.batchSize = batchSize
         self.currentSpaceSamples = None
-    
+        self.ranges = space.getAllDimensionsRanges()
+
     # Batch size getter and setter:
     def setBatchSize(self,batchSize):
         self._batchSize = batchSize
@@ -91,7 +92,6 @@ class GA_Exploiter(GA_Optimizer):
                     progress_bar=progress_bar)
         self.epsilon = epsilon                   
         self.clf = clf
-        self.ranges = space.getAllDimensionsRanges()
     
     def objFunction(self, X):
         dist = self.space.nearestPointDistance(X, self.currentSpaceSamples, normalize=True)
@@ -113,7 +113,7 @@ class GA_Explorer(GA_Optimizer):
                         convergence_curve=convergence_curve, 
                         progress_bar=progress_bar)
         self.beta = beta 
-    
+        
     # The scale of the dimensions are normalized so that it does not affect the 
     # relative distance between the points of the dataset and the prospective 
     # solutions.

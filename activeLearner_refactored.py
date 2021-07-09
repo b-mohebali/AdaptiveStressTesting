@@ -10,7 +10,6 @@ import shutil
 import matplotlib.pyplot as plt 
 from enum import Enum
 from sklearn import svm
-from geneticalgorithm import geneticalgorithm as ga
 from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Explorer
 from copy import copy
 
@@ -136,7 +135,7 @@ while currentBudget > 0:
     # exploiterPoints = exploiter.findNextPoints(min(currentBudget, batchSize))
     exploiterPoints = exploiter.findNextPoints(pointNum=exploitationBudget)
     explorerPoints = explorer.findNextPoints(pointNum=explorationBudget)
-    # Updating the remaining budget:
+    # Updating the remaining budget:    
     currentBudget -= min(currentBudget, batchSize) 
     # Visualization and saving the results:
     sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_NotLabeled'
