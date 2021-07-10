@@ -260,6 +260,8 @@ remoteRepo101 = newLocalRepo + 'sample101'
 remoteRepo102 = newLocalRepo + 'sample102'
 # Sample with the metrics including the modulation
 remoteRepo103 = newLocalRepo + 'sample103'
+# Changed the range of variation. Took out the irrelevant variables from the analysis. Added the new metric "Voltage modulation".:
+remoteRepo104 = newLocalRepo + 'sample104'
 
 
 
@@ -313,6 +315,13 @@ testRepo5 = newTestRepo + 'test5'
 testRepo6 = newTestRepo + 'test6'
 # Adding all the variables of the model
 testRepo7 = newTestRepo + 'test7'
+# A 30 point frequency sweep on the model to find the regions of vulnerability.
+testRepo8 = newTestRepo + 'test8'
+# Frequency sweep with 50 points between 0.1 Hz and 7 Hz. Pulse load = 0.5 MW (10% nominal)
+testRepo9 = newTestRepo + 'test9'
+# Frequency sweep with 50 points between 0.1 Hz and 7 Hz. Pulse load = 0.25 MW (5% nominal)
+testRepo10 = newTestRepo + 'test10'
+
 
 currentDir = os.getcwd()
 isRepoRemote = True

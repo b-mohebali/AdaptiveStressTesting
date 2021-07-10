@@ -64,7 +64,8 @@ def getMetricsResults(dataLocation: str,
     # Calling the matlab script that handles the metrics run and calculating the 
     # time it took.
     startTime = time.time()
-    output = eng.runMetrics(dataLocation, sampleNumber, figFolderLoc, nargout = 4)
+    # NOTE: The number of outputs is 1 plus the number of metrics. 1 is for the label of the sample.
+    output = eng.runMetrics(dataLocation, sampleNumber, figFolderLoc, nargout = 1 + len(metricNames))
     endTime = time.time()
     elapsed = endTime - startTime
     processIndicator = f'Process {procNum}: ' if procNum!=0 else ''

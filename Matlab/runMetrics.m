@@ -1,4 +1,4 @@
-function [label,VdevMax,fdevMax, VLLUnbalanceMax] = runMetrics(dataLocation, sampleNum, figLocation)
+function [label,VdevMax,fdevMax, VLLUnbalanceMax, Vmodulation] = runMetrics(dataLocation, sampleNum, figLocation)
     fprintf('Evaluating sample at %s\n',dataLocation);
     
     %% The preparation of the data for the metrics run:
@@ -57,7 +57,8 @@ function [label,VdevMax,fdevMax, VLLUnbalanceMax] = runMetrics(dataLocation, sam
     fdevMax = vals.fdevMax;
     VLLUnbalanceMax = vals.VLLUnbalanceMax;
     VdevMax = vals.VdevMax;
-    
+    Vmodulation = vals.Vmod;
+
     % Closing all the plots:
     close all;
 end

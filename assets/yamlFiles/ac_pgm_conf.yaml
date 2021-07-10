@@ -15,9 +15,10 @@ matlab_path_Linux:
   - "/home/caps/.wine/drive_c/cef/MVDC_SPS/AC_PGM_Analysis"
 profileLoc: "./profileExample"
 metricNames:
-  - "Max dev |V| pu"
+  - "Max dev absolute V pu"
   - "Max dev V freq pu"
   - "Voltage L-L unbalance"
+  - "Voltage modulation"
 modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM_drp_disb_copy" 
 outputFolder: './assets/outputReports/'
 sampleRepo: "D:/Data/Sample80/data"

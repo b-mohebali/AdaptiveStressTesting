@@ -209,7 +209,7 @@ def _plotSpace4D(space: SampleSpace,
             if comparison_classifier is not None:
                 comp_Df = comparison_classifier.decision_function(dataVec).reshape(XX.shape)
                 comp_thresh = 0.5 if comparison_classifier.probability else 0
-                cs = ax.contour(XX,YY,comp_DF, colors='m', levels = [comp_thresh], 
+                cs = ax.contour(XX,YY,comp_Df, colors='m', levels = [comp_thresh], 
                     alpha = 1, linestyles = ['solid'])
                 cslabels = ['Compared']
                 if plotNum==1:

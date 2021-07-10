@@ -339,13 +339,15 @@ def loadSampleFromTxtFile(fileName):
 # This function will generate the samples needed for verification of the 
 # samples (FFD and OAT). The idea is to check the variation of the output
 # around the initial point with logarithmic scales. 
-def generateVerifSample(variables):
+def generateVerifSample(variables, scales = None, initValue = True):
     print('Generating verification samples')
     varInitial = getVariablesInitialValueDict(variables)
     varDict = getTimeindepVariablesDict(variables)
     sampleList = []
-    sampleList.append(varInitial.copy())
-    scales = [0.2,0.3,0.4,0.5]
+    if initValue:
+        sampleList.append(varInitial.copy())
+    if scales is None: 
+        scales = [0.2,0.3,0.4,0.5]
     lastSample = None
     for key in varInitial:
         var = varDict[key]
@@ -367,3 +369,23 @@ def findDifferentValue(baseLine, sample):
             return key
     return None
 
+def generateSweepSample(variables, varName, num, scaleType = Scale.LOGARITHMIC):
+    """
+        Gets the config object of a variable and generates a sample that sweeps that variable from its lower limit to its upper limit. 
+    """
+    varConfig = [_ for _ in variables if _.name==varName][0]
+    lower = varConfig.lowerLimit
+    upper = varConfig.upperLimit
+    varName = varConfig.name
+    scales = []
+    if scaleType == Scale.LOGARITHMIC:
+        logDiff = math.log10(upper) - math.log10(lower)
+        scale = 10**(logDiff/(num-1))
+        scales = [lower * scale**_ for _ in range(num)]
+    elif scaleType == Scale.LINEAR:
+        scales = np.linspace(lower,upper, num = num, endpoint=True)
+    samples = [{varName: value} for value in scales]
+    for sample in samples:
+        for var in variables:
+            if var.name != varName: sample[var.name] = var.initialState
+    return samples

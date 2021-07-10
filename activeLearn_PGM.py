@@ -38,9 +38,15 @@ NOTE 1: Use the currentDir variable from repositories to point to the AdaptiveSt
 print('This is the AC PGM sampling test file. ')
 variablesFile = currentDir + '/assets/yamlFiles/ac_pgm_adaptive.yaml'
 
+
+
+#-------------------SETTINGS OF THE PROCESS---------------------------
 includeBenchmarkSample = False
 loadInitialSample = True 
 runInitialSample = False 
+
+
+#---------------------------------------------------------------------
 
 # Extracting the hyperparameters of the analysis:
 budget = simConfig.sampleBudget
@@ -87,6 +93,7 @@ if not loadInitialSample:
 else: 
     print(currentDir)
     formattedSample = loadSampleFromTxtFile(sampleSaveFile)
+
 if runInitialSample: 
     runSample(caseLocation=modelLoc,
                 sampleDictList=formattedSample,
@@ -107,9 +114,9 @@ runBatch(dataLocation=dataLoc,
 
 #### Load the mother sample for comparison:
 """
-This part loads a pickled classifier that is trained on the Monte-Carlo sample taken from the 
-    model. The purpose for this classifier is to act as a benchmark for the active classifier
-    that we are trying to make. 
+    This part loads a pickled classifier that is trained on the Monte-Carlo sample taken from the model. The purpose for his classifier is to act as a benchmark for the active classifier that we are trying to make. 
+
+    NOTE: This part is only used when the 'includeBenchmarkSample' setting is activated. Otherwise the benchmark classifier is not included in the plots as well.
 """
 motherClfPickle = picklesLoc + 'mother_clf.pickle'
 classifierBench = None
@@ -125,7 +132,7 @@ if includeBenchmarkSample and os.path.exists(motherClfPickle) and os.path.isfile
 dataset, labels = readDataset(dataLoc, dimNames=dimNames)
 
 
-# updating the space:
+# updating the space with the new samples:
 designSpace._samples, designSpace._eval_labels = dataset, labels
 # Stopping the time measurement for the iteration report:
 initialReport.setStop()
@@ -137,11 +144,12 @@ clf.fit(dataset, labels)
 # Updating the budget:
 currentBudget = budget - initialSampleSize
 
-
 convergenceSample = ConvergenceSample(designSpace)
+# This vector holds all the values for the change measure and will be used for monitoring and plotting later. 
 changeMeasure = [convergenceSample.getChangeMeasure(percent = True,
                         classifier = clf,
                         updateLabels=True)]
+# This vector is the x axis of the change measure vector in the upcoming plots.
 samplesNumber = [initialSampleSize]
 
 # Defining the exploiter object:

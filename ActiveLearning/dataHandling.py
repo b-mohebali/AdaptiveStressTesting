@@ -15,8 +15,19 @@ class BadExtention(Exception):
 
 resultFileName = 'finalReport.yaml'
 
+def printName(s):
+    printName = [c for c in s if c.isalnum()]
+    return ''.join(printName)
 
-def readDataset(repoLoc, dimNames, includeTimes = False, sampleRange = None):
+
+# ------------------------------------------------------------------------
+# Managing the dataset, loading, getting informating about evaluated and not evaluated samples, number of sampes taken, etc. 
+def getSampleFolders(dataLoc, sort = False):
+    sf = [int(name) for name in os.listdir(dataLoc) if name.isdigit()]
+    if sort: sf.sort()
+    return sf
+
+def readDataset(dataLoc, dimNames, includeTimes = False, sampleRange = None):
     """
         Reading a dataset from a group of evaluated samples.
         
@@ -37,7 +48,8 @@ def readDataset(repoLoc, dimNames, includeTimes = False, sampleRange = None):
         all the other types of names (alphabetical or symbolic characters)
 
     """
-    sampleFolders = [name for name in os.listdir(repoLoc) if name.isdigit()]
+    sampleFolders = getSampleFolders(dataLoc=dataLoc, sort = True)
+    print('Sample Folders', sampleFolders)
     # This makes sure that only the samples that actually exist in the 
     #   repo will be loaded into the dataset.
     if sampleRange is not None:
@@ -46,21 +58,21 @@ def readDataset(repoLoc, dimNames, includeTimes = False, sampleRange = None):
     dataset = []
     elapsed_times = []
     for sampleFolder in sampleFolders: 
-        d,l,t = readSingleSample(repoLoc, dimNames, sampleFolder)
+        d,l,t = readSingleSample(dataLoc, dimNames, sampleFolder)
         labels.append(l)
         dataset.append(d)
         elapsed_times.append(t)
     if includeTimes:
         return dataset, labels, elapsed_times
-    return dataset, labels
+    return np.array(dataset), np.array(labels)
 
-def readSingleSample(repoLoc,dimNames, sampleNumber):
+def readSingleSample(dataLoc,dimNames, sampleNumber):
     """
         This function read the results of a single sample from the repo.
         NOTE: The final report coming from the factor screening may have more dimensions than needed for the adaptive sampling. The extra dimensions will be ignored by this function as the list of the desirable dimensions is passed to it. 
 
         Inputs:
-            - Location of the samples (repoLoc)
+            - Location of the samples (dataLoc)
             - List of the dimension names (dimNames)
             - Sample Number (sampleNumber)
 
@@ -69,39 +81,38 @@ def readSingleSample(repoLoc,dimNames, sampleNumber):
             - Label of the sample as it was evaluated by the metrics (label)
             - The time the sample took to be evaluated.
     """
-    yamlFile = repoLoc + f'/{sampleNumber}/{resultFileName}'
+    yamlFile = dataLoc + f'/{sampleNumber}/{resultFileName}'
     reportObj = FinalReport(yamlFile)
     varList = []
     for dimName in dimNames:
         varList.append(reportObj.variables[dimName])
     return varList, reportObj.label, reportObj.elapsed_time
 
-
-def getNextSampleNumber(repoLoc, createFolder:bool = False, count = 1):
+def getNextSampleNumber(dataLoc, createFolder:bool = False, count = 1):
     """
         Gets the location of the repository and determines what is the number of the next sample. 
 
         Returns a list of sample numbers if count > 1
     """
-    sampleFolders = [int(name) for name in os.listdir(repoLoc) if name.isdigit()]
+    sampleFolders = getSampleFolders(dataLoc)
     lastSampleNumber = max(sampleFolders)
     nextSampleNumber = lastSampleNumber + 1
     nextSamples = [_ for _ in range(nextSampleNumber, nextSampleNumber+count)]
     if createFolder:
-        [os.mkdir(repoLoc + f'/{_}') for _ in nextSamples]
+        [os.mkdir(dataLoc + f'/{_}') for _ in nextSamples]
     return nextSamples
 
-def getNextEvalSample(repoLoc):
+def getNextEvalSample(dataLoc):
     """
         Gets the location of the repository and determines the first sample that needs MATLAB metrics evaluation. This means all the samples before this sample must be evaluated using the MATLAB metrics implementation. 
 
         Returns the number of the next sample that needs MATLAB metrics evaluation.
         If all the samples in the repo are evaluated (meaning the report files are present in all the sample folders) returns None.
     """
-    sampleFolders = [int(name) for name in os.listdir(repoLoc) if name.isdigit()]
+    sampleFolders = getSampleFolders(dataLoc)
     sampleFolders.sort()
     for sf in sampleFolders:
-        resultFileLoc = f'{repoLoc}/{sf}/{resultFileName}'
+        resultFileLoc = f'{dataLoc}/{sf}/{resultFileName}'
         if not os.path.isfile(resultFileLoc):
             return sf
     return None
@@ -122,65 +133,6 @@ def saveClassifierAsPickle(cls, pickleName: str):
     # Saving the pickle:
     with open(fileName, 'wb'):
         pickle.dump(cls, fileName)
-
-
-class ProcessLocator:
-    """
-        This class contains the answers to some questions regarding where we are in the process of adaptive sampling. Its main application is when the proces is interrupted midway and needs to be restarted from the middle without the need to discard the already gathered samples. These are the questions and potential answers:
-
-        1- Is the initial sample taking done?
-            - No -> What is the # of the next sample to be taken?
-            - Yes -> Are all the metrics evaluated?
-                - Yes -> Go to Question2.
-                - No -> What is the # of the next sample to be evaluated by the MATLAB code?
-        2- Is the adaptive sampling phase done completed?
-            - Yes -> 3- Are all the samples evaluated by MATLAB code? 
-                - Yes -> train the classifier and report the final results.
-                - No -> What is the # of the next sample to be evaluated by the MATLAB code? 
-            - No -> What is the # of the next sample to be taken? 
-    """
-    def __init__(self):
-        self.initialSampleDone = False          # Are initial samples taken?
-        self.initialSamplesEvaluated = False    # Are initial samples evaluated?
-        self.adaptiveSamplingDone = False       # Are adaptive samples taken?
-        self.adaptiveSamplesEvaluated = False   # Are adaptive samples evaluated?
-        self.nextSampleNum = None               # Next sample to be simulated.
-        self.nextEvalSampleNum = None           # Next sample to be evaluated.
-
-    def locateProcess(self, repoLoc, simConfig: simulationConfig):
-        """ 
-            The logic of finding the answers to those questions is here:
-        """
-        initSampleSize = simConfig.initialSampleSize
-        budget = simConfig.sampleBudget
-        nextEval = getNextEvalSample(repoLoc=repoLoc)
-        currentSample = getNextSampleNumber(repoLoc)[0]
-        # Checking to see if the initial sample is done:
-        if currentSample <= initSampleSize:
-            self.nextSampleNum = currentSample
-            self.nextEvalSampleNum = nextEval
-            return self
-        else:
-            self.initialSampleDone = True 
-            if nextEval <= initSampleSize:
-                # If we are here it means the adaptive phase is not started yet. But the initial samples are all taken but not evaluated. 
-                self.nextEvalSampleNum = nextEval
-                return self 
-            self.initialSamplesEvaluated = True 
-        # Check to see if the adaptive sampling phase is done:
-        if currentSample <= budget: 
-            # If we are here it means that the adaptive samples are not done but the initial samples are fully taken and evaluted.
-            self.adaptiveSamplesEvaluated = (nextEval > budget)
-            self.nextEvalSampleNum = nextEval
-            self.nextSampleNum= currentSample
-            return self
-        else: 
-            # If we are here the adaptive samples are all taken according to the assigned budget. 
-            self.adaptiveSamplingDone = True 
-            self.adaptiveSamplesEvaluated = nextEval > budget
-            self.nextEvalSampleNum = nextEval if not self.adaptiveSamplesEvaluated else None
-        return self
-
 
 def loadChangeMeasure(reportFile: str):
     """
@@ -227,6 +179,26 @@ def loadAccuracy(reportFile: str):
             accuracies.append(report.changeMeasure)
     return iterationNumbers, accuracies
 
+def getNotEvaluatedSamples(dataLoc):
+    """
+        Takes the location of a set of sample folders and returns the list of the samples that are not evaluated yet.
+
+        Inputs:
+            - dataLoc: Location of the sample folders
+        
+        Outputs:
+            - notEvaluated: The list of the samples that are not evaluated. Checks for existence of the report file in the sample folder.
+    """    
+    sampleFolders = getSampleFolders(dataLoc = dataLoc, sort = True)
+    notEvaluated = []
+    for folder in sampleFolders:
+        resultFile = f'{dataLoc}/{folder}/{resultFileName}'
+        if not os.path.isfile(resultFile):
+            notEvaluated.append(folder)
+    notEvaluated.sort()
+    return notEvaluated
+
+
 
 # ------------------------------------------------------------------------
 # This part is related to the factor screening analysis and data handling:
@@ -235,15 +207,13 @@ class OutputType(Enum):
     NPARRAY = 1
     LIST = 2
 
-def loadMetricValues(dataLoc, metricNames, outType : OutputType = OutputType.DICT):
+def loadMetricValues(dataLoc, metricNames):
     '''
         This function takes the location of a data repo and loads the metric values for all the evaluated samples into a dictionary.
 
         Inputs: 
             - dataLoc: Location of the repository where the sample folders are.
             - metricNames: List of strings containing the name by which the values are saved in the report yaml file. 
-            TODO:
-            - outType: The desired type for the output. 
     '''
     samples = [int(name) for name in os.listdir(dataLoc) if name.isdigit()]
     samples.sort()
