@@ -1,5 +1,7 @@
 #! /usr/bin/python3
 
+from scipy.linalg.special_matrices import fiedler_companion
+from scipy.sparse.extract import find
 from ActiveLearning.dataHandling import getNotEvaluatedSamples, loadMetricValues, loadVariableValues, reconstructDesignMatrix
 from ActiveLearning.dataHandling import readDataset
 import repositories
@@ -15,6 +17,8 @@ import matplotlib.pyplot as plt
 from ActiveLearning.visualization import * 
 from enum import Enum 
 from scipy.interpolate import interp1d
+from hampel import hampel
+import pandas as pd
 
 def printName(s):
     printName = [c for c in s if c.isalnum()]
@@ -38,6 +42,7 @@ def analyseFactorScreening(repoLoc, figFolder, metNames, include_bias = False):
     sInfo = SaveInformation(fileName = '', savePDF=True, savePNG=True)
     metVals = loadMetricValues(dataLoc = dataLoc, metricNames=metNames)
     varValues = loadVariableValues(dataLoc=dataLoc, varNames = varNames)
+    # Adding the Bias term information for the plotting:
     if include_bias:
         varNames.insert(0,'bias')
         descs['bias'] = 'Bias term'
@@ -108,19 +113,34 @@ def analyseFactorScreening(repoLoc, figFolder, metNames, include_bias = False):
     return 
 
 def InterpMetrics(varValues, metricValues, n):
+    """
+        Takes a set of two vectors in the form of y_n = f(x_n) and calculates an interpolation of the points within the vectors. Then reconstructs two other vectors with larger length using the interpolation that was just calculated. The range of the x axis for the new points is the same as the old points but the spacing is linear and fine. 
+
+        Inputs: 
+            - varValues: A value vector for the x
+            - metricValues: A value vector for the y
+            - n: The number of points in the new interpolation vectors 
+
+        Outputs: 
+            - newVals: Linearly spaced vector between min and max of varValues. The number of elements is n
+            - newMetVals: F_interp(newVals)
+    """
     newVals = np.linspace(min(varValues),max(varValues), num=n, endpoint = True)
     newMet = interp1d(varValues, metricValues, kind = 'cubic')
     newMetVals = newMet(newVals)
     return newVals, newMetVals
 
-def analyseVariableSweep(repoLoc, figFolder, metricNames):
+def analyseVariableSweep(repoLoc, figFolder, metricNames, interpolate = True, findOutliers = True):
     """
-        This function analyzes the data from the variable sweep experiment that uses the verification sample generation procedure. The output is a set of plots, one for each metric value, vs the variable that is used for the sweep
+        This function analyzes the data from the variable sweep experiment that uses the verification sample generation procedure. The output is a set of plots, one for each metric value, vs the variable that is used for the sweep. 
+
 
         Inputs:
             - repoLoc: Location of the repository that includes the data folder, that includes the sample folders.
             - figFolder: The location of the figure folder that is going to store the results of the analysis and the plots from evaluation of the samples. 
             - metNames: The list of the metric names coming out of the evaluation. It is used both for loading the sweeping data and the plotting of the results.
+            - interpolate: Option to include a cubic interpolation of the results in the plots. 
+            - findOutliers: When true, the outlier samples in all the plots are excluded from the interpolation data. If a sample is deemed an outlier for one metric value, it will be excluded from the interpolation data for all the metric plots. 
         
         Outputs: 
             - NOTE: The output is a set of plots for the metrics. No value is returned from this function. 
@@ -140,15 +160,34 @@ def analyseVariableSweep(repoLoc, figFolder, metricNames):
         os.mkdir(resultsFolder)
     
     _, labels = readDataset(dataLoc, dimNames = [varName])
+    # Finding all the outliers:
+    allOutliers = set()
+    if findOutliers:
+        for metName in metricNames:
+            outlierInd = hampel(pd.Series(metVals[metName]), window_size = 4, n=2)
+            allOutliers.update(outlierInd)
+            print('Outliers for', metName, ': ', outlierInd)
+    print('All outliers: ', allOutliers)
+    allOutliers = list(allOutliers)
+
     # Analysis based on the metric names:
     for metName in metricNames:
         met = metVals[metName]
         plt.figure(figsize = (10,5))
         # Adding the smooth interpolation of the points:
-        x_inter, y_inter = InterpMetrics(varValues, met,n=200)
-        plt.semilogx(x_inter, y_inter, color = 'k', label = 'Interpolation')
         plt.scatter(varValues[labels==1], met[labels==1], label='Infeasible samples', color = 'r', s = 20)
         plt.scatter(varValues[labels==0], met[labels==0], label='Feasible samples', color = 'b', s = 20)
+        # Indicating the outliers on the scatter plots for all the metrics.
+        if findOutliers:
+            plt.scatter(varValues[allOutliers], met[allOutliers], color = 'g', s= 20, label = 'Outliers')
+        if interpolate:
+            newVars, newMet = np.ma.array(varValues, mask = False), np.ma.array(met, mask = False)
+            newVars.mask[allOutliers] = newMet.mask[allOutliers] = True
+            x_inter, y_inter = InterpMetrics(newVars.compressed(), newMet.compressed(),n=200)
+            plt.semilogx(x_inter, y_inter, color = 'k', label = 'Interpolation')
+        else:
+            ax = plt.gca()
+            ax.set_xscale('log')
         plt.legend()
         # Touch ups and saving the results:
         plt.grid(b=True, which='both')
@@ -171,10 +210,10 @@ def main(run_exp:bool = True,
         run_eval:bool=True, 
         run_analysis:bool = True,
         experType: ExperimentType = ExperimentType.FFD,
-        include_bias = False):
+        include_bias = False):  
     # Simulation phase:
     # repoLoc = 'C:/Data/testSample'
-    repoLoc = testRepo10
+    repoLoc = testRepo14
     samplesLoc = repoLoc + '/data'
     print(samplesLoc)
     # Creating the data folder if it does not exist:
@@ -196,7 +235,8 @@ def main(run_exp:bool = True,
         print(f'Variable: {v.name}, mapped name: {v.mappedName}, Initial value: {v.initialState}')
         from ActiveLearning.simInterface import runExperiment
     timeIndepVars = getTimeIndepVars(variables, omitZero=True) 
-    # Doing the experiment based on what was asked for. 
+    
+    # Generating the experiment based on what was asked for. 
     if experType == ExperimentType.FFD:
         exper = fractionalFactorialExperiment(timeIndepVars, res4 = True)
     elif experType == ExperimentType.VERIFICATION:
@@ -206,7 +246,6 @@ def main(run_exp:bool = True,
     elif experType == ExperimentType.STANDARD_OAT:
         exper = standardOATSampleGenerator(variables = timeIndepVars)       
     elif experType == ExperimentType.SWEEP:
-        # Sweep only done for the first variable in the config
         varName = 'QXUfro'
         exper = generateSweepSample(variables,varName = varName, num = 50, scaleType=Scale.LOGARITHMIC)
 
@@ -244,12 +283,14 @@ def main(run_exp:bool = True,
         else:
             analyseVariableSweep(repoLoc= repoLoc,
                             figFolder = figLoc, 
-                            metricNames=metNames)
+                            metricNames=metNames,
+                            interpolate = True,
+                            findOutliers=True)
 
 # Since we are using multiprocessing we need to have this here: 
 if __name__=="__main__":
     freeze_support()
     experType = ExperimentType.SWEEP
-    main(run_exp=True, run_eval=True, run_analysis = True,
+    main(run_exp=False, run_eval=True, run_analysis = True,
         experType = experType, include_bias = False)
     

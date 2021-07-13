@@ -242,7 +242,7 @@ def runSinglePoint(caseLocation: str,
     dFolder = repositories.outputLocation.mounted
     realTimeCase = Case(caseLocation = caseLocation, 
             rackNum = repositories.rackNum)
-    outFile = realTimeCase.draft,str()
+    outFile = realTimeCase.draft
     varDescYaml = setVariables(outFile, sampleDict, inplace = True)
     realTimeCase.runCase(logDirectory=repositories.outputLocation.absolute)
     newF = createSpecificDataFolder(remoteRepo, sampleNumber)
@@ -300,7 +300,8 @@ def runExperiment(modelLoc, variables,simRepo, experiment, experFile, descFile):
     copyDataToremoteServer(simRepo,descFile, isFolder=False)
     runSample(caseLocation=modelLoc,
                 sampleDictList=experiment,
-                remoteRepo=simRepo)
+                remoteRepo=simRepo,
+                sampleGroup = [8])
     return True
 
 if __name__=='__main__':

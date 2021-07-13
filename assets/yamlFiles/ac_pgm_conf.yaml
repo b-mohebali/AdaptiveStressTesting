@@ -10,7 +10,7 @@ matlab_path_Windows:
   - "./Matlab"
   - "C:/Users/bm12m/Google Drive/codes/CodeBase"
 matlab_path_Linux:
-  - "./Matlab"
+  - "/home/caps/AdaptiveStressTesting/Matlab"
   - "/home/caps/.wine/drive_c/STAFF/langston/MFiles"
   - "/home/caps/.wine/drive_c/cef/MVDC_SPS/AC_PGM_Analysis"
 profileLoc: "./profileExample"
@@ -23,6 +23,6 @@ modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM_drp_disb_copy"
 outputFolder: './assets/outputReports/'
 sampleRepo: "D:/Data/Sample80/data"
 sampleBudget: 400
-initialSampleSize: 20
+initialSampleSize: 50
 batchSize: 1
 ...

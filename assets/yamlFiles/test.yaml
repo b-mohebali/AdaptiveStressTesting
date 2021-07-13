@@ -3,7 +3,7 @@ name: QXUfro
 type: timeIndep
 initialState: 1
 lowerLimit: 0.1
-upperLimit: 7
+upperLimit: 10
 description: "Pulse load frequency"
 
 ...

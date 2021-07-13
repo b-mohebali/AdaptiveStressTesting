@@ -27,7 +27,7 @@ def getSampleFolders(dataLoc, sort = False):
     if sort: sf.sort()
     return sf
 
-def readDataset(dataLoc, dimNames, includeTimes = False, sampleRange = None):
+def readDataset(dataLoc, dimNames, includeTimes = False, sampleRange = None, normalize = False):
     """
         Reading a dataset from a group of evaluated samples.
         
@@ -77,9 +77,9 @@ def readSingleSample(dataLoc,dimNames, sampleNumber):
             - Sample Number (sampleNumber)
 
         Output:
-            - list of the values for the dimensions of the sample (varList)
-            - Label of the sample as it was evaluated by the metrics (label)
-            - The time the sample took to be evaluated.
+            - varList: list of the values for the dimensions of the sample
+            - label: Label of the sample as it was evaluated by the metrics
+            - elapsed_time: The time the sample took to be evaluated.
     """
     yamlFile = dataLoc + f'/{sampleNumber}/{resultFileName}'
     reportObj = FinalReport(yamlFile)
@@ -290,3 +290,10 @@ def reconstructDesignMatrix(variableValues):
         print(col)
         H[:,idx+1] = col
     return H
+
+def normalizeDataset(dataset):
+    means = np.mean(dataset, axis = 0)
+    stds = np.std(dataset, axis = 0)
+    return (dataset - means) / stds # Dataset normalized by the mean and standard deviation. 
+    
+     

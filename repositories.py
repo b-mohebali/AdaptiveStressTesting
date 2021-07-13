@@ -295,7 +295,8 @@ adaptRepo6 = newAdaptiveRepo + 'adaptiveRepo6'
 adaptRepo7 = newAdaptiveRepo + 'adaptiveRepo7'
 # Same problem with the last sample. Changed the range of the variables and tried again. Also changed the L-L RMS voltage to 4160 v
 adaptRepo8 = newAdaptiveRepo + 'adaptiveRepo8'
-
+# Adaptive Sample after the range of the variables were established through frequency sweep experiments. 
+adaptRepo9 = newAdaptiveRepo + 'adaptiveRepo9'
 
 """
     Miscellanous tests with different purposes that are not meant for sensitivity analysis or adaptive stress testing. 
@@ -319,9 +320,16 @@ testRepo7 = newTestRepo + 'test7'
 testRepo8 = newTestRepo + 'test8'
 # Frequency sweep with 50 points between 0.1 Hz and 7 Hz. Pulse load = 0.5 MW (10% nominal)
 testRepo9 = newTestRepo + 'test9'
-# Frequency sweep with 50 points between 0.1 Hz and 7 Hz. Pulse load = 0.25 MW (5% nominal)
+# Frequency sweep with 50 points between 0.1 Hz and 7 Hz. Pulse load = 0.25 MW (5% nominal), Steady state load = 2 MW 
 testRepo10 = newTestRepo + 'test10'
-
+# Frequency sweep with 50 points between 0.1 Hz and 10 Hz pulse load  0.25 MW, Steady state load = 1 MW. 
+testRepo11 = newTestRepo + 'test11'
+# Repeating test11:
+testRepo12 = newTestRepo + 'test12'
+# Frequency sweep with same frequency and pulse load levels as 11 and 10 but steady state load = 1.5 MW 
+testRepo13 = newTestRepo + 'test13'
+# Frequency sweep. SteadyState = 1.5MW, Pulse load = 0.5MW, Frequency: 0.1-10 Hz
+testRepo14 = newTestRepo + 'test14'
 
 currentDir = os.getcwd()
 isRepoRemote = True

@@ -49,6 +49,7 @@ def getMetricsResults(dataLocation: str,
     if isinstance(sampleNumber, list):
         labels = []
         for sampleNum in sampleNumber:
+            print(f'Running sample at {dataLocation}\n\tSample number: {sampleNum}\n\tFigureFolder:{figFolderLoc}')
             l = getMetricsResults(dataLocation,
                                 eng = eng,
                                 sampleNumber = sampleNum,
