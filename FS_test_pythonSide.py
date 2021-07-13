@@ -1,7 +1,5 @@
 #! /usr/bin/python3
 
-from scipy.linalg.special_matrices import fiedler_companion
-from scipy.sparse.extract import find
 from ActiveLearning.dataHandling import getNotEvaluatedSamples, loadMetricValues, loadVariableValues, reconstructDesignMatrix
 from ActiveLearning.dataHandling import readDataset
 import repositories
@@ -275,18 +273,19 @@ def main(run_exp:bool = True,
     # Analysis of the results:
     if run_analysis:
         metNames = simConfig.metricNames
-        if experType != ExperimentType.SWEEP:
-            analyseFactorScreening(repoLoc=repoLoc, 
-                            figFolder=figLoc,
-                            metNames = metNames, 
-                            include_bias=include_bias)
-        else:
+        if experType == ExperimentType.SWEEP:
             analyseVariableSweep(repoLoc= repoLoc,
                             figFolder = figLoc, 
                             metricNames=metNames,
                             interpolate = True,
                             findOutliers=True)
-
+            return
+        else:
+            analyseFactorScreening(repoLoc=repoLoc, 
+                            figFolder=figLoc,
+                            metNames = metNames, 
+                            include_bias=include_bias)
+        
 # Since we are using multiprocessing we need to have this here: 
 if __name__=="__main__":
     freeze_support()

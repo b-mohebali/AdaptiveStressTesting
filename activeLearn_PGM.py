@@ -2,17 +2,13 @@
 
 from yamlParseObjects.yamlObjects import *
 from yamlParseObjects.variablesUtil import *
-import os
-from profileExample.profileBuilder import * 
-from eventManager.eventsLogger import * 
-from scipy.linalg import hadamard
+import os, copy
 import matplotlib.pyplot as plt
 from ActiveLearning.Sampling import *
 from ActiveLearning.dataHandling import *
 from ActiveLearning.visualization import * 
 from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Explorer
 from ActiveLearning.benchmarks import TrainedSvmClassifier
-from sklearn import svm
 from ActiveLearning.simInterface import *
 from repositories import *
 from metricsRunTest import * 
@@ -138,7 +134,6 @@ def main():
         threshold = 0.5 if motherClf.probability else 0
         classifierBench = TrainedSvmClassifier(motherClf, len(variables), threshold)
 
-
     #### Load the results into the dataset and train the initial classifier:
     dataset, labels = readDataset(dataLoc, dimNames=dimNames)
 
@@ -149,10 +144,8 @@ def main():
     initialReport.setStop()
 
     #### Iterations of exploitative sampling:
-    # Normalizing the dataset values:
-
-    # Training the classifier using the normalized dataset:
-    clf = svm.SVC(kernel = 'rbf', C = 1000)
+    # using the custom classifier that also trains a standard scaler with the data as well. 
+    clf = StandardClassifier(kernel = 'rbf', C = 1000, probability=False)
     clf.fit(dataset, labels)
 
     # Updating the budget:
@@ -175,11 +168,12 @@ def main():
                             progress_bar = True)
 
     # Defining the explorer object for future use: 
-    explorer = GA_Explorer(space = designSpace,
-                            batchSize=batchSize, 
-                            convergence_curve=False,
-                            progress_bar=True,
-                            beta = 100)
+    # TODO: Include the explorer in the analysis
+    # explorer = GA_Explorer(space = designSpace,
+    #                         batchSize=batchSize, 
+    #                         convergence_curve=False,
+    #                         progress_bar=True,
+    #                         beta = 100)
 
     iterationReports = []
     # Creating the report object:
@@ -216,15 +210,15 @@ def main():
         NOTE: Done but not tested yet.
     """
     plotSpace(designSpace,
-                figsize = figSize,
-                meshRes = 100,
-                classifier = clf,
-                gridRes = gridRes,
-                showPlot=False,
-                saveInfo=sInfo,
-                insigDimensions=insigDims,
-                legend = True,
-                benchmark = classifierBench) 
+            figsize = figSize,
+            meshRes = meshRes,
+            classifier = clf,
+            gridRes = gridRes,
+            showPlot=False,
+            saveInfo=sInfo,
+            insigDimensions=insigDims,
+            legend = True,
+            benchmark = classifierBench) 
     plt.close()
 
     currentSample = formattedSample
@@ -248,8 +242,8 @@ def main():
         currentSample.extend(formattedFoundPoints)
         # Getting the number of next samples:
         nextSamples = getNextSampleNumber(dataLoc, 
-            createFolder=False, 
-            count = len(newPointsFound))
+                                        createFolder=False, 
+                                        count = len(newPointsFound))
         print('Next samples:', nextSamples)
         # running the simulation at the points that were just found:
         """
@@ -267,20 +261,21 @@ def main():
         # Evaluating the newly simulated samples using MATLAB engine:
         samplesGroup = getNotEvaluatedSamples(dataLoc = dataLoc)
         runBatch(dataLocation=dataLoc,
-                        sampleGroup=samplesGroup,
-                        configFile=simConfig,
-                        figureFolder=figFolder,
-                        PN_suggest=2)
+                sampleGroup=samplesGroup,
+                configFile=simConfig,
+                figureFolder=figFolder,
+                PN_suggest=2)
         
         # Updating the classifier and checking the change measure:
         dataset,labels = readDataset(dataLoc, dimNames= dimNames)
         designSpace._samples, designSpace._eval_labels = dataset, labels
-        prevClf = clf
-        clf = svm.SVC(kernel = 'rbf', C = 1000)
+        prevClf = copy.deepcopy(clf)
+        # clf = svm.SVC(kernel = 'rbf', C = 1000)
+        clf = StandardClassifier(kernel = 'rbf', C = 1000)
         clf.fit(dataset, labels)
         newChangeMeasure = convergenceSample.getChangeMeasure(percent = True,
-                            classifier = clf, 
-                            updateLabels = True)
+                                                            classifier = clf, 
+                                                            updateLabels = True)
         
         # Saving the change measure vector vs the number of samples in each iteration. 
         changeMeasure.append(newChangeMeasure)

@@ -278,6 +278,8 @@ motherSample = adaptiveSamplingLoc + 'motherSample'
 # NOTE: reason for use of LHS over CVT is that we can add to this sample 
 #   later but not to the CVT sample. 
 motherSample2 = adaptiveSamplingLoc + 'motherSample2'
+# Large sample used as a benchmark dataset with 2500 samples (CVT) in a 4D space. 
+monteCarlo2500 = newAdaptiveRepo + 'monteCarlo2500'
 
 # Adaptive Sampling 300(80)-1
 adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'

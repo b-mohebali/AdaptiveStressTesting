@@ -313,3 +313,37 @@ def generateInitialSample(space: SampleSpace,
         samples[:,dimIndex] += dimension.bounds[0]
     return samples
 
+from sklearn.svm import SVC
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+class StandardClassifier(SVC):
+    """
+        A custom classifier based on Support vector classifier class that trains a standard scaler to the same data that it uses to train the SVM. The data is then standardized before fitting the fitting function is called. 
+    """
+    def __init__(self, *, C=1.0, kernel='rbf', degree=3, gamma='scale',
+                 coef0=0.0, shrinking=True, probability=False,
+                 tol=1e-3, cache_size=200, class_weight=None,
+                 verbose=False, max_iter=-1, decision_function_shape='ovr',
+                 break_ties=False,
+                 random_state=None):
+        super().__init__(C=C, kernel=kernel, degree=degree, gamma=gamma, coef0=coef0, shrinking=shrinking, probability=probability, tol=tol, cache_size=cache_size, class_weight=class_weight, verbose=verbose, max_iter=max_iter, decision_function_shape=decision_function_shape, break_ties=break_ties, random_state=random_state)
+    
+    def fit(self, X, y, sample_weight=None):
+        # self.scaler = StandardScaler()
+        self.scaler = MinMaxScaler(feature_range=(0,1))
+        normalX = self.scaler.fit_transform(X)
+        return super().fit(normalX, y, sample_weight=sample_weight)
+    
+    def predict(self, X):
+        # TODO: If X is just one sample then the scaler.transform will fail. It needs to be detected. 
+        normalX = self.scaler.transform(X)
+        return super().predict(normalX)
+    
+    def decision_function(self, X):
+        return super().decision_function(self.scaler.transform(X))
+
+    def getSupportVectors(self, standard = True):
+        if not standard:
+            return self.support_vectors_
+        else:
+            return self.scaler.inverse_transform(self.support_vectors_)

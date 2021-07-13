@@ -1,6 +1,10 @@
 function [label,VdevMax,fdevMax, VLLUnbalanceMax, Vmodulation] = runMetrics(dataLocation, sampleNum, figLocation)
     fprintf('Evaluating sample at %s\n',dataLocation);
-    
+
+    % Determining whether the .fig files should be saved or not:
+    saveFigFiles = false;
+
+
     %% The preparation of the data for the metrics run:
     if exist('y','var')==1
         clear y;
@@ -38,20 +42,24 @@ function [label,VdevMax,fdevMax, VLLUnbalanceMax, Vmodulation] = runMetrics(data
     figName = 'VoltageMagnitude';
     title(sprintf('Voltage Magnitude (sample %d)', sampleNum));
     saveas(gcf,sprintf('%s/%s.png', figFolder, figName));
-    savefig(gcf,sprintf('%s/%s', figFolder, figName));
-
+    if saveFigFiles
+        savefig(gcf,sprintf('%s/%s', figFolder, figName));
+    end
     figure(2);
     figName = 'VoltageFrequency';
     title(sprintf('Voltage Frequency (sample %d)', sampleNum));
     saveas(gcf,sprintf('%s/%s.png', figFolder, figName));
-    savefig(gcf,sprintf('%s/%s', figFolder, figName));
+    if saveFigFiles
+        savefig(gcf,sprintf('%s/%s', figFolder, figName));
+    end
 
     figure(3);
     figName = 'VoltageUnbalance';
     title(sprintf('Voltage L-L Imbalance (sample %d)', sampleNum));
     saveas(gcf,sprintf('%s/%s.png', figFolder, figName));
-    savefig(gcf,sprintf('%s/%s', figFolder, figName));
-
+    if saveFigFiles
+        savefig(gcf,sprintf('%s/%s', figFolder, figName));
+    end
     %% Preparation of the output:
     label = status;
     fdevMax = vals.fdevMax;

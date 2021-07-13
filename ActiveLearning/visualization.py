@@ -9,9 +9,9 @@ from skimage import measure
 from matplotlib import cm
 from mpl_toolkits.mplot3d import axes3d
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-import pickle
 from ActiveLearning.benchmarks import Benchmark 
 import os
+from ActiveLearning.Sampling import StandardClassifier
 
 class SaveInformation():
     def __init__(self, fileName, savePDF = False, savePNG = False):
@@ -104,7 +104,7 @@ def plotSpace(space: SampleSpace,
 def _plotSpace4D(space: SampleSpace,
                 insigDimensions,
                 showPlot = True, 
-                classifier = None,
+                classifier:StandardClassifier = None,
                 figsize = (6,6),
                 legend = True,
                 benchmark = None,
@@ -321,7 +321,7 @@ def _plotSpace3D(space: SampleSpace,
     return 
 
 def _plotSpace2D(space: SampleSpace, 
-                classifier, 
+                classifier:StandardClassifier, 
                 figsize = None, 
                 meshRes=100, 
                 benchmark = None,
@@ -367,7 +367,9 @@ def _plotSpace2D(space: SampleSpace,
         decision boundary and the margin. 
     """
     if classifier is not None:
-        ax.scatter(classifier.support_vectors_[:,0], classifier.support_vectors_[:,1], s=80, 
+        # Inverse transforming the support vectors of the classifier since the SVs are a subset of the transformed data points. 
+        suppoerVectots = classifier.getSupportVectors(standard=True)
+        ax.scatter(suppoerVectots[:,0], suppoerVectots[:,1], s=80, 
                     linewidth = 1, facecolors = 'none', edgecolors = 'orange', label='Support vectors')
         decisionFunction = classifier.decision_function(xy).reshape(XX.shape)
         cs2 = ax.contour(XX, YY, decisionFunction, colors='k', levels=[-1,0,1], alpha=1,linestyles=['dashed','solid','dotted'])
