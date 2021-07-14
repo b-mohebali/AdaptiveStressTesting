@@ -280,6 +280,8 @@ motherSample = adaptiveSamplingLoc + 'motherSample'
 motherSample2 = adaptiveSamplingLoc + 'motherSample2'
 # Large sample used as a benchmark dataset with 2500 samples (CVT) in a 4D space. 
 monteCarlo2500 = newAdaptiveRepo + 'monteCarlo2500'
+# Large sample with constrained space. The constraint is based on the pulse load power, frequnecy and the ramp rate.
+constrainedSample = newAdaptiveRepo + 'constrainedSample'
 
 # Adaptive Sampling 300(80)-1
 adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'

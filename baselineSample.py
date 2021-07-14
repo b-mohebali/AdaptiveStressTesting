@@ -9,8 +9,15 @@ from yamlParseObjects.yamlObjects import *
 from ActiveLearning.simInterface import * 
 import os 
 
+def constraint(X):
+    freq = X[0]
+    pulsePower = X[1]
+    rampRate = X[2]
+    cons = (2 * pulsePower * freq) < rampRate
+    return cons
+
 def main(run_exper = True, run_eval = True, load_sample = False):
-    repoLoc = repositories.monteCarlo2500
+    repoLoc = repositories.constrainedSample
     dataLoc = repoLoc + '/data'
     if not os.path.isdir(dataLoc):
         os.mkdir(dataLoc)
@@ -23,6 +30,7 @@ def main(run_exper = True, run_eval = True, load_sample = False):
     variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
     designSpace = SampleSpace(variableList=variables)
     dimNames = designSpace.getAllDimensionNames()
+    print(dimNames)
     initialSampleSize = 2500 
     # Creating the large sample using CVT method:
     if load_sample:
@@ -32,6 +40,9 @@ def main(run_exper = True, run_eval = True, load_sample = False):
                                             sampleSize=initialSampleSize,
                                             method = InitialSampleMethod.CVT,
                                             checkForEmptiness=False)
+        validity = np.array([constraint(x) for x in initialSample])
+        initialSample = initialSample[validity,:]
+        print(len(initialSample))
         formattedSample = getSamplePointsAsDict(dimNames, initialSample)
         saveSampleToTxtFile(formattedSample, experFile)
     # Running the sample:
