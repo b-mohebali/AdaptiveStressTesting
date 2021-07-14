@@ -14,3 +14,4 @@ variableValues.yaml
 .ipynb_checkpoints
 crs_test.py
 assets/outputReports/
+prototypes/
