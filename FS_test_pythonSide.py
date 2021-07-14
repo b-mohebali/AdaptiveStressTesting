@@ -211,7 +211,7 @@ def main(run_exp:bool = True,
         include_bias = False):  
     # Simulation phase:
     # repoLoc = 'C:/Data/testSample'
-    repoLoc = testRepo14
+    repoLoc = testRepo10
     samplesLoc = repoLoc + '/data'
     print(samplesLoc)
     # Creating the data folder if it does not exist:
@@ -290,6 +290,6 @@ def main(run_exp:bool = True,
 if __name__=="__main__":
     freeze_support()
     experType = ExperimentType.SWEEP
-    main(run_exp=False, run_eval=True, run_analysis = True,
+    main(run_exp=False, run_eval=False, run_analysis = True,
         experType = experType, include_bias = False)
     
