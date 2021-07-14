@@ -15,10 +15,6 @@ class BadExtention(Exception):
 
 resultFileName = 'finalReport.yaml'
 
-def printName(s):
-    printName = [c for c in s if c.isalnum()]
-    return ''.join(printName)
-
 
 # ------------------------------------------------------------------------
 # Managing the dataset, loading, getting informating about evaluated and not evaluated samples, number of sampes taken, etc. 

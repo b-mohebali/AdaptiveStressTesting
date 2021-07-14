@@ -1,13 +1,11 @@
 #! /usr/bin/python3
 
-import sys 
-import repositories    
-repositories.addCodeBaseToPath()
+import repositories as repos  
+repos.addCodeBaseToPath()
 
 import os
 import shutil
 import logging
-from typing import Dict
 from yamlParseObjects.variablesUtil import *
 log = logging.getLogger(__name__)
 import contextlib
@@ -191,9 +189,9 @@ def setVariables(draftFile,
         rtdsSys.save_dft(fpath = draftFile)
         draftFile.compile()
     # Saving the yaml file that describes the variable values:
-    os.chdir(repositories.currentDir)
+    os.chdir(repos.currentDir)
     saveVariableValues(variableDict, varFileName)
-    absPath = f'{repositories.currentDir}/{varFileName}'
+    absPath = f'{repos.currentDir}/{varFileName}'
    
     return absPath
 
@@ -201,17 +199,17 @@ def runSample(caseLocation,
             sampleDictList, 
             remoteRepo, 
             sampleGroup = None):
-    dFolder = repositories.outputLocation.mounted
+    dFolder = repos.outputLocation.mounted
     print(dFolder)
     indexGroup = range(1,len(sampleDictList)+1) if sampleGroup is None else sampleGroup
     print([_ for _ in indexGroup])
     realTimeCase = Case(caseLocation=caseLocation,
-                    rackNum = repositories.rackNum)
+                    rackNum = repos.rackNum)
     for sampleIndex in indexGroup:
         sample = sampleDictList[sampleIndex - 1]
         outFile = realTimeCase.draft
         varDescYaml = setVariables(outFile, sample, inplace = True)
-        realTimeCase.runCase(repositories.outputLocation.absolute)
+        realTimeCase.runCase(repos.outputLocation.absolute)
         newF = createSpecificDataFolder(remoteRepo, sampleIndex)
         # shutil.copyfile(varDescYaml, f'{newF.rstrip("/")}/{os.path.basename(varDescYaml)}')
         copyDataToremoteServer(newF, varDescYaml, isFolder = False)
@@ -220,11 +218,11 @@ def runSample(caseLocation,
         print('removed the extra folders from the source repository.')
         print(f'Done with the experiment {sampleIndex} and copying files to the repository.')
     print('This is the working directory after the sample is done: ',os.getcwd())
-    os.chdir(repositories.currentDir)
+    os.chdir(repos.currentDir)
     return
 
 def runSampleFrom(caseLocation, sampleDictList, remoteRepo = None, fromSample = None):
-    dFolder = repositories.outputLocation.mounted
+    dFolder = repos.outputLocation.mounted
     N = len(sampleDictList)
     # Setting up the sample group:
     if fromSample is not None: sampleGroup = range(fromSample, N+1)
@@ -239,12 +237,12 @@ def runSinglePoint(caseLocation: str,
                 sampleDict,
                 remoteRepo: str,
                 sampleNumber: int):
-    dFolder = repositories.outputLocation.mounted
+    dFolder = repos.outputLocation.mounted
     realTimeCase = Case(caseLocation = caseLocation, 
-            rackNum = repositories.rackNum)
+            rackNum = repos.rackNum)
     outFile = realTimeCase.draft
     varDescYaml = setVariables(outFile, sampleDict, inplace = True)
-    realTimeCase.runCase(logDirectory=repositories.outputLocation.absolute)
+    realTimeCase.runCase(logDirectory=repos.outputLocation.absolute)
     newF = createSpecificDataFolder(remoteRepo, sampleNumber)
     copyDataToremoteServer(newF, varDescYaml, isFolder = False)
     copyDataToNewLocation(newF, dFolder)
@@ -262,8 +260,8 @@ def FFD(modelLoc, variables,simRepo,res4 = True):
             - False if otherwise.
     '''
     print(f'Running the FFD experiment for model at {modelLoc}')
-    experFile = repositories.experimentsLoc + 'FFD.txt'
-    descFile = repositories.currentDir + '/varDescription.yaml'
+    experFile = repos.experimentsLoc + 'FFD.txt'
+    descFile = repos.currentDir + '/varDescription.yaml'
     exper = fractionalFactorialExperiment(variables, res4 = res4)
     return runExperiment(modelLoc, variables, simRepo, exper, experFile, descFile)
     
@@ -275,8 +273,8 @@ def strictOAT(modelLoc, variables, simRepo):
             - True if the operation is successful
             - False if otherwise.
     '''
-    experFile = repositories.experimentsLoc + 'strict_OAT.txt'
-    descFile = repositories.currentDir + '/varDescription.yaml'
+    experFile = repos.experimentsLoc + 'strict_OAT.txt'
+    descFile = repos.currentDir + '/varDescription.yaml'
     exper = strictOATSampleGenerator(variables)
     return runExperiment(modelLoc, variables, simRepo, exper, experFile, descFile)
     
@@ -288,8 +286,8 @@ def standardOAT(modelLoc, variables, simRepo):
             - True if the operation is successful
             - False if otherwise.
     '''
-    experFile = repositories.experimentsLoc + 'standard_OAT.txt'
-    descFile = repositories.currentDir + '/varDescription.yaml'
+    experFile = repos.experimentsLoc + 'standard_OAT.txt'
+    descFile = repos.currentDir + '/varDescription.yaml'
     exper = standardOATSampleGenerator(variables)
     return runExperiment(modelLoc, variables, simRepo, exper, experFile, descFile)
 
@@ -304,5 +302,72 @@ def runExperiment(modelLoc, variables,simRepo, experiment, experFile, descFile):
                 sampleGroup = [8])
     return True
 
+#---------------------------------TEST FOR CASE AND SIMULATION
+class RepositoryNotThere(Exception):
+    pass 
+
+from collections import namedtuple
+TestResult = namedtuple('TestResult', 'message, result')
+
+def testCaseReadiness(simconfig: simulationConfig, variables, repoLoc):
+    messageLength =100
+    def printResult(testResult):
+        print(testResult.message + 
+            '.' * (messageLength - len(testResult.message)) +
+            ('Passed' if testResult.result else 'Failed'))
+
+    draftFileExistence = None
+    repoLocationCheck = None
+    variablesExistenceCheck = None 
+    runCaseCheck = None
+    # Checking the repository location:
+    if os.path.isdir(repoLoc):
+        repoLocationCheck = TestResult('Repository location test', True)
+    printResult(repoLocationCheck)
+    # Test for the existence of the draft file: 
+    caseLocation = repos.cefLoc + simconfig.modelLocation
+    draft = None 
+    try: 
+        draft = DftFile.from_directory(caseLocation)
+        draftFileExistence = TestResult('Draft file existence check', True)
+    except Exception:
+        draftFileExistence = TestResult('Draft file existence check', False)
+    printResult(draftFileExistence)
+    # Test for existence of the variables in the draft file: 
+    if draft is not None: # If the draft file is found in the designated location
+        rtdsSys = rtds.RtdsSystem.from_dft(draft)
+        draftVars = rtdsSys.get_draftvars()
+        sliders = rtdsSys.get_sliders()
+        allVars = {}
+        for var in draftVars:
+            allVars[var['Name']] = var
+        for var in sliders:
+            allVars[var['Name']] = var
+        varNames = set(var.name for var in variables)
+        for var in variables:
+            if var.name in allVars.keys(): varNames.remove(var.name)
+        if len(varNames)==0:
+            # All variables found
+            variablesExistenceCheck = TestResult('All variables exist in the draft file', True)
+        else: 
+            # Some variables are not found in the draft file: 
+            variablesExistenceCheck = TestResult('All variables exist in the draft file', False)
+        printResult(variablesExistenceCheck)
+        if len(varNames) > 0:
+            print('Variables not found: ', list(varNames))
+
+        # Testing whether the case runs without any problem or not
+        dFolder = repos.outputLocation.absolute
+        try:
+            realTimeCase = Case(caseLocation = caseLocation, rackNum = repos.rackNum)
+            realTimeCase.runCase(logDirectory=dFolder)
+            runCaseCheck = TestResult('Run Case check', True)
+        except Exception: 
+            runCaseCheck = TestResult('Run Case Check', False)
+    printResult(repoLocationCheck)
+    printResult(draftFileExistence)
+    if draft is not None: 
+        printResult(variablesExistenceCheck)
+        printResult(runCaseCheck)
 if __name__=='__main__':
     pass

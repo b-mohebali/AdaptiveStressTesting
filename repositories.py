@@ -332,6 +332,8 @@ testRepo12 = newTestRepo + 'test12'
 testRepo13 = newTestRepo + 'test13'
 # Frequency sweep. SteadyState = 1.5MW, Pulse load = 0.5MW, Frequency: 0.1-10 Hz
 testRepo14 = newTestRepo + 'test14'
+# just to test the test for repo location
+testRepo15 = newTestRepo + 'test15'
 
 currentDir = os.getcwd()
 isRepoRemote = True

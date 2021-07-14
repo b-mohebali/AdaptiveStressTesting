@@ -1,6 +1,5 @@
 #! /usr/bin/python3
 
-
 from ActiveLearning.dataHandling import *
 from ActiveLearning.Sampling import *
 from ActiveLearning.simInterface import *
@@ -10,25 +9,24 @@ from repositories import *
 from yamlParseObjects.variablesUtil import *
 from yamlParseObjects.yamlObjects import *
 
-simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
-variablesFile = currentDir + '/assets/yamlFiles/ac_pgm_adaptive.yaml'
-repoLoc = adaptRepo9
-dataLoc = repoLoc + '/data'
-variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
-designSpace = SampleSpace(variableList = variables)
-dimNames = designSpace.getAllDimensionNames()
-dataset, labels = readDataset(dataLoc, dimNames=dimNames, sampleRange = range(1,51))
-print(labels)
+# simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
+# variablesFile = currentDir + '/assets/yamlFiles/ac_pgm_adaptive.yaml'
+# repoLoc = adaptRepo9
+# dataLoc = repoLoc + '/data'
+# variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
+# designSpace = SampleSpace(variableList = variables)
+# dimNames = designSpace.getAllDimensionNames()
+# dataset, labels = readDataset(dataLoc, dimNames=dimNames, sampleRange = range(1,51))
+# print(labels)
 
-# Getting the mean value of all the dimensions: 
-means = np.mean(dataset, axis = 0)
-print(means)
-stds = np.std(dataset, axis = 0)
-print(stds)
-normalDataset = (dataset - means) / stds
+# # Getting the mean value of all the dimensions: 
+# means = np.mean(dataset, axis = 0)
+# print(means)
+# stds = np.std(dataset, axis = 0)
+# print(stds)
+# normalDataset = (dataset - means) / stds
 
 # Using standard Scaler:
-print('--------------------------------------------------')
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 # scaler = StandardScaler()
@@ -54,9 +52,17 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 # print(stds2)
 
 print('--------------------------------------------------')
-scaler = MinMaxScaler(feature_range=(-1,1))
-scaler.fit(dataset)
-fittedData = scaler.transform(dataset)
-print(np.min(fittedData, axis = 0))
-print(np.max(fittedData, axis = 0))
+# scaler = MinMaxScaler(feature_range=(-1,1))
+# scaler.fit(dataset)
+# fittedData = scaler.transform(dataset)
+# print(np.min(fittedData, axis = 0))
+# print(np.max(fittedData, axis = 0))
 
+#----------------------------
+# Running tests for the test of the case: 
+simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
+
+variablesFile = './assets/yamlFiles/test.yaml'
+variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
+repoLoc = testRepo15
+testCaseReadiness(simConfig, variables, repoLoc )

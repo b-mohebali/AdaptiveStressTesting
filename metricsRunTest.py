@@ -9,7 +9,6 @@ from multiprocessing import Process
 from ActiveLearning.dataHandling import resultFileName
 
 simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
-print(simConfig.name)
 for p in simConfig.codeBase:
     sys.path.insert(0,p)
     print(p + ' has been added to the path.')
