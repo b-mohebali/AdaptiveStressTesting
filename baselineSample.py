@@ -26,15 +26,18 @@ def main(run_exper = True, run_eval = True, load_sample = False):
     simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
     modelLoc = repositories.cefLoc + simConfig.modelLocation
     variablesFile = './assets/yamlFiles/ac_pgm_adaptive.yaml'
-    experFile = './assets/experiments/monteCarlo2500.txt'
+    experFile = './assets/experiments/constrainedSample.txt'
     variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
     designSpace = SampleSpace(variableList=variables)
     dimNames = designSpace.getAllDimensionNames()
     print(dimNames)
-    initialSampleSize = 2500 
+    initialSampleSize = 2500
     # Creating the large sample using CVT method:
     if load_sample:
         formattedSample = loadSampleFromTxtFile(experFile)
+        print(len(formattedSample))
+        alpha = 1 - len(formattedSample)/initialSampleSize
+        print('Alpha:', alpha)
     else:
         initialSample = generateInitialSample(space = designSpace,
                                             sampleSize=initialSampleSize,
@@ -42,7 +45,11 @@ def main(run_exper = True, run_eval = True, load_sample = False):
                                             checkForEmptiness=False)
         validity = np.array([constraint(x) for x in initialSample])
         initialSample = initialSample[validity,:]
+        print(initialSample)
         print(len(initialSample))
+        print(validity)
+        alpha = 1 - len(initialSample)/ initialSampleSize
+        print('Alpha',alpha)
         formattedSample = getSamplePointsAsDict(dimNames, initialSample)
         saveSampleToTxtFile(formattedSample, experFile)
     # Running the sample:
@@ -67,4 +74,4 @@ def main(run_exper = True, run_eval = True, load_sample = False):
 
 
 if __name__=='__main__':
-    main(run_exper = False, run_eval=False, load_sample = False)
+    main(run_exper = True, run_eval=True, load_sample = True)

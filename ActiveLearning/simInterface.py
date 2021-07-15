@@ -39,6 +39,7 @@ class Case:
 
     def runCase(self,logDirectory):
         with glog.RscadConnection() as conn:
+            self.draft.unlock_racks(conn, ['caps'])
             self._runCase(conn, logDirectory=logDirectory)
 
     def _runCase(self,conn, logDirectory):
@@ -60,7 +61,7 @@ class Case:
         with self.startCase():
             time.sleep(5)
             self.setPulseLoad(enable = True)
-            time.sleep(5)
+            time.sleep(10)
             with self.dataRecord(logDir = logDirectory):
                 time.sleep(20)
 

@@ -22,7 +22,8 @@ class GA_Optimizer(ABC):
                 space: SampleSpace, 
                 batchSize: int = 1, 
                 convergence_curve = True, 
-                progress_bar = True):
+                progress_bar = True,
+                constraints = []):
         self.space = space
         self.clf = None 
         self.convergence_curve = convergence_curve
@@ -30,6 +31,7 @@ class GA_Optimizer(ABC):
         self.batchSize = batchSize
         self.currentSpaceSamples = None
         self.ranges = space.getAllDimensionsRanges()
+        self.constraints = constraints
 
     # Batch size getter and setter:
     def setBatchSize(self,batchSize):
@@ -42,6 +44,16 @@ class GA_Optimizer(ABC):
     def objFunction(self, X):
         pass
     
+    def constrainedObjFunction(self, X):
+        """
+            This function applies a set of constraints, defined as functions of n-dimensional vectors that return boolean values, and penalize the objective function if any of the constraints is True. If the constraints list is empty or none is True the same objective function value is passed.
+        """
+        initialValue = self.objFunction(X)
+        results = [constraint(X) for constraint in self.constraints] if self.constraints else [False]
+        if any(results):
+            initialValue += 1e6
+        return initialValue
+
     def getModel(self):
         algoParam = {'max_num_iteration': 40,
             'population_size':600,
