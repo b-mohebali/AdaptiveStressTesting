@@ -144,11 +144,14 @@ class ConvergenceSample():
             benchmark and not an expensive computational model.  
     '''
     def __init__(self, 
-                space: SampleSpace):
+                space: SampleSpace,
+                constraints = []):
         self.size = 100 * 5**space.dNum
         self.samples = generateInitialSample(space, 
                                             sampleSize=self.size, 
-                                            method=InitialSampleMethod.LHS)
+                                            method=InitialSampleMethod.LHS,
+                                            constraints=constraints)
+        self.size = len(self.samples)
         self.pastLabels = np.zeros(shape=(self.size,), dtype = float)
         self.currentLabels = None
 
@@ -285,7 +288,8 @@ class ActiveClassifier():
 def generateInitialSample(space: SampleSpace, 
                         sampleSize: int, 
                         method: InitialSampleMethod = InitialSampleMethod.CVT,
-                        checkForEmptiness = False):
+                        checkForEmptiness = False,
+                        constraints = []):
     ''' This function samples from the entire space. 
         Can be used for the convergence samples as well without the check for 
         the emptiness of the space.
@@ -311,7 +315,19 @@ def generateInitialSample(space: SampleSpace,
     for dimIndex, dimension in enumerate(space.dimensions):
         samples[:,dimIndex] *= dimension.range
         samples[:,dimIndex] += dimension.bounds[0]
+    # Chekcing the points for the constraints:
+    # acceptedSamples = []
+    # if len(constraints) > 0:
+    #     for sample in samples:
+    #         if all([constraint(sample) for constraint in constraints]):
+    #             acceptedSamples.append(sample)
+    #     return np.array(acceptedSamples)
+    if len(constraints)>0:
+        results = np.array([np.apply_along_axis(cons,axis = 1, arr = samples) for cons in constraints]).T
+        taking = np.apply_along_axis(all, axis=1,arr=results)
+        samples = samples[taking,:]
     return samples
+    
 
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler, MinMaxScaler

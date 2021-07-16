@@ -17,7 +17,7 @@ from multiprocessing import freeze_support
 def main():
     simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
     print(simConfig.name)
-    modelLoc = repositories.cefLoc + simConfig.modelLocation
+    modelLoc = cefLoc + simConfig.modelLocation
 
     """
     Steps of checks for correctness: 

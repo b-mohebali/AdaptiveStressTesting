@@ -11,9 +11,9 @@ matlab_path_Linux:
   - "./Matlab"
 modelLocation: "MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V5_NewFactors"
 modelName: "PGM_V5_NF"
-outputFolder: './assets/outputReports/29'
+outputFolder: './assets/outputReports/33'
 sampleRepo: "D:/Data/Sample80/data"
-sampleBudget: 100
-initialSampleSize: 15
-batchSize: 5
+sampleBudget: 200
+initialSampleSize: 60
+batchSize: 4
 ... 

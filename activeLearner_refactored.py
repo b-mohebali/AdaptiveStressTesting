@@ -10,13 +10,25 @@ import shutil
 import matplotlib.pyplot as plt 
 from enum import Enum
 from sklearn import svm
-from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Explorer
+from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Voronoi_Explorer
 from copy import copy
 
 from ActiveLearning.visualization import *
 import time 
 from datetime import datetime 
 import numpy as np 
+
+def constraint1(X):
+    x1 = X[0]
+    x2 = X[1]
+    cons = x1-x2 < 2.5
+    return cons
+
+def constraint2(X):
+    x2=X[1]
+    cons = x2 < 3.5
+    return cons
+consVector = [constraint1, constraint2]
 
 # Loading the config files of the process:
 simConfig = simulationConfig('./assets/yamlFiles/adaptiveTesting.yaml')
@@ -29,7 +41,7 @@ batchSize = simConfig.batchSize
 initialSampleSize = simConfig.initialSampleSize
 
 # Individual budgets. Will be replaced by dynamic resource allocator:
-exploitationBudget = 3
+exploitationBudget = 2
 explorationBudget = batchSize - exploitationBudget
 
 # Defining the design space based on the variables config file: 
@@ -48,30 +60,32 @@ initialReport.setStart()
 initialSamples = generateInitialSample(space = mySpace, 
                                         sampleSize = initialSampleSize,
                                         method = InitialSampleMethod.CVT,
-                                        checkForEmptiness=False)
-# Getting the labels for the initial sample:
+                                        checkForEmptiness=False,
+                                        constraints=consVector)
 initialLabels = myBench.getLabelVec(initialSamples)
 
 # Initial iteration of the classifier trained on the initial samples and their labels:
-clf = svm.SVC(kernel = 'rbf', C = 1000)
+clf = StandardClassifier(kernel = 'rbf', C = 1000)
 clf.fit(initialSamples, initialLabels)
 # Adding the samples and their labels to the space: 
 mySpace.addSamples(initialSamples, initialLabels)
 
-# Setting up the location of the output of the process:
+# # Setting up the location of the output of the process:
 outputFolder = simConfig.outputFolder
 iterationReportFile = f'{outputFolder}/iterationReport.yaml'
 figFolder = setFigureFolder(outputFolder)
 sInfo = SaveInformation(fileName = f'{figFolder}/InitialPlot', savePDF=True, savePNG=True)
 
 # Visualization of the first iteration of the space with the initial sample:
+
 plotSpace(mySpace, 
         classifier=clf, 
         figsize = (10,8), 
         legend = True, 
         showPlot=False,
         saveInfo = sInfo, 
-        benchmark = myBench)
+        benchmark = myBench,
+        constraints = consVector)
 plt.close()
 # Finishing time
 initialReport.stopTime = datetime.now()
@@ -82,18 +96,19 @@ exploiter = GA_Exploiter(space = mySpace,
                     batchSize = simConfig.batchSize,
                     convergence_curve=False,
                     progress_bar=False,
-                    clf = clf)
+                    clf = clf, 
+                    constraints = consVector)
 
 # Defining the explorer object:
-explorer = GA_Explorer(space = mySpace, 
+explorer = GA_Voronoi_Explorer(space = mySpace, 
                     batchSize = simConfig.batchSize,
                     convergence_curve=False, 
                     progress_bar=False, 
-                    beta = 100)
+                    constraints = consVector)
 
 # Defining the convergence sample that implementes the change measure as well as
 #   the performance metrics for the process. 
-convergenceSample = ConvergenceSample(mySpace)
+convergenceSample = ConvergenceSample(mySpace, constraints=consVector)
 changeMeasure = [convergenceSample.getChangeMeasure(percent = True, 
                                     classifier = clf, 
                                     updateLabels=True)]
@@ -147,7 +162,8 @@ while currentBudget > 0:
         saveInfo=sInfo,
         newPoints=exploiterPoints,
         explorePoints=explorerPoints,
-        benchmark = myBench)
+        benchmark = myBench,
+        constraints = consVector)
     plt.close()
     # Evaluating the newly found samples: 
     newLabels = myBench.getLabelVec(exploiterPoints)
@@ -156,7 +172,7 @@ while currentBudget > 0:
     mySpace.addSamples(exploiterPoints, newLabels)
     mySpace.addSamples(explorerPoints, exploreLabels)
     # Training the next iteration of the classifier:
-    clf = svm.SVC(kernel = 'rbf', C=1000)
+    clf = StandardClassifier(kernel = 'rbf', C=1000)
     clf.fit(mySpace.samples, mySpace.eval_labels)
     exploiter.clf = clf
     # Calculation of the new measure of change and accuracy after training:
@@ -181,7 +197,8 @@ while currentBudget > 0:
         benchmark = myBench,
         newPoints=None,
         saveInfo=sInfo,
-        showPlot=False)
+        showPlot=False,
+        constraints = consVector)
     plt.close()
     # Adding the iteration information to the report for saving.
     iterReport.setStop()
@@ -197,7 +214,7 @@ while currentBudget > 0:
 # Final visualization of the results: 
 plotSpace(space = mySpace, figsize=(10,8), legend = True,
                         saveInfo=sInfo, showPlot=True, classifier = clf, 
-                        benchmark = myBench)
+                        benchmark = myBench, constraints = consVector)
 
 
 

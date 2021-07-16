@@ -49,8 +49,10 @@ class GA_Optimizer(ABC):
             This function applies a set of constraints, defined as functions of n-dimensional vectors that return boolean values, and penalize the objective function if any of the constraints is True. If the constraints list is empty or none is True the same objective function value is passed.
         """
         initialValue = self.objFunction(X)
-        results = [constraint(X) for constraint in self.constraints] if self.constraints else [False]
-        if any(results):
+        if len(self.constraints)==0:
+            return initialValue
+        results = [constraint(X) for constraint in self.constraints] if self.constraints else [True]
+        if not all(results):
             initialValue += 1e6
         return initialValue
 
@@ -63,7 +65,7 @@ class GA_Optimizer(ABC):
             'parents_portion': 0.3,
             'crossover_type':'uniform',
             'max_iteration_without_improv':None}
-        gaModel = ga(function = self.objFunction, 
+        gaModel = ga(function = self.constrainedObjFunction, 
                         dimension = self.space.dNum, 
                         variable_type = 'real', 
                         variable_boundaries= self.space.getAllDimensionBounds(),
@@ -96,12 +98,14 @@ class GA_Exploiter(GA_Optimizer):
                 clf,
                 batchSize: int = 1, 
                 convergence_curve = True, 
-                progress_bar = True):
+                progress_bar = True,
+                constraints = []):
         GA_Optimizer.__init__(self, 
                     space = space,
                     batchSize=batchSize,
                     convergence_curve=convergence_curve, 
-                    progress_bar=progress_bar)
+                    progress_bar=progress_bar,
+                    constraints = constraints)
         self.epsilon = epsilon                   
         self.clf = clf
     
@@ -118,12 +122,14 @@ class GA_Explorer(GA_Optimizer):
                 batchSize: int = 1, 
                 convergence_curve = True, 
                 progress_bar = True,
-                beta:float = 1):
+                beta:float = 1,
+                constraints = []):
         GA_Optimizer.__init__(self, 
                         space = space, 
                         batchSize=batchSize, 
                         convergence_curve=convergence_curve, 
-                        progress_bar=progress_bar)
+                        progress_bar=progress_bar,
+                        constraints=constraints)
         self.beta = beta 
         
     # The scale of the dimensions are normalized so that it does not affect the 
@@ -137,12 +143,14 @@ class GA_Voronoi_Explorer(GA_Optimizer):
             space: SampleSpace, 
             batchSize: int = 1, 
             convergence_curve = True, 
-            progress_bar = True):
+            progress_bar = True,
+            constraints = []):
         GA_Optimizer.__init__(self, 
                         space = space, 
                         batchSize=batchSize, 
                         convergence_curve=convergence_curve, 
-                        progress_bar=progress_bar)
+                        progress_bar=progress_bar,
+                        constraints = constraints)
         self.ranges = space.getAllDimensionsRanges()
     
     def objFunction(self, X):

@@ -42,7 +42,8 @@ def plotSpace(space: SampleSpace,
               insigDimensions = [2,3], 
               gridRes = None,
               prev_classifier =None,
-              comparison_classifier = None) -> None:
+              comparison_classifier = None,
+              constraints = []) -> None:
     """This function plots the samples in a Space object.
     - Options: 3D and 2D spaces. (4D coming up)
     - TO-DO: Higher dimensions implementation by generating a set 
@@ -69,7 +70,8 @@ def plotSpace(space: SampleSpace,
                     newPoints = newPoints,
                     saveInfo = saveInfo,
                     showPlot = showPlot,
-                    explorePoints = explorePoints)
+                    explorePoints = explorePoints,
+                    constraints = constraints)
     elif space.dNum == 3: 
         _plotSpace3D(space = space,
                     showPlot= showPlot,
@@ -93,7 +95,8 @@ def plotSpace(space: SampleSpace,
                     insigDimensions = insigDimensions,
                     gridRes = gridRes,
                     prev_classifier = prev_classifier, 
-                    comparison_classifier = comparison_classifier)
+                    comparison_classifier = comparison_classifier,
+                    constraints = constraints)
     return 
 
 
@@ -112,7 +115,8 @@ def _plotSpace4D(space: SampleSpace,
                 gridRes = (4,4),
                 saveInfo: SaveInformation = None,
                 prev_classifier = None,
-                comparison_classifier = None):
+                comparison_classifier = None,
+                constraints = []):
     ### Getting the information about the significant and insignificant dimensions. 
     
     ## Implementation of the 4D visualization: 
@@ -215,6 +219,13 @@ def _plotSpace4D(space: SampleSpace,
                 if plotNum==1:
                     for i in range(len(cslabels)):
                         cs.collections[i].set_label(cslabels[i])
+            # Applying the space constraints if there is any:
+            if len(constraints) > 0:
+                results = np.array([np.apply_along_axis(cons, axis=1,arr=dataVec) for cons in constraints]).T
+                taking = np.apply_along_axis(all, axis = 1,arr = results).astype(int).reshape(XX.shape)
+                cs3 = ax.contour(XX,YY,taking, colors='orange',levels=[0.5],alpha =1, linestyles=['dashdot'])
+                cs3.collections[0].set_label('Constraint(s)')
+                
             # Updating the plot number, needed for locating the subplots.
             plotNum += 1
             
@@ -329,7 +340,8 @@ def _plotSpace2D(space: SampleSpace,
                 newPoints = None,
                 explorePoints = None,
                 saveInfo:SaveInformation = None,
-                showPlot = True):
+                showPlot = True,
+                constraints = []):
     labels = space.eval_labels
     
     _,ax = plt.subplots(figsize = figsize)  
@@ -388,6 +400,13 @@ def _plotSpace2D(space: SampleSpace,
         explorePoints = explorePoints.reshape(1,len(explorePoints)) if len(explorePoints.shape) <2 else explorePoints
         legendLabel = 'Exploitative point' + ('s' if explorePoints.shape[0]>1 else '')
         ax.scatter(explorePoints[:,0], explorePoints[:,1], marker = 's',s = 20, label = legendLabel, color = 'g')
+    # Drawing the constraints:
+    if len(constraints)>0:
+        results = np.array([np.apply_along_axis(cons, axis=1,arr=xy) for cons in constraints]).T
+        taking = np.apply_along_axis(all, axis = 1,arr = results).astype(int).reshape(XX.shape)
+        cs3 = ax.contour(XX,YY,taking, colors='orange',levels=[0.5],alpha =1, linestyles=['dashdot'])
+        cs3.collections[0].set_label('Constraint(s)')
+
     if legend:
         plt.legend(loc = 'upper left',bbox_to_anchor=(1.05, 1.0))
     plt.tight_layout()
