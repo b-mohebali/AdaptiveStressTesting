@@ -54,9 +54,11 @@ def main(run_exper = True, run_eval = True, load_sample = False):
         saveSampleToTxtFile(formattedSample, experFile)
     # Running the sample:
     if run_exper:
+        sampleGroup = list(range(2425, len(formattedSample)+1))
         runSample(caseLocation = modelLoc,
                 sampleDictList=formattedSample,
-                remoteRepo = dataLoc)
+                remoteRepo = dataLoc,
+                sampleGroup=sampleGroup)
 
     # Evaluation of the sample points in parallel
     processNum = 4
@@ -69,9 +71,7 @@ def main(run_exper = True, run_eval = True, load_sample = False):
                 figureFolder = figLoc,
                 PN_suggest=processNum)
         
-
-
-
-
 if __name__=='__main__':
-    main(run_exper = True, run_eval=True, load_sample = True)
+    main(run_exper = False, 
+        run_eval=True, 
+        load_sample = True)

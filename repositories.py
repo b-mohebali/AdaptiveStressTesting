@@ -301,6 +301,9 @@ adaptRepo7 = newAdaptiveRepo + 'adaptiveRepo7'
 adaptRepo8 = newAdaptiveRepo + 'adaptiveRepo8'
 # Adaptive Sample after the range of the variables were established through frequency sweep experiments. 
 adaptRepo9 = newAdaptiveRepo + 'adaptiveRepo9'
+# Adaptive Sample 400(80)-1 after the mother sample was taken with 2425 samples. The rejection of the constrained area was added to the algorithm.
+adaptRepo10 = newAdaptiveRepo + 'adaptiveRepo10'
+
 
 """
     Miscellanous tests with different purposes that are not meant for sensitivity analysis or adaptive stress testing. 

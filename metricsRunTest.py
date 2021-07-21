@@ -74,8 +74,6 @@ def getMetricsResults(dataLocation: str,
     label = int(output[0])
     # Unpacking the results of other metrics coming from the matlab evaluation:
     metricValues = list(output[1:]) if len(output) > 1 else []
-    # TODO: Capturing the rest of the metric values that may be useful for the 
-    # factor screening in case we do it on the python side.
 
     # saving the results to a yaml report file.
     sampleLoc = f'{dataLocation}/{sampleNumber}'

@@ -303,7 +303,7 @@ def runExperiment(modelLoc, variables,simRepo, experiment, experFile, descFile):
                 sampleGroup = [8])
     return True
 
-#---------------------------------TEST FOR CASE AND SIMULATION
+#---------------------------------TEST FOR CASE AND SIMULATION INTEGRITY
 class RepositoryNotThere(Exception):
     pass 
 
