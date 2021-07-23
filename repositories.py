@@ -282,6 +282,8 @@ motherSample2 = adaptiveSamplingLoc + 'motherSample2'
 monteCarlo2500 = newAdaptiveRepo + 'monteCarlo2500'
 # Large sample with constrained space. The constraint is based on the pulse load power, frequnecy and the ramp rate.
 constrainedSample = newAdaptiveRepo + 'constrainedSample'
+# Another constrained sample after the first one came out all infeasible:
+constrainedSample2 = newAdaptiveRepo + 'constrainedSample2'
 
 # Adaptive Sampling 300(80)-1
 adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'

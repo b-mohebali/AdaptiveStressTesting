@@ -9,6 +9,7 @@ from repositories import *
 import pickle
 from enum import Enum
 import string
+import glob
 
 class BadExtention(Exception):
     pass
@@ -18,10 +19,10 @@ resultFileName = 'finalReport.yaml'
 
 # ------------------------------------------------------------------------
 # Managing the dataset, loading, getting informating about evaluated and not evaluated samples, number of sampes taken, etc. 
-def getSampleFolders(dataLoc, sort = False):
+def getSampleFolders(dataLoc, sort = False, descending = False):
     sf = [int(name) for name in os.listdir(dataLoc) if name.isdigit()]
     if sort: sf.sort()
-    return sf
+    return sf[::-1] if descending else sf
 
 def readDataset(dataLoc, dimNames, includeTimes = False, sampleRange = None, normalize = False):
     """
@@ -45,7 +46,7 @@ def readDataset(dataLoc, dimNames, includeTimes = False, sampleRange = None, nor
 
     """
     sampleFolders = getSampleFolders(dataLoc=dataLoc, sort = True)
-    print('Sample Folders', sampleFolders)
+    # print('Sample Folders', sampleFolders)
     # This makes sure that only the samples that actually exist in the 
     #   repo will be loaded into the dataset.
     if sampleRange is not None:
@@ -194,9 +195,26 @@ def getNotEvaluatedSamples(dataLoc):
     notEvaluated.sort()
     return notEvaluated
 
+def getLastSimulatedSampleNumber(dataLoc):
+    """
+        Takes the location of the set of the sample folders and returns the sample number of the last sample that is simulated and its log file was taken.
 
+        Inputs: 
+            - dataLoc: Location of the sample folders
 
-# ------------------------------------------------------------------------
+        Outputs: 
+            - lastSimulated: The number of the last sample that is simulated. 
+    """
+    sampleFolders = getSampleFolders(dataLoc = dataLoc, sort = True, descending=True)
+    for sampleFolder in sampleFolders:  
+        dataFile = glob.glob(dataLoc + f'/{sampleFolder}/*.mat')
+        if len(dataFile) > 0:
+            return sampleFolder
+    return 0
+
+# ========================================================================
+# ========================================================================
+# ========================================================================
 # This part is related to the factor screening analysis and data handling:
 class OutputType(Enum):
     DICT = 0

@@ -14,6 +14,22 @@ from repositories import *
 from metricsRunTest import * 
 from multiprocessing import freeze_support
 
+"""
+    Constraint format:
+        - Input: a numpy vector representing a point in the space. 
+        - output: Boolean indicating whether the constraint is respected at that point or not:
+            True: Constraint Respected.
+            False: Constraint Violated.
+        
+"""
+def constraint(X):
+    freq = X[0]
+    pulsePower = X[1]
+    rampRate = X[2]
+    cons = (2 * pulsePower * freq) < rampRate
+    return cons
+consVector = [constraint]
+
 def main():
     simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
     print(simConfig.name)
@@ -34,14 +50,14 @@ def main():
     """
 
     print('This is the AC PGM sampling test file. ')
-    variablesFile = currentDir + '/assets/yamlFiles/ac_pgm_adaptive.yaml'
+    variablesFile = currentDir + '/assets/yamlFiles/ac_pgm_restricted.yaml'
 
 
 
     #-------------------SETTINGS OF THE PROCESS---------------------------
     includeBenchmarkSample = False
-    loadInitialSample = True
-    runInitialSample = False 
+    loadInitialSample = False
+    runInitialSample = True 
     discardEvaluations = False
 
     #---------------------------------------------------------------------
@@ -55,8 +71,8 @@ def main():
 
     # Setting the main files and locations:
     descriptionFile = currentDir + '/assets/yamlFiles/varDescription.yaml'
-    sampleSaveFile = currentDir + '/assets/experiments/adaptive_sample-400(80)-1.txt'
-    repoLoc = adaptRepo9
+    sampleSaveFile = currentDir + '/assets/experiments/adaptive_sample-400(80)-1_Num10.txt'
+    repoLoc = adaptRepo10
     dataLoc = repoLoc + '/data'
     if not os.path.isdir(dataLoc):
         os.mkdir(dataLoc)
@@ -72,7 +88,8 @@ def main():
     # Defining the design space and the handler for the name of the dimensions. 
     designSpace = SampleSpace(variableList=variables)
     dimNames = designSpace.getAllDimensionNames()
-    initialReport = IterationReport(dimNames)
+    dimDescs = designSpace.getAllDimensionDescriptions()
+    initialReport = IterationReport(dimDescs)
     initialReport.setStart()
 
     #-------------------CREATING SAMPLES BEFORE SIMULATION----------------
@@ -81,7 +98,8 @@ def main():
         initialSamples = generateInitialSample(space = designSpace,
                                                 sampleSize=initialSampleSize,
                                                 method = InitialSampleMethod.CVT,
-                                                checkForEmptiness=False)
+                                                checkForEmptiness=False,
+                                                constraints=consVector)
 
         ### Preparing and running the initial sample: 
         formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
@@ -137,7 +155,6 @@ def main():
     #### Load the results into the dataset and train the initial classifier:
     dataset, labels = readDataset(dataLoc, dimNames=dimNames)
 
-
     # updating the space with the new samples:
     designSpace._samples, designSpace._eval_labels = dataset, labels
     # Stopping the time measurement for the iteration report:
@@ -149,7 +166,9 @@ def main():
     clf.fit(dataset, labels)
 
     # Updating the budget:
-    currentBudget = budget - initialSampleSize
+    # NOTE: The update must be done based on the number of accepted samples and not the number of initial sample size. 
+    lastSimulated = getLastSimulatedSampleNumber(dataLoc = dataLoc)
+    currentBudget = budget - lastSimulated
 
     convergenceSample = ConvergenceSample(designSpace)
     # This vector holds all the values for the change measure and will be used for monitoring and plotting later. 
@@ -165,7 +184,8 @@ def main():
                             clf = clf,
                             batchSize = batchSize,
                             convergence_curve = False,
-                            progress_bar = True)
+                            progress_bar = True,
+                            constraints = consVector)
 
     # Defining the explorer object for future use: 
     # TODO: Include the explorer in the analysis
@@ -194,10 +214,10 @@ def main():
 
     ## -----------------------------------
     # # Setting up the parameters for visualization: 
-    insigDims = [0,2]
-    figSize = (12,10)
-    gridRes = (4,4)
-    meshRes = 100
+    insigDims = [2,3]
+    figSize = (32,30)
+    gridRes = (7,7)
+    meshRes = 200
     sInfo = SaveInformation(fileName = f'{figFolder}/initial_plot', 
                             savePDF=True, 
                             savePNG=True)
@@ -218,7 +238,8 @@ def main():
             saveInfo=sInfo,
             insigDimensions=insigDims,
             legend = True,
-            benchmark = classifierBench) 
+            benchmark = classifierBench,
+            constraints = consVector) 
     plt.close()
 
     currentSample = formattedSample
@@ -227,7 +248,7 @@ def main():
     while currentBudget > 0:
         # Setting up the iteration number:
         iterationNum += 1
-        iterReport = IterationReport(dimNames, batchSize = batchSize)
+        iterReport = IterationReport(dimDescs, batchSize = batchSize)
         iterReport.setStart()
         print('Current budget: ', currentBudget, ' samples.')
         
@@ -239,7 +260,7 @@ def main():
         # formatting the samples for simulation:
         # NOTE: this is due to the old setting used for the DOE code in the past.
         formattedFoundPoints = getSamplePointsAsDict(dimNames, newPointsFound)
-        currentSample.extend(formattedFoundPoints)
+        currentSample.extend(formattedFoundPoints) 
         # Getting the number of next samples:
         nextSamples = getNextSampleNumber(dataLoc, 
                                         createFolder=False, 
@@ -264,13 +285,12 @@ def main():
                 sampleGroup=samplesGroup,
                 configFile=simConfig,
                 figureFolder=figFolder,
-                PN_suggest=2)
+                PN_suggest=4)
         
         # Updating the classifier and checking the change measure:
         dataset,labels = readDataset(dataLoc, dimNames= dimNames)
         designSpace._samples, designSpace._eval_labels = dataset, labels
         prevClf = copy.deepcopy(clf)
-        # clf = svm.SVC(kernel = 'rbf', C = 1000)
         clf = StandardClassifier(kernel = 'rbf', C = 1000)
         clf.fit(dataset, labels)
         newChangeMeasure = convergenceSample.getChangeMeasure(percent = True,
@@ -286,7 +306,7 @@ def main():
         sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_Labeled'
         plotSpace(designSpace,
                 figsize = figSize,
-                meshRes = 80,
+                meshRes = meshRes,
                 classifier = clf,
                 gridRes = gridRes,
                 showPlot=False,
@@ -294,7 +314,8 @@ def main():
                 insigDimensions=insigDims,
                 legend = True,
                 prev_classifier = prevClf,
-                benchmark = classifierBench) 
+                benchmark = classifierBench,
+                constraints= consVector) 
         plt.close() # Just in case. 
         # Saving the iteration report:
         # TODO: Reduce the lines of code that does this job:

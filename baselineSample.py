@@ -17,7 +17,7 @@ def constraint(X):
     return cons
 
 def main(run_exper = True, run_eval = True, load_sample = False):
-    repoLoc = repositories.constrainedSample
+    repoLoc = repositories.constrainedSample2
     dataLoc = repoLoc + '/data'
     if not os.path.isdir(dataLoc):
         os.mkdir(dataLoc)
@@ -25,13 +25,13 @@ def main(run_exper = True, run_eval = True, load_sample = False):
     print(repositories.currentDir)
     simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
     modelLoc = repositories.cefLoc + simConfig.modelLocation
-    variablesFile = './assets/yamlFiles/ac_pgm_adaptive.yaml'
-    experFile = './assets/experiments/constrainedSample.txt'
+    variablesFile = './assets/yamlFiles/ac_pgm_restricted.yaml'
+    experFile = './assets/experiments/constrainedSample2.txt'
     variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
     designSpace = SampleSpace(variableList=variables)
     dimNames = designSpace.getAllDimensionNames()
     print(dimNames)
-    initialSampleSize = 2500
+    initialSampleSize = 250
     # Creating the large sample using CVT method:
     if load_sample:
         formattedSample = loadSampleFromTxtFile(experFile)
@@ -54,7 +54,7 @@ def main(run_exper = True, run_eval = True, load_sample = False):
         saveSampleToTxtFile(formattedSample, experFile)
     # Running the sample:
     if run_exper:
-        sampleGroup = list(range(2425, len(formattedSample)+1))
+        sampleGroup = list(range(71,len(formattedSample)+1))
         runSample(caseLocation = modelLoc,
                 sampleDictList=formattedSample,
                 remoteRepo = dataLoc,
@@ -72,6 +72,6 @@ def main(run_exper = True, run_eval = True, load_sample = False):
                 PN_suggest=processNum)
         
 if __name__=='__main__':
-    main(run_exper = False, 
+    main(run_exper = True, 
         run_eval=True, 
         load_sample = True)

@@ -332,7 +332,7 @@ def generateInitialSample(space: SampleSpace,
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-class StandardClassifier(SVC):
+class StandardClassifier(SVC,Benchmark):
     """
         A custom classifier based on Support vector classifier class that trains a standard scaler to the same data that it uses to train the SVM. The data is then standardized before fitting the fitting function is called. 
     """
@@ -343,11 +343,13 @@ class StandardClassifier(SVC):
                  break_ties=False,
                  random_state=None):
         super().__init__(C=C, kernel=kernel, degree=degree, gamma=gamma, coef0=coef0, shrinking=shrinking, probability=probability, tol=tol, cache_size=cache_size, class_weight=class_weight, verbose=verbose, max_iter=max_iter, decision_function_shape=decision_function_shape, break_ties=break_ties, random_state=random_state)
-    
+        self.threshold = 0.5 if probability else 0
+
     def fit(self, X, y, sample_weight=None):
         # self.scaler = StandardScaler()
         self.scaler = MinMaxScaler(feature_range=(0,1))
         normalX = self.scaler.fit_transform(X)
+        self.inputDim = len(normalX[0,:])
         return super().fit(normalX, y, sample_weight=sample_weight)
     
     def predict(self, X):
@@ -363,3 +365,7 @@ class StandardClassifier(SVC):
             return self.support_vectors_
         else:
             return self.scaler.inverse_transform(self.support_vectors_)
+
+    def _function(self, datum):
+        return self.decision_function(datum.reshape(1,self.inputDim))
+

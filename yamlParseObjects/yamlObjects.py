@@ -138,6 +138,7 @@ class IterationReport():
 
     def setStart(self):
         self.__start = time.time()
+        self.startTime=datetime.now()
     def setStop(self):
         self.elapsedTimeSeconds = time.time() - self.__start
         self.stopTime = datetime.now()

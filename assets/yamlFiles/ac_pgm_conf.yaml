@@ -23,6 +23,6 @@ modelLocation: "MVDC_SPS/AC_PGM/fileman/StudentPGM/StudentPGM_drp_disb_copy"
 outputFolder: './assets/outputReports/'
 sampleRepo: "D:/Data/Sample80/data"
 sampleBudget: 400
-initialSampleSize: 50
-batchSize: 1
+initialSampleSize: 100
+batchSize: 4
 ...
