@@ -17,7 +17,7 @@ def constraint(X):
     return cons
 
 def main(run_exper = True, run_eval = True, load_sample = False):
-    repoLoc = repositories.constrainedSample2
+    repoLoc = repositories.constrainedSample3
     dataLoc = repoLoc + '/data'
     if not os.path.isdir(dataLoc):
         os.mkdir(dataLoc)
@@ -26,12 +26,12 @@ def main(run_exper = True, run_eval = True, load_sample = False):
     simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
     modelLoc = repositories.cefLoc + simConfig.modelLocation
     variablesFile = './assets/yamlFiles/ac_pgm_restricted.yaml'
-    experFile = './assets/experiments/constrainedSample2.txt'
+    experFile = './assets/experiments/constrainedSample3.txt'
     variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
     designSpace = SampleSpace(variableList=variables)
     dimNames = designSpace.getAllDimensionNames()
     print(dimNames)
-    initialSampleSize = 250
+    initialSampleSize = 2500
     # Creating the large sample using CVT method:
     if load_sample:
         formattedSample = loadSampleFromTxtFile(experFile)

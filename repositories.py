@@ -284,6 +284,8 @@ monteCarlo2500 = newAdaptiveRepo + 'monteCarlo2500'
 constrainedSample = newAdaptiveRepo + 'constrainedSample'
 # Another constrained sample after the first one came out all infeasible:
 constrainedSample2 = newAdaptiveRepo + 'constrainedSample2'
+# Benchmark sample after the bounds are tested again
+constrainedSample3 = newAdaptiveRepo + 'constrainedSample3'
 
 # Adaptive Sampling 300(80)-1
 adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'

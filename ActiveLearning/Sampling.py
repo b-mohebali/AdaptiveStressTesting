@@ -118,8 +118,6 @@ class SampleSpace():
         else:
             r = self.ones
         if samplesList is None:
-        #     return np.min(np.linalg.norm(self.samples - X, axis=1))
-        # return np.min(np.linalg.norm(samplesList - X, axis=1))
             result = np.min(np.linalg.norm(np.divide(self.samples-X,r),axis=1))
         else:
             result = np.min(np.linalg.norm(np.divide(samplesList-X,r),axis=1))
@@ -308,7 +306,7 @@ def generateInitialSample(space: SampleSpace,
         raise SampleNotEmpty('The space already contains samples.')
     if method == InitialSampleMethod.CVT:
         print('Generating the samples using CVT method. This may take a while...')
-        samples = cvt(count = sampleSize, dimensionality= space.dNum)
+        samples = cvt(count = sampleSize, dimensionality= space.dNum, epsilon=1e-7)
     elif method == InitialSampleMethod.LHS:
         print('Generating the samples using LHS method. This may take a while...')
         samples = lhs(count = sampleSize, dimensionality=space.dNum)

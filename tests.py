@@ -1,19 +1,23 @@
-#! /usr/bin/python3
+# #! /usr/bin/python3
 
-import repositories as repo
-from yamlParseObjects.yamlObjects import * 
-from ActiveLearning.dataHandling import * 
-import glob
+from sobol_stuff import * 
+import matplotlib.pyplot as plt
+import numpy as np 
+from samply.hypercube import cvt
+n = 200
+seed = 13
 
-repoLoc = repo.adaptRepo10
-dataLoc= repoLoc + '/data' 
-sampleFolders = getSampleFolders(dataLoc = dataLoc, sort = True, descending=True)
-# print(sampleFolders)
-lastSample = 1
-for sampleFolder in sampleFolders:
-    dataFolder = dataLoc + f'/{sampleFolder}'
-    dataFile = glob.glob(dataFolder + '/*.mat')
-    if len(dataFile)>0:
-        lastSample = sampleFolder
-        break 
-print(lastSample)
+points = []
+for _ in range(n):
+    newpoint, seed = i4_sobol(2, seed)
+    points.append(newpoint)
+points = np.array(points)
+
+samples = cvt(count = n, dimensionality=2, verbose=False)
+
+
+plt.figure()
+# plt.scatter(points[:,0], points[:,1], s = 8)
+plt.scatter(samples[:,0], samples[:,1], s = 8, color = 'r')
+plt.grid(True)
+plt.show()
