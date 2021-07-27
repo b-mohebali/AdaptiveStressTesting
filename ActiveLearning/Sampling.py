@@ -1,6 +1,6 @@
 from yamlParseObjects.yamlObjects import VariableConfig
 from typing import List
-from samply.hypercube import cvt, lhs
+from samply.hypercube import cvt, lhs, halton
 from enum import Enum
 from .benchmarks import Benchmark
 from sklearn import svm
@@ -33,6 +33,7 @@ class InitialSampleMethod(Enum):
     CVT = 0
     LHS = 1
     Sobol = 2
+    HALTON = 3
 
 '''
     This class determines the type of the performance metric for the current iteration
@@ -147,7 +148,7 @@ class ConvergenceSample():
         self.size = 100 * 5**space.dNum
         self.samples = generateInitialSample(space, 
                                             sampleSize=self.size, 
-                                            method=InitialSampleMethod.LHS,
+                                            method=InitialSampleMethod.HALTON,
                                             constraints=constraints)
         self.size = len(self.samples)
         self.pastLabels = np.zeros(shape=(self.size,), dtype = float)
@@ -311,6 +312,10 @@ def generateInitialSample(space: SampleSpace,
     elif method == InitialSampleMethod.LHS:
         print('Generating the samples using LHS method. This may take a while...')
         samples = lhs(count = sampleSize, dimensionality=space.dNum)
+    elif method == InitialSampleMethod.HALTON:
+        print('Generating the samples using Halton sequences method. This may take a while...')
+        samples = halton(count = sampleSize, dimensionality=space.dNum)
+    
     for dimIndex, dimension in enumerate(space.dimensions):
         samples[:,dimIndex] *= dimension.range
         samples[:,dimIndex] += dimension.bounds[0]
