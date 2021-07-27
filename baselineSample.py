@@ -17,7 +17,7 @@ def constraint(X):
     return cons
 
 def main(run_exper = True, run_eval = True, load_sample = False):
-    repoLoc = repositories.constrainedSample
+    repoLoc = repositories.constrainedSample3
     dataLoc = repoLoc + '/data'
     if not os.path.isdir(dataLoc):
         os.mkdir(dataLoc)
@@ -25,8 +25,8 @@ def main(run_exper = True, run_eval = True, load_sample = False):
     print(repositories.currentDir)
     simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
     modelLoc = repositories.cefLoc + simConfig.modelLocation
-    variablesFile = './assets/yamlFiles/ac_pgm_adaptive.yaml'
-    experFile = './assets/experiments/constrainedSample.txt'
+    variablesFile = './assets/yamlFiles/ac_pgm_restricted.yaml'
+    experFile = './assets/experiments/constrainedSample3.txt'
     variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
     designSpace = SampleSpace(variableList=variables)
     dimNames = designSpace.getAllDimensionNames()
@@ -54,9 +54,11 @@ def main(run_exper = True, run_eval = True, load_sample = False):
         saveSampleToTxtFile(formattedSample, experFile)
     # Running the sample:
     if run_exper:
+        sampleGroup = list(range(71,len(formattedSample)+1))
         runSample(caseLocation = modelLoc,
                 sampleDictList=formattedSample,
-                remoteRepo = dataLoc)
+                remoteRepo = dataLoc,
+                sampleGroup=sampleGroup)
 
     # Evaluation of the sample points in parallel
     processNum = 4
@@ -69,9 +71,7 @@ def main(run_exper = True, run_eval = True, load_sample = False):
                 figureFolder = figLoc,
                 PN_suggest=processNum)
         
-
-
-
-
 if __name__=='__main__':
-    main(run_exper = True, run_eval=True, load_sample = True)
+    main(run_exper = True, 
+        run_eval=True, 
+        load_sample = True)

@@ -35,6 +35,7 @@ def plotSpace(space: SampleSpace,
               classifier = None, 
               benchmark:Benchmark = None,
               legend = True,
+              showGrid = False, 
               newPoints = None,
               explorePoints = None,
               saveInfo: SaveInformation = None,
@@ -66,6 +67,7 @@ def plotSpace(space: SampleSpace,
                     classifier = classifier,
                     meshRes = meshRes, 
                     legend = legend,
+                    showGrid = showGrid,
                     benchmark = benchmark,
                     newPoints = newPoints,
                     saveInfo = saveInfo,
@@ -80,6 +82,7 @@ def plotSpace(space: SampleSpace,
                     benchmark = benchmark,
                     meshRes = meshRes,
                     legend = legend,
+                    showGrid=showGrid,
                     newPoints = newPoints,
                     explorePoints = explorePoints,
                     saveInfo=saveInfo)
@@ -91,6 +94,7 @@ def plotSpace(space: SampleSpace,
                     legend = legend,
                     benchmark=benchmark,
                     meshRes = meshRes,
+                    showGrid = showGrid,
                     saveInfo=saveInfo,
                     insigDimensions = insigDimensions,
                     gridRes = gridRes,
@@ -110,6 +114,7 @@ def _plotSpace4D(space: SampleSpace,
                 classifier:StandardClassifier = None,
                 figsize = (6,6),
                 legend = True,
+                showGrid = False,
                 benchmark = None,
                 meshRes = 100,
                 gridRes = (4,4),
@@ -161,10 +166,13 @@ def _plotSpace4D(space: SampleSpace,
 
     plotNum = 1
     fig,ax = plt.subplots(nrows = gridRes[0], ncols = gridRes[1], figsize = figsize)
+    # This variable is used to make sure that the legend for only one constraint is shown
+    constraintsLabeled = False
     """
         This loop goes through the values of the "insignificant" dimensions that are discretized and 
         creates a grid of 2D plots 
     """
+    
     for rowNum in range(gridRes[0]):
         for colNum in range(gridRes[1]):
             dataVec[:,insigDimensions[0]] = onesVec * insigDim1Vals[rowNum]
@@ -222,10 +230,31 @@ def _plotSpace4D(space: SampleSpace,
             # Applying the space constraints if there is any:
             if len(constraints) > 0:
                 results = np.array([np.apply_along_axis(cons, axis=1,arr=dataVec) for cons in constraints]).T
-                taking = np.apply_along_axis(all, axis = 1,arr = results).astype(int).reshape(XX.shape)
-                cs3 = ax.contour(XX,YY,taking, colors='orange',levels=[0.5],alpha =1, linestyles=['dashdot'])
-                cs3.collections[0].set_label('Constraint(s)')
+                taking = np.apply_along_axis(all, axis = 1,arr = results).astype(int)
+                takingGrid = taking.reshape(XX.shape)
+                reducedIdx = range(0,len(taking),23)
+                cs3 = ax.contour(XX,YY,takingGrid, colors='orange',levels=[0.5],alpha =1, linestyles=['dashdot'])
                 
+                # Scatter plotting the violating, feasible and infeasible regions:
+                labels = classifier.predict(dataVec)
+                reducedLabels = labels[reducedIdx]
+                reducedTaking = taking[reducedIdx]
+                redXy = xy[reducedIdx,:]
+                feasXy = redXy[reducedLabels==0,:]
+                infeasXy = redXy[reducedLabels==1,:]
+                noResXy = redXy[reducedTaking==0,:]
+                if not constraintsLabeled:
+                    constraintsLabeled = True
+                    cs3.collections[0].set_label('Constraint(s)')
+                    ax.scatter(feasXy[:,0], feasXy[:,1], s=0.2,color='lime',label='Feeasible Region')
+                    ax.scatter(infeasXy[:,0], infeasXy[:,1], s=0.2,color='gold',label='Infeasible Region')
+                    ax.scatter(noResXy[:,0], noResXy[:,1], s=0.2,color='orangered',label='Violationg constraints')
+                else:
+                    ax.scatter(feasXy[:,0], feasXy[:,1], s=0.2,color='lime')
+                    ax.scatter(infeasXy[:,0], infeasXy[:,1], s=0.2,color='gold')
+                    ax.scatter(noResXy[:,0], noResXy[:,1], s=0.2,color='orangered')
+                    
+            ax.grid(showGrid)
             # Updating the plot number, needed for locating the subplots.
             plotNum += 1
             
@@ -247,6 +276,7 @@ def _plotSpace3D(space: SampleSpace,
                 legend = True, 
                 benchmark = None,
                 meshRes = 100,
+                showGrid = False,
                 saveInfo:SaveInformation = None,
                 newPoints = None,
                 explorePoints = None):
@@ -322,7 +352,7 @@ def _plotSpace3D(space: SampleSpace,
         explorePoints = explorePoints.reshape(1,len(explorePoints)) if len(explorePoints.shape) <2 else explorePoints
         legendLabel = 'Exploratory point' + ('s' if explorePoints.shape[0]>1 else '')
         ax.scatter(explorePoints[:,0], explorePoints[:,1], explorePoints[:,2], marker = 's',s = 20, label = legendLabel, color = 'green' )
-    
+    ax.grid(showGrid)
     if saveInfo is not None:
         saveFigures(saveInfo=saveInfo)
     if showPlot:
@@ -338,6 +368,7 @@ def _plotSpace2D(space: SampleSpace,
                 benchmark = None,
                 legend=True,
                 newPoints = None,
+                showGrid = False,
                 explorePoints = None,
                 saveInfo:SaveInformation = None,
                 showPlot = True,
@@ -402,11 +433,27 @@ def _plotSpace2D(space: SampleSpace,
         ax.scatter(explorePoints[:,0], explorePoints[:,1], marker = 's',s = 20, label = legendLabel, color = 'g')
     # Drawing the constraints:
     if len(constraints)>0:
-        results = np.array([np.apply_along_axis(cons, axis=1,arr=xy) for cons in constraints]).T
-        taking = np.apply_along_axis(all, axis = 1,arr = results).astype(int).reshape(XX.shape)
-        cs3 = ax.contour(XX,YY,taking, colors='orange',levels=[0.5],alpha =1, linestyles=['dashdot'])
-        cs3.collections[0].set_label('Constraint(s)')
 
+        results = np.array([np.apply_along_axis(cons, axis=1,arr=xy) for cons in constraints]).T
+        taking = np.apply_along_axis(all, axis = 1,arr = results).astype(int)
+        takingGrid = taking.reshape(XX.shape)
+        reducedIdx = range(0,len(taking),int(meshRes/8))
+        cs3 = ax.contour(XX,YY,takingGrid, colors='orange',levels=[0.5],alpha =1, linestyles=['dashdot'])
+        cs3.collections[0].set_label('Constraint(s)')
+        
+        # Scatter plotting the violating, feasible and infeasible regions:
+        labels = classifier.predict(xy)
+        reducedLabels = labels[reducedIdx]
+        reducedTaking = taking[reducedIdx]
+        redXy = xy[reducedIdx,:]
+        feasXy = redXy[reducedLabels==0,:]
+        infeasXy = redXy[reducedLabels==1,:]
+        noResXy = redXy[reducedTaking==0,:]
+        ax.scatter(feasXy[:,0], feasXy[:,1], s=0.2,color='lime',label='Feeasible Region')
+        ax.scatter(infeasXy[:,0], infeasXy[:,1], s=0.2,color='gold',label='Infeasible Region')
+        ax.scatter(noResXy[:,0], noResXy[:,1], s=0.2,color='orangered',label='Violationg constraints')
+
+    ax.grid(showGrid)
     if legend:
         plt.legend(loc = 'upper left',bbox_to_anchor=(1.05, 1.0))
     plt.tight_layout()

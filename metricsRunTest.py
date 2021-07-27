@@ -74,8 +74,6 @@ def getMetricsResults(dataLocation: str,
     label = int(output[0])
     # Unpacking the results of other metrics coming from the matlab evaluation:
     metricValues = list(output[1:]) if len(output) > 1 else []
-    # TODO: Capturing the rest of the metric values that may be useful for the 
-    # factor screening in case we do it on the python side.
 
     # saving the results to a yaml report file.
     sampleLoc = f'{dataLocation}/{sampleNumber}'
@@ -150,8 +148,9 @@ def runBatch(dataLocation: str,
     # Dividing the samples into groups, one for each process:
     for proc in range(processNumber): 
         sInd = range(proc, len(sampleGroup), processNumber)
-        sg = [sampleGroup[ind] for ind in sInd]
-        print(f'Process# {proc+1} sample numbers: {sg}')
+        # Building the sample groups for each process as lists:
+        sg = [sampleGroup[ind] for ind in sInd] 
+        print(f'Process #{proc+1} sample numbers: {sg}')
         sampleGroups.append(sg)
     # Instantiating the metrics process objects, one for each sample group:
     metricProcesses = [

@@ -46,12 +46,13 @@ class GA_Optimizer(ABC):
     
     def constrainedObjFunction(self, X):
         """
-            This function applies a set of constraints, defined as functions of n-dimensional vectors that return boolean values, and penalize the objective function if any of the constraints is True. If the constraints list is empty or none is True the same objective function value is passed.
+            This function applies a set of constraints, defined as functions of n-dimensional vectors that return boolean values, and penalize the objective function if any of the constraints is violated. If the constraints list is empty or none is violated the same objective function value is passed.
         """
         initialValue = self.objFunction(X)
         if len(self.constraints)==0:
             return initialValue
-        results = [constraint(X) for constraint in self.constraints] if self.constraints else [True]
+        results = [constraint(X) for constraint in self.constraints]
+        # Penalizing the objective function if any of the constraints are violated. 
         if not all(results):
             initialValue += 1e6
         return initialValue

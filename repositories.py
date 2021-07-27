@@ -282,6 +282,10 @@ motherSample2 = adaptiveSamplingLoc + 'motherSample2'
 monteCarlo2500 = newAdaptiveRepo + 'monteCarlo2500'
 # Large sample with constrained space. The constraint is based on the pulse load power, frequnecy and the ramp rate.
 constrainedSample = newAdaptiveRepo + 'constrainedSample'
+# Another constrained sample after the first one came out all infeasible:
+constrainedSample2 = newAdaptiveRepo + 'constrainedSample2'
+# Benchmark sample after the bounds are tested again
+constrainedSample3 = newAdaptiveRepo + 'constrainedSample3'
 
 # Adaptive Sampling 300(80)-1
 adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'
@@ -301,6 +305,9 @@ adaptRepo7 = newAdaptiveRepo + 'adaptiveRepo7'
 adaptRepo8 = newAdaptiveRepo + 'adaptiveRepo8'
 # Adaptive Sample after the range of the variables were established through frequency sweep experiments. 
 adaptRepo9 = newAdaptiveRepo + 'adaptiveRepo9'
+# Adaptive Sample 400(80)-1 after the mother sample was taken with 2425 samples. The rejection of the constrained area was added to the algorithm.
+adaptRepo10 = newAdaptiveRepo + 'adaptiveRepo10'
+
 
 """
     Miscellanous tests with different purposes that are not meant for sensitivity analysis or adaptive stress testing. 
