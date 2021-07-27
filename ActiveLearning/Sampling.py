@@ -287,7 +287,8 @@ def generateInitialSample(space: SampleSpace,
                         sampleSize: int, 
                         method: InitialSampleMethod = InitialSampleMethod.CVT,
                         checkForEmptiness = False,
-                        constraints = []):
+                        constraints = [],
+                        resample = False):
     ''' This function samples from the entire space. 
         Can be used for the convergence samples as well without the check for 
         the emptiness of the space.
@@ -306,7 +307,7 @@ def generateInitialSample(space: SampleSpace,
         raise SampleNotEmpty('The space already contains samples.')
     if method == InitialSampleMethod.CVT:
         print('Generating the samples using CVT method. This may take a while...')
-        samples = cvt(count = sampleSize, dimensionality= space.dNum, epsilon=1e-7)
+        samples = cvt(count = sampleSize, dimensionality= space.dNum, epsilon=0.0000001)
     elif method == InitialSampleMethod.LHS:
         print('Generating the samples using LHS method. This may take a while...')
         samples = lhs(count = sampleSize, dimensionality=space.dNum)
@@ -314,16 +315,24 @@ def generateInitialSample(space: SampleSpace,
         samples[:,dimIndex] *= dimension.range
         samples[:,dimIndex] += dimension.bounds[0]
     # Chekcing the points for the constraints:
-    # acceptedSamples = []
-    # if len(constraints) > 0:
-    #     for sample in samples:
-    #         if all([constraint(sample) for constraint in constraints]):
-    #             acceptedSamples.append(sample)
-    #     return np.array(acceptedSamples)
     if len(constraints)>0:
         results = np.array([np.apply_along_axis(cons,axis = 1, arr = samples) for cons in constraints]).T
         taking = np.apply_along_axis(all, axis=1,arr=results)
-        samples = samples[taking,:]
+        na = sum(taking.astype(int))
+        nr = sampleSize - na
+        # If resample is activated then the sample is taken again to compensate for all the rejected samples.
+        if resample: 
+            newSampleSize = int((sampleSize **2)/na) + 1
+            print(f'{nr} Samples were rejected due to wiolating constraints. The samples will be retaken to compensate for the rejected ones. New sample size will be {newSampleSize}.')
+            return generateInitialSample(
+                space = space,
+                sampleSize = newSampleSize,
+                method=method,
+                checkForEmptiness=checkForEmptiness,
+                constraints=constraints,
+                resample = False)
+        else: 
+            samples = samples[taking,:]
     return samples
     
 

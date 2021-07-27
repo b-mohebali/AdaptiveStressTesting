@@ -1,23 +1,12 @@
-# #! /usr/bin/python3
+#! /usr/bin/python3
 
-from sobol_stuff import * 
-import matplotlib.pyplot as plt
-import numpy as np 
-from samply.hypercube import cvt
-n = 200
-seed = 13
+import repositories as repos 
+repos.addCodeBaseToPath()
 
-points = []
-for _ in range(n):
-    newpoint, seed = i4_sobol(2, seed)
-    points.append(newpoint)
-points = np.array(points)
+from rscad import * 
+from rscad.fs import *
 
-samples = cvt(count = n, dimensionality=2, verbose=False)
-
-
-plt.figure()
-# plt.scatter(points[:,0], points[:,1], s = 8)
-plt.scatter(samples[:,0], samples[:,1], s = 8, color = 'r')
-plt.grid(True)
-plt.show()
+scratchPath = get_plasma_scratch_dir()
+print(scratchPath)
+s = glog.Glogger.cfg_options(18,10)
+print(s)

@@ -15,6 +15,7 @@ def constraint(X):
     rampRate = X[2]
     cons = (2 * pulsePower * freq) < rampRate
     return cons
+consVector = [constraint]
 
 def main(run_exper = True, run_eval = True, load_sample = False):
     repoLoc = repositories.constrainedSample3
@@ -36,25 +37,18 @@ def main(run_exper = True, run_eval = True, load_sample = False):
     if load_sample:
         formattedSample = loadSampleFromTxtFile(experFile)
         print(len(formattedSample))
-        alpha = 1 - len(formattedSample)/initialSampleSize
-        print('Alpha:', alpha)
     else:
         initialSample = generateInitialSample(space = designSpace,
                                             sampleSize=initialSampleSize,
                                             method = InitialSampleMethod.CVT,
-                                            checkForEmptiness=False)
-        validity = np.array([constraint(x) for x in initialSample])
-        initialSample = initialSample[validity,:]
-        print(initialSample)
-        print(len(initialSample))
-        print(validity)
-        alpha = 1 - len(initialSample)/ initialSampleSize
-        print('Alpha',alpha)
+                                            checkForEmptiness=False,
+                                            constraints=consVector,
+                                            resample=True)
         formattedSample = getSamplePointsAsDict(dimNames, initialSample)
         saveSampleToTxtFile(formattedSample, experFile)
     # Running the sample:
     if run_exper:
-        sampleGroup = list(range(71,len(formattedSample)+1))
+        sampleGroup = list(range(49,len(formattedSample)+1))
         runSample(caseLocation = modelLoc,
                 sampleDictList=formattedSample,
                 remoteRepo = dataLoc,
@@ -72,6 +66,6 @@ def main(run_exper = True, run_eval = True, load_sample = False):
                 PN_suggest=processNum)
         
 if __name__=='__main__':
-    main(run_exper = True, 
+    main(run_exper = False, 
         run_eval=True, 
         load_sample = True)
