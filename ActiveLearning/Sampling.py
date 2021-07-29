@@ -192,7 +192,8 @@ class ConvergenceSample():
     # TODO: Get a threshold for the classification. Right now the default threshold 
     #       is 0.5, which may not be the best for the application.
     def getPerformanceMetrics(self,
-                            benchmark: Benchmark,
+                            benchmark: Benchmark = None,
+                            yTrue = None,
                             classifier = None,
                             percentage = True,
                             metricType: PerformanceMeasure = PerformanceMeasure.ACCURACY):
@@ -215,7 +216,8 @@ class ConvergenceSample():
         # If the classifier is not entered, the last set of labels are used for the 
         #   evaluation. 
         yPred = self.currentLabels if classifier is None else classifier.predict(self.samples)
-        yTrue = benchmark.getLabelVec(self.samples)
+        if yTrue is None: 
+            yTrue = benchmark.getLabelVec(self.samples)
         if metricType == PerformanceMeasure.ACCURACY:
             metric = accuracy_score(yTrue, yPred)
         elif metricType == PerformanceMeasure.PRECISION:

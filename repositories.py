@@ -290,7 +290,7 @@ constrainedSample3 = newAdaptiveRepo + 'constrainedSample3'
 # Adaptive Sampling 300(80)-1
 adaptRepo2 = adaptiveSamplingLoc + 'adaptiveRepo2'
 # Adaptive Sampling 400(80)-1 Droop control on the voltage and frequency was engaged. 
-adaptRepo3 = adaptiveSamplingLoc + 'adaptiveRepo3'
+adaptRepo3 = newAdaptiveRepo + 'adaptiveRepo3'
 # Monte Carlo sample of size 400 taken as the baseline for the adaptive samples of the same size:
 monteCarlo400 = adaptiveSamplingLoc + 'monteCarlo400'
 # Adaptive Sampling 400(80)-1 Droop control disengaged. 

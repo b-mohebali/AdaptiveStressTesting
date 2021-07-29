@@ -40,8 +40,8 @@ def main():
     print(labels)
     print(sum(labels))
 
-    behchmarkClf = StandardClassifier(kernel = 'rbf', C = 1000, probability=False)
-    behchmarkClf.fit(dataset, labels)
+    # behchmarkClf = StandardClassifier(kernel = 'rbf', C = 1000, probability=False)
+    # behchmarkClf.fit(dataset, labels)
 
 
 
@@ -78,7 +78,7 @@ def main():
             insigDimensions=insigDims,
             legend = True,
             constraints=consVector,
-            benchmark=behchmarkClf)
+            benchmark=None)
     plt.close()
 
     # repoLoc = 'E:/Data/adaptiveRepo4'
