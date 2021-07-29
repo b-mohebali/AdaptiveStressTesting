@@ -223,6 +223,7 @@ class ConvergenceSample():
         elif metricType == PerformanceMeasure.RECALL:
             metric = recall_score(yTrue, yPred)
         elif metricType == PerformanceMeasure.F1_SCORE:
+            percentage = False
             metric = f1_score(yTrue, yPred)
         return metric * 100 if percentage else metric
     
