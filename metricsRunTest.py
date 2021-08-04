@@ -150,7 +150,7 @@ def runBatch(dataLocation: str,
         sInd = range(proc, len(sampleGroup), processNumber)
         # Building the sample groups for each process as lists:
         sg = [sampleGroup[ind] for ind in sInd] 
-        print(f'Process #{proc+1} sample numbers: {sg}')
+        print(f'Process #{proc+1} sample numbers: {sg}', 'Number of samples:', len(sg))
         sampleGroups.append(sg)
     # Instantiating the metrics process objects, one for each sample group:
     metricProcesses = [

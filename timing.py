@@ -34,14 +34,14 @@ def main():
     variablesFile = currentDir + '/assets/yamlFiles/ac_pgm_restricted.yaml'
     variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
     dimNames = [var.name for var in variables]
-    repoLoc = repo.constrainedSample2
+    repoLoc = repo.constrainedSample3
     dataLoc = repoLoc + '/data'
     dataset,labels = readDataset(dataLoc, dimNames=dimNames)
     print(labels)
     print(sum(labels))
 
-    # behchmarkClf = StandardClassifier(kernel = 'rbf', C = 1000, probability=False)
-    # behchmarkClf.fit(dataset, labels)
+    benchmarkClf = StandardClassifier(kernel = 'rbf', C = 1000, probability=False)
+    benchmarkClf.fit(dataset, labels)
 
 
 
@@ -72,13 +72,13 @@ def main():
             figsize = figSize,
             meshRes=meshRes,
             showPlot=False,
-            showGrid=False,
+            showGrid=True,
             gridRes = gridRes,
             saveInfo=sInfo,
             insigDimensions=insigDims,
             legend = True,
             constraints=consVector,
-            benchmark=None)
+            benchmark=benchmarkClf)
     plt.close()
 
     # repoLoc = 'E:/Data/adaptiveRepo4'

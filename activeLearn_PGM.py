@@ -67,7 +67,8 @@ def main():
     batchSize = simConfig.batchSize
     initialSampleSize = simConfig.initialSampleSize
 
-    variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
+    variables = getAllVariableConfigs(yamlFileAddress=variablesFile, 
+                        scalingScheme=Scale.LINEAR)
 
     # Setting the main files and locations:
     descriptionFile = currentDir + '/assets/yamlFiles/varDescription.yaml'
@@ -99,7 +100,8 @@ def main():
                                                 sampleSize=initialSampleSize,
                                                 method = InitialSampleMethod.CVT,
                                                 checkForEmptiness=False,
-                                                constraints=consVector)
+                                                constraints=consVector,
+                                                resample = True)
 
         ### Preparing and running the initial sample: 
         formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
@@ -222,12 +224,8 @@ def main():
                             savePDF=True, 
                             savePNG=True)
     """
-    TODO: Implementation of the benchmark for this visualizer. 
-        The correct way is to use a pickle that contains the classifier 
-        trained on the mother sample. Since the results of the evaluation 
-        of the mother sample are in the local system.
-
-        NOTE: Done but not tested yet.
+    TODO: Implementation of the benchmark for this visualizer. The correct way is to use a pickle that contains the classifier trained on the mother sample. Since the results of the evaluation of the mother sample are in the local system.
+    NOTE: Done but not tested yet.
     """
     plotSpace(designSpace,
             figsize = figSize,
