@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from ActiveLearning.visualization import *
 import repositories as repo
 import sys 
+import pickle
 
 original_stdout = sys.stdout
 
@@ -42,7 +43,9 @@ def main():
 
     benchmarkClf = StandardClassifier(kernel = 'rbf', C = 1000, probability=False)
     benchmarkClf.fit(dataset, labels)
-
+    pickleName = repo.picklesLoc + 'mother_clf_constrained.pickle'
+    with open(pickleName, 'wb') as motherClf:
+        pickle.dump(benchmarkClf, motherClf)
 
 
     repoLoc = repo.adaptRepo10
@@ -59,12 +62,12 @@ def main():
     designSpace._samples, designSpace._eval_labels = dataset, labels 
     insigDims = [2,3]
     figSize = (32,30)
-    gridRes = (7,7)
-    meshRes = 200
+    gridRes = (5,5)
+    meshRes = 100
     outputFolder = f'{repoLoc}/outputs'
-    figFolder = setFigureFolder(outputFolder)
-    print('Figure folder: ', figFolder)
-    sInfo = SaveInformation(fileName = f'{figFolder}/testPlot', 
+    # figFolder = setFigureFolder(outputFolder)
+    # print('Figure folder: ', figFolder)
+    sInfo = SaveInformation(fileName = f'{outputFolder}/testPlot', 
                             savePDF=True, 
                             savePNG=True)
     plotSpace(designSpace,

@@ -307,6 +307,12 @@ adaptRepo8 = newAdaptiveRepo + 'adaptiveRepo8'
 adaptRepo9 = newAdaptiveRepo + 'adaptiveRepo9'
 # Adaptive Sample 400(80)-1 after the mother sample was taken with 2425 samples. The rejection of the constrained area was added to the algorithm.
 adaptRepo10 = newAdaptiveRepo + 'adaptiveRepo10'
+# Adaptive Sample 400(100)-4. The batch sampling is enabled for the adaptive part. Only the metrics evalaution is done in parallel. The sample simulation is done sequentially. The exploration is NOT engaged yet. The initial sample is resampled due to the rejection effect.
+adaptRepo11 = newAdaptiveRepo + 'adaptiveRepo11'
+# Adaptive sample 400(100)-4 with batch sampling and exploration enabled. The exploration is one sample per 3 exploitative sample. The resource allocation part is not implemented yet. 
+adaptRepo12 = newAdaptiveRepo + 'adaptiveRepo12'
+ 
+
 
 
 """

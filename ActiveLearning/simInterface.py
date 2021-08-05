@@ -203,7 +203,7 @@ def runSample(caseLocation,
     dFolder = repos.outputLocation.mounted
     print(dFolder)
     indexGroup = range(1,len(sampleDictList)+1) if sampleGroup is None else sampleGroup
-    print([_ for _ in indexGroup])
+    print('Simulating these samples:',[_ for _ in indexGroup])
     realTimeCase = Case(caseLocation=caseLocation,
                     rackNum = repos.rackNum)
     for sampleIndex in indexGroup:

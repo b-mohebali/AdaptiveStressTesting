@@ -55,8 +55,9 @@ def main():
 
 
     #-------------------SETTINGS OF THE PROCESS---------------------------
-    includeBenchmarkSample = False
-    loadInitialSample = False
+    includeBenchmarkSample = True
+    loadInitialSample = True
+    resampleInitial = True
     runInitialSample = True 
     discardEvaluations = False
 
@@ -72,8 +73,8 @@ def main():
 
     # Setting the main files and locations:
     descriptionFile = currentDir + '/assets/yamlFiles/varDescription.yaml'
-    sampleSaveFile = currentDir + '/assets/experiments/adaptive_sample-400(80)-1_Num10.txt'
-    repoLoc = adaptRepo10
+    sampleSaveFile = currentDir + '/assets/experiments/AS-400(100)-4.txt'
+    repoLoc = adaptRepo11
     dataLoc = repoLoc + '/data'
     if not os.path.isdir(dataLoc):
         os.mkdir(dataLoc)
@@ -101,8 +102,9 @@ def main():
                                                 method = InitialSampleMethod.CVT,
                                                 checkForEmptiness=False,
                                                 constraints=consVector,
-                                                resample = True)
-
+                                                resample = resampleInitial)
+        # The maximum number of the samples taken is the intended size of the initial sample.
+        # initialSamples = initialSamples[:min(len(initialSamples), initialSampleSize)]
         ### Preparing and running the initial sample: 
         formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
         saveSampleToTxtFile(formattedSample, sampleSaveFile)
@@ -117,8 +119,11 @@ def main():
         formattedSample = loadSampleFromTxtFile(sampleSaveFile)
 
     if runInitialSample: 
+        lastSample = getLastSimulatedSampleNumber(dataLoc=dataLoc)
+        sampleGroup = range(lastSample + 1, len(formattedSample)+1)
         runSample(caseLocation=modelLoc,
                     sampleDictList=formattedSample,
+                    sampleGroup = sampleGroup,
                     remoteRepo=dataLoc)
     #--------------------------------------------------------------------
 
@@ -143,9 +148,9 @@ def main():
     """
         This part loads a pickled classifier that is trained on the Monte-Carlo sample taken from the model. The purpose for his classifier is to act as a benchmark for the active classifier that we are trying to make. 
 
-        NOTE: This part is only used when the 'includeBenchmarkSample' setting is activated. Otherwise the benchmark classifier is not included in the plots as well.
+        NOTE: This part is only used when the 'includeBenchmarkSample' setting is True. Otherwise the benchmark classifier is not included in the plots as well.
     """
-    motherClfPickle = picklesLoc + 'mother_clf.pickle'
+    motherClfPickle = picklesLoc + 'mother_clf_constrained.pickle'
     classifierBench = None
 
     if includeBenchmarkSample and os.path.exists(motherClfPickle) and os.path.isfile(motherClfPickle):
@@ -169,8 +174,7 @@ def main():
 
     # Updating the budget:
     # NOTE: The update must be done based on the number of accepted samples and not the number of initial sample size. 
-    lastSimulated = getLastSimulatedSampleNumber(dataLoc = dataLoc)
-    currentBudget = budget - lastSimulated
+    currentBudget = budget - len(labels)
 
     convergenceSample = ConvergenceSample(designSpace)
     # This vector holds all the values for the change measure and will be used for monitoring and plotting later. 
@@ -218,7 +222,7 @@ def main():
     # # Setting up the parameters for visualization: 
     insigDims = [2,3]
     figSize = (32,30)
-    gridRes = (7,7)
+    gridRes = (5,5)
     meshRes = 200
     sInfo = SaveInformation(fileName = f'{figFolder}/initial_plot', 
                             savePDF=True, 

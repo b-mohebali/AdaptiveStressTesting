@@ -227,11 +227,11 @@ def _plotSpace4D(space: SampleSpace,
                         cs.collections[i].set_label(cslabels[i])
             # Applying the space constraints if there is any:
             if len(constraints) > 0:
-                pointSize = 0.6
+                pointSize = 1
                 results = np.array([np.apply_along_axis(cons, axis=1,arr=dataVec) for cons in constraints]).T
                 taking = np.apply_along_axis(all, axis = 1,arr = results).astype(int)
                 takingGrid = taking.reshape(XX.shape)
-                reducedIdx = range(0,len(taking),23)
+                reducedIdx = range(0,len(taking),6)
                 cs3 = ax.contour(XX,YY,takingGrid, colors='orange',levels=[0.5],alpha =1, linestyles=['dashdot'])
                 
                 # Scatter plotting the violating, feasible and infeasible regions:
