@@ -4,7 +4,7 @@ from samply.hypercube import cvt, lhs, halton
 from enum import Enum
 from .benchmarks import Benchmark
 from sklearn import svm
-from sklearn.metrics import accuracy_score,precision_score, recall_score
+from sklearn.metrics import accuracy_score,precision_score, recall_score,f1_score
 import numpy as np 
 
 class InsufficientInformation(Exception):
@@ -43,6 +43,7 @@ class PerformanceMeasure(Enum):
     ACCURACY = 0
     PRECISION = 1
     RECALL = 2
+    F1_SCORE = 3
 
 
 """
@@ -134,7 +135,7 @@ class SampleSpace():
 # TODO: This class holds the sample used for convergence check at each iteration:
 class ConvergenceSample():
     '''
-    This class contains the convergence sample used for checking the amount of 
+    Contains the convergence sample used for checking the amount of 
     change in the hypothesis. It also provides some functionality for measuring 
     the mentioned change.
 
@@ -144,8 +145,9 @@ class ConvergenceSample():
     '''
     def __init__(self, 
                 space: SampleSpace,
-                constraints = []):
-        self.size = 100 * 5**space.dNum
+                constraints = [],
+                size = None):
+        self.size = 100 * 5**space.dNum if size is None else size
         self.samples = generateInitialSample(space, 
                                             sampleSize=self.size, 
                                             method=InitialSampleMethod.HALTON,
@@ -164,9 +166,15 @@ class ConvergenceSample():
             self.pastLabels = self.currentLabels
         return (diff * 100.0) if percent else diff 
     
-    '''
-    This function takes two classifiers and says how much they differ in 
-        terms of how they classify a given sample space. 
+    
+    def getDifferenceMeasure(self, 
+                        clf1,
+                        clf2,
+                        percent = False):
+        '''
+        Takes two classifiers and says how much they differ in 
+            terms of how they classify a given sample space. 
+            
         Inputs: 
             - clf1: First classifier
             - clf2: Second classifier
@@ -175,32 +183,12 @@ class ConvergenceSample():
             - diff: A measure of difference between their decision boundaries, or
                 how much of the space is labeled differently by these two 
                 classifiers. 
-    '''
-    def getDifferenceMeasure(self, 
-                        clf1,
-                        clf2,
-                        percent = False):
+        '''
         labels1 = clf1.predict(self.samples)
         labels2 = clf2.predict(self.samples)
         diff = np.sum(np.abs(labels1 - labels2))/self.size
         return diff if not percent else diff * 100.0 
         
-    # TODO
-    """
-    This function takes a benckmark object and a classifier and compares the 
-    prediction of the classifier with the benchmark. In case the classifier 
-    is not provided, the last iteration of the labels are assumed to be the 
-    predictions of the classifier.
-        Inputs:
-            - Benchmark: The benchmark object as implemented in the Benchmark.py file.
-            - classifier: A classifier object that implement the predict() function
-            - percentage: Whether the results is reported as percentage or 
-                a ratio between 0 and 1.
-            - Metrics type: Choses what metric is reported between accuracy, 
-                precision, or recall
-        outputs:
-            - The performance metric as selected by the user. 
-    """
     # TODO: Get a threshold for the classification. Right now the default threshold 
     #       is 0.5, which may not be the best for the application.
     def getPerformanceMetrics(self,
@@ -208,7 +196,22 @@ class ConvergenceSample():
                             classifier = None,
                             percentage = True,
                             metricType: PerformanceMeasure = PerformanceMeasure.ACCURACY):
-        
+        """
+        Takes a benckmark object and a classifier and compares the 
+        prediction of the classifier with the benchmark. In case the classifier 
+        is not provided, the last iteration of the labels are assumed to be the 
+        predictions of the classifier.
+            Inputs:
+                - Benchmark: The benchmark object as implemented in the Benchmark.py file.
+                - classifier: A classifier object that implement the predict() function
+                - percentage: Whether the results is reported as percentage or 
+                    a ratio between 0 and 1.
+                - Metrics type: Choses what metric is reported between accuracy, 
+                    precision, or recall
+            outputs:
+                - The performance metric as selected by the user. 
+        """
+
         # If the classifier is not entered, the last set of labels are used for the 
         #   evaluation. 
         yPred = self.currentLabels if classifier is None else classifier.predict(self.samples)
@@ -219,11 +222,17 @@ class ConvergenceSample():
             metric = precision_score(yTrue, yPred)
         elif metricType == PerformanceMeasure.RECALL:
             metric = recall_score(yTrue, yPred)
+        elif metricType == PerformanceMeasure.F1_SCORE:
+            percentage = False
+            metric = f1_score(yTrue, yPred)
         return metric * 100 if percentage else metric
     
-"""
-    This function returns a list of dictionaries containing the values of the 
+
+def getSamplePointsAsDict(dimNames, sampleList):
+    """
+    Returns a list of dictionaries containing the values of the 
     design variables for each experiment (one dict per experiment)
+    
     Inputs:
         - dimNames: List of the name of the dimensions in the space        
         - sampleList: A List of lists containing the values for all the 
@@ -233,8 +242,7 @@ class ConvergenceSample():
     Outputs:
         - Samples dictionary: A list of dictionaries each haveing the name 
             and the value of the dimensions for each of the sample points.    
-"""
-def getSamplePointsAsDict(dimNames, sampleList):
+    """
     output = []
     for sample in sampleList:
         sampleDict = {}
@@ -294,15 +302,18 @@ def generateInitialSample(space: SampleSpace,
         Can be used for the convergence samples as well without the check for 
         the emptiness of the space.
 
-        space:  Contains information about the number of dimensions and their range 
-                of variations.
+        Inputs: 
+            - space:  Contains information about the number of dimensions and their range of variations.
 
-        method: CVT (Centroid Voronoi Tesselation)
+            - method: CVT (Centroid Voronoi Tesselation)
                 LHS (Latin Hypercube)
 
-        CheckForEmptiness: (True/False) 
-                Raises error if the sample list of the space is not empty, meaning 
-                that the initial sample is most likely taken. 
+            - CheckForEmptiness: (True/False) Raises error if the sample list of the space is not empty, meaning that the initial sample is most likely taken. 
+
+            - Constraints : List of the constraint functions that act on the sampled points and return boolean values showing whether the constraint is respected or violated. 
+
+            - resample: Boolean input indicating whether the sample is going to be retaken to compensate for the rejected samples.
+
     '''
     if checkForEmptiness and len(space.samples) > 0:
         raise SampleNotEmpty('The space already contains samples.')
@@ -326,7 +337,7 @@ def generateInitialSample(space: SampleSpace,
         na = sum(taking.astype(int))
         nr = sampleSize - na
         # If resample is activated then the sample is taken again to compensate for all the rejected samples.
-        if resample: 
+        if resample and na < sampleSize : 
             newSampleSize = int((sampleSize **2)/na) + 1
             print(f'{nr} Samples were rejected due to wiolating constraints. The samples will be retaken to compensate for the rejected ones. New sample size will be {newSampleSize}.')
             return generateInitialSample(

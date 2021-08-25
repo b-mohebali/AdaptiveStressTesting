@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
-import repositories as repos 
-repos.addCodeBaseToPath()
+# import repositories as repos 
+# repos.addCodeBaseToPath()
 
 from rscad import * 
 from rscad.fs import *
