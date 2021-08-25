@@ -25,4 +25,5 @@ sampleRepo: "D:/Data/Sample80/data"
 sampleBudget: 400
 initialSampleSize: 100
 batchSize: 4
+exploreBatch: 1
 ...

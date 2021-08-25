@@ -340,8 +340,8 @@ def generateInitialSample(space: SampleSpace,
         nr = sampleSize - na
         # If resample is activated then the sample is taken again to compensate for all the rejected samples.
         if resample and na < sampleSize : 
-            newSampleSize = int((sampleSize **2)/na) + 1
-            print(f'{nr} Samples were rejected due to wiolating constraints. The samples will be retaken to compensate for the rejected ones. New sample size will be {newSampleSize}.')
+            newSampleSize = int((sampleSize**2)/na) + 1
+            print(f'{nr} Samples were rejected due to violating constraints. The samples will be retaken to compensate for the rejected ones. New sample size will be {newSampleSize}.')
             return generateInitialSample(
                 space = space,
                 sampleSize = newSampleSize,

@@ -42,6 +42,8 @@ class simulationConfig():
         self.batchSize = self._getNecessaryProperty('batchSize')
         self.outputFolder = self._getNecessaryProperty('outputFolder')
         self.metricNames = self.yamlObj['metricNames'] if 'metricNames' in self.yamlObj else []
+        self.exploreBatchSize = self.yamlObj['exploreBatch'] if 'exploreBatch' in self.yamlObj else 0
+        
 
     def _getNecessaryProperty(self,propName):
         if propName not in self.yamlObj:

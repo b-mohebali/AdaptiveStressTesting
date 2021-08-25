@@ -8,6 +8,7 @@ from ActiveLearning.Sampling import *
 import matplotlib.pyplot as plt 
 import repositories as repos
 import os 
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 
 def constraint(X):
@@ -18,23 +19,29 @@ def constraint(X):
     return cons
 consVector = [constraint]
 
+plotIterations = True 
+
 # Configs: 
 simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
 variablesFile = './assets/yamlFiles/ac_pgm_restricted.yaml'
 variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
-repoLoc = repos.adaptRepo10
-# repoLoc = 'E:/Data/adaptiveRepo3'
+repoLoc = repos.adaptRepo11
 
 dataLoc = repoLoc + '/data' 
-# figFolder = repos.testRepo15 + '/figures'
 outputFolder = f'{repoLoc}/outputs'
-figFolder = f'{setFigureFolder(outputFolder)}/newFigs'
+metricFigFolder = f'{setFigureFolder(outputFolder)}/performance_metric_figures'
+
+figFolder = f'{setFigureFolder(outputFolder)}/newFigures'
+
 if not os.path.isdir(figFolder):
     os.mkdir(figFolder)
+if not os.path.isdir(metricFigFolder):
+    os.mkdir(metricFigFolder)
 budgetSize = simConfig.sampleBudget
 
-initialSampleSize = 87 # Due to constraint violating samples being rejected from the initial sample
-batchSize = 1
+initialSampleSize = 105 # Due to constraint violating samples being rejected from the initial sample
+batchSize = simConfig.batchSize 
+
 
 designSpace = SampleSpace(variableList=variables)
 dimNames = designSpace.getAllDimensionNames()
@@ -64,52 +71,22 @@ with open(motherClfPickle, 'rb') as pickleIn:
 threshold = 0.5 if motherClf.probability else 0
 classifierBench = TrainedSvmClassifier(motherClf, len(variables),threshold)
 convSample = ConvergenceSample(space = designSpace, constraints = consVector)
-yTrue = classifierBench.getLabelVec(convSample.samples)
+# yTrue = classifierBench.getLabelVec(convSample.samples)
 
+benchRepo = repos.constrainedSample3
+benchDataLoc = benchRepo + '/data'
+benchData, benchLabels = readDataset(benchDataLoc,dimNames)
+yTrue = benchLabels
 
 insigDims = [2,3]
 figSize = (32,30)
 gridRes = (7,7)
-meshRes = 200
+meshRes = 150
 print('Figure folder: ', figFolder)
 sInfo = SaveInformation(fileName = f'{figFolder}/initial_Plot', 
-                        savePDF=True, 
-                        savePNG=False)
-plotSpace(designSpace,
-        classifier= clf,
-        figsize = figSize,
-        meshRes=meshRes,
-        showPlot=False,
-        showGrid=True,
-        gridRes = gridRes,
-        saveInfo=sInfo,
-        insigDimensions=insigDims,
-        legend = True,
-        constraints=consVector,
-        benchmark=None)
-plt.close()
-
-prevClassifier = clf
-currentBudget = budgetSize - initialSampleSize
-for sampleNum in range(initialSampleSize + 1, adaptiveSampleNum + initialSampleSize + 1, batchSize):
-# for sampleNum in range(initialSampleSize+1, 120):
-    iterNum += 1 
-    dataset,labels = readDataset(dataLoc, dimNames, sampleRange = range(1,sampleNum+1))
-    clf = StandardClassifier(kernel = 'rbf', C = 1000)
-    clf.fit(dataset, labels)
-    changeMeasure = convSample.getChangeMeasure(classifier=clf, updateLabels= True, percent = False)
-    f1Score = convSample.getPerformanceMetrics(classifier = clf, yTrue = yTrue,metricType = PerformanceMeasure.F1_SCORE)
-    precisionScore = convSample.getPerformanceMetrics(classifier = clf, yTrue = yTrue,metricType = PerformanceMeasure.PRECISION)
-    recallScore = convSample.getPerformanceMetrics(classifier = clf, yTrue = yTrue,metricType = PerformanceMeasure.RECALL)
-    f1.append(f1Score)
-    precision.append(precisionScore)
-    recall.append(recallScore)
-    changeMeasureVector.append(changeMeasure * 100) # Making it percentage.
-    iterationNumber.append(iterNum)
-    samplesUsed.append(sampleNum)
-    print(f'Iteration {iterNum}, Difference: {changeMeasure*100 } %, Number of samples used: {sampleNum}')
-    currentBudget -= 1
-    sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_Labeled'
+                        savePDF=False, 
+                        savePNG=True)
+if plotIterations:                        
     plotSpace(designSpace,
             classifier= clf,
             figsize = figSize,
@@ -121,25 +98,63 @@ for sampleNum in range(initialSampleSize + 1, adaptiveSampleNum + initialSampleS
             insigDimensions=insigDims,
             legend = True,
             constraints=consVector,
-            prev_classifier=prevClassifier,
             benchmark=None)
+    plt.close()
+
+prevClassifier = clf
+currentBudget = budgetSize - initialSampleSize
+for sampleNum in range(initialSampleSize, budgetSize + 1, batchSize):
+    iterNum += 1 
+    dataset,labels = readDataset(dataLoc, dimNames, sampleRange = range(1,sampleNum+1))
+    clf = StandardClassifier(kernel = 'rbf', C = 1000)
+    clf.fit(dataset, labels)
+    changeMeasure = convSample.getChangeMeasure(classifier=clf, updateLabels= True, percent = False)
+    
+    yPred = clf.predict(benchData)
+    f1Score = f1_score(yTrue, yPred) 
+    precisionScore = precision_score(yTrue, yPred)
+    recallScore = recall_score(yTrue, yPred) 
+
+    f1.append(f1Score)
+    precision.append(precisionScore)
+    recall.append(recallScore)
+    changeMeasureVector.append(changeMeasure * 100) # Making it percentage.
+    iterationNumber.append(iterNum)
+    samplesUsed.append(sampleNum)
+    print(f'Iteration {iterNum}, Difference: {changeMeasure*100}%, Number of samples used: {sampleNum}')
+    currentBudget -= 1
+    if plotIterations:
+        sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_Labeled'
+        plotSpace(designSpace,
+                classifier= clf,
+                figsize = figSize,
+                meshRes=meshRes,
+                showPlot=False,
+                showGrid=True,
+                gridRes = gridRes,
+                saveInfo=sInfo,
+                insigDimensions=insigDims,
+                legend = True,
+                constraints=consVector,
+                prev_classifier=prevClassifier,
+                benchmark=None)
     prevClassifier = clf
 
     # Included in the loop so that we can get the update at any iteration. 
     plt.figure(figsize = (10,5))
-    plt.plot(iterationNumber, changeMeasureVector)
+    plt.plot(iterationNumber[1:], changeMeasureVector[1:])
     plt.grid(True)
     plt.xlabel('Iteration number')
     plt.ylabel('Change Measure %')
-    plt.savefig(f'{figFolder}/changeMeasure_vs_Iteration.png')
+    plt.savefig(f'{metricFigFolder}/changeMeasure_vs_Iteration.png')
     plt.close()
 
     plt.figure(figsize = (10,5))
-    plt.plot(samplesUsed, changeMeasureVector)
+    plt.plot(samplesUsed[1:], changeMeasureVector[1:])
     plt.grid(True)
     plt.xlabel('Number of samples used')
     plt.ylabel('Change measure %')
-    plt.savefig(f'{figFolder}/changeMeasure_samplesUsed.png')
+    plt.savefig(f'{metricFigFolder}/changeMeasure_samplesUsed.png')
     plt.close()
 
     plt.figure(figsize = (10,5))
@@ -147,7 +162,7 @@ for sampleNum in range(initialSampleSize + 1, adaptiveSampleNum + initialSampleS
     plt.grid(True)
     plt.xlabel('Iteration number')
     plt.ylabel('f1 score')
-    plt.savefig(f'{figFolder}/f1_score_vs_Iteration.png')
+    plt.savefig(f'{metricFigFolder}/f1_score_vs_Iteration.png')
     plt.close()
 
     plt.figure(figsize = (10,5))
@@ -155,7 +170,7 @@ for sampleNum in range(initialSampleSize + 1, adaptiveSampleNum + initialSampleS
     plt.grid(True)
     plt.xlabel('Iteration number')
     plt.ylabel('Precision')
-    plt.savefig(f'{figFolder}/precision_vs_Iteration.png')
+    plt.savefig(f'{metricFigFolder}/precision_vs_Iteration.png')
     plt.close()
 
     plt.figure(figsize = (10,5))
@@ -163,5 +178,5 @@ for sampleNum in range(initialSampleSize + 1, adaptiveSampleNum + initialSampleS
     plt.grid(True)
     plt.xlabel('Iteration number')
     plt.ylabel('Recall')
-    plt.savefig(f'{figFolder}/recall_vs_Iteration.png')
+    plt.savefig(f'{metricFigFolder}/recall_vs_Iteration.png')
     plt.close()

@@ -58,7 +58,7 @@ def main():
     includeBenchmarkSample = True
     loadInitialSample = True
     resampleInitial = True
-    runInitialSample = True 
+    runInitialSample = False 
     discardEvaluations = False
 
     #---------------------------------------------------------------------
@@ -66,6 +66,8 @@ def main():
     # Extracting the hyperparameters of the analysis:
     budget = simConfig.sampleBudget
     batchSize = simConfig.batchSize
+    exploreBatchSize = simConfig.exploreBatchSize
+    exploitBudget = batchSize - exploreBatchSize 
     initialSampleSize = simConfig.initialSampleSize
 
     variables = getAllVariableConfigs(yamlFileAddress=variablesFile, 
@@ -74,7 +76,9 @@ def main():
     # Setting the main files and locations:
     descriptionFile = currentDir + '/assets/yamlFiles/varDescription.yaml'
     sampleSaveFile = currentDir + '/assets/experiments/AS-400(100)-4.txt'
-    repoLoc = adaptRepo11
+    repoLoc = adaptRepo12
+    if not os.path.isdir(repoLoc):
+        os.mkdir(repoLoc)
     dataLoc = repoLoc + '/data'
     if not os.path.isdir(dataLoc):
         os.mkdir(dataLoc)
@@ -104,7 +108,7 @@ def main():
                                                 constraints=consVector,
                                                 resample = resampleInitial)
         # The maximum number of the samples taken is the intended size of the initial sample.
-        # initialSamples = initialSamples[:min(len(initialSamples), initialSampleSize)]
+        initialSamples = initialSamples[:min(len(initialSamples), initialSampleSize)]
         ### Preparing and running the initial sample: 
         formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
         saveSampleToTxtFile(formattedSample, sampleSaveFile)
@@ -133,7 +137,7 @@ def main():
     if discardEvaluations:
         samplesList = list(range(1, initialSampleSize+1))
     else:
-        print('Fiding the samples that are not evaluated yet. ')
+        print('Fiding the samples that are not evaluated yet.')
         samplesList = getNotEvaluatedSamples(dataLoc = dataLoc)
     print('Not evaluated samples:', samplesList)
     ### Calling the metrics function on all the samples:
@@ -195,11 +199,13 @@ def main():
 
     # Defining the explorer object for future use: 
     # TODO: Include the explorer in the analysis
-    # explorer = GA_Explorer(space = designSpace,
-    #                         batchSize=batchSize, 
-    #                         convergence_curve=False,
-    #                         progress_bar=True,
-    #                         beta = 100)
+    explorer = GA_Explorer(space = designSpace,
+                            batchSize=batchSize, 
+                            convergence_curve=False,
+                            progress_bar=True,
+                            beta = 100,
+                            constraints=consVector)
+
 
     iterationReports = []
     # Creating the report object:
@@ -225,7 +231,7 @@ def main():
     gridRes = (5,5)
     meshRes = 200
     sInfo = SaveInformation(fileName = f'{figFolder}/initial_plot', 
-                            savePDF=True, 
+                            savePDF=False, 
                             savePNG=True)
     """
     TODO: Implementation of the benchmark for this visualizer. The correct way is to use a pickle that contains the classifier trained on the mother sample. Since the results of the evaluation of the mother sample are in the local system.
@@ -256,17 +262,24 @@ def main():
         
         # Upodating the exploiter object classifier at each iteration. 
         exploiter.clf = clf
-        newPointsFound = exploiter.findNextPoints(min(currentBudget, batchSize))
+        newExploiters = exploiter.findNextPoints(min(currentBudget, exploitBudget))
+        newExplorers = explorer.findNextPoints(min(currentBudget, exploreBatchSize))
+
         # Updating the remaining budget:
-        currentBudget -= len(newPointsFound)
+        # NOTE: The size of the explore sample and exploit sample may vary based on the remaining budget. So we are not using the static batch size value for updating the budget in each iteration.  
+        currentBudget -= (len(newExplorers)+ len(newExploiters))
         # formatting the samples for simulation:
         # NOTE: this is due to the old setting used for the DOE code in the past.
-        formattedFoundPoints = getSamplePointsAsDict(dimNames, newPointsFound)
+        formattedExploiters = getSamplePointsAsDict(dimNames, newExploiters)
+        formattedExplorers = getSamplePointsAsDict(dimNames, newExplorers)
+        formattedFoundPoints = []
+        formattedFoundPoints.extend(formattedExploiters)
+        formattedFoundPoints.extend(formattedExplorers)
         currentSample.extend(formattedFoundPoints) 
         # Getting the number of next samples:
         nextSamples = getNextSampleNumber(dataLoc, 
                                         createFolder=False, 
-                                        count = len(newPointsFound))
+                                        count = len(formattedFoundPoints))
         print('Next samples:', nextSamples)
         # running the simulation at the points that were just found:
         """
@@ -324,8 +337,9 @@ def main():
         iterReport.setStop()
         iterReport.budgetRemaining = currentBudget
         iterReport.iterationNumber = iterationNum
-        iterReport.setMetricResults(labels[-len(newPointsFound):])
-        iterReport.setSamples(newPointsFound)
+        iterReport.setMetricResults(labels[-len(formattedFoundPoints):])
+        iterReport.setExploitatives(newExploiters)
+        iterReport.setExplorers(newExplorers)
         iterReport.setChangeMeasure(newChangeMeasure)
         iterationReports.append(iterReport)
         saveIterationReport(iterationReports,iterationReportsFile)
@@ -344,10 +358,3 @@ def main():
 if __name__=='__main__':
     freeze_support()
     main()
-
-
-
-
-
-
-

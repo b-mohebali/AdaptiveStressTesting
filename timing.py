@@ -11,6 +11,7 @@ from ActiveLearning.visualization import *
 import repositories as repo
 import sys 
 import pickle
+from sklearn.metrics import accuracy_score
 
 original_stdout = sys.stdout
 
@@ -37,38 +38,51 @@ def main():
     dimNames = [var.name for var in variables]
     repoLoc = repo.constrainedSample3
     dataLoc = repoLoc + '/data'
-    dataset,labels = readDataset(dataLoc, dimNames=dimNames)
-    print(labels)
-    print(sum(labels))
+    benchDataset,benchLabels = readDataset(dataLoc, dimNames=dimNames)
+
 
     benchmarkClf = StandardClassifier(kernel = 'rbf', C = 1000, probability=False)
-    benchmarkClf.fit(dataset, labels)
+    benchmarkClf.fit(benchDataset, benchLabels)
     pickleName = repo.picklesLoc + 'mother_clf_constrained.pickle'
     with open(pickleName, 'wb') as motherClf:
         pickle.dump(benchmarkClf, motherClf)
 
+    yPred = benchmarkClf.predict(benchDataset)
+    acc = accuracy_score(benchLabels,yPred)
+    print('Accuracy:', acc * 100)
 
-    repoLoc = repo.adaptRepo10
+    repoLoc = repo.adaptRepo12
     dataLoc = repoLoc + '/data'
-    dataset,labels = readDataset(dataLoc, dimNames=dimNames)
-    print(labels)
-    print(sum(labels))
 
+
+    # for _ in range(105, 401):
+    #     dataset,labels = readDataset(dataLoc, dimNames=dimNames, sampleRange = range(1,_+1))
+    #     clf = StandardClassifier(kernel = 'rbf', C = 1000, probability=False)
+    #     clf.fit(dataset, labels)
+    #     yPred = clf.predict(benchDataset)
+    #     acc = accuracy_score(benchLabels, yPred)
+    #     print(f'Obtained accuracy with {_} samples:', acc * 100)
+    dataset, labels = readDataset(dataLoc = dataLoc, dimNames = dimNames)
     clf = StandardClassifier(kernel = 'rbf', C = 1000, probability=False)
     clf.fit(dataset, labels)
+
 
 
     designSpace = SampleSpace(variableList = variables)
     designSpace._samples, designSpace._eval_labels = dataset, labels 
     insigDims = [2,3]
-    figSize = (32,30)
-    gridRes = (5,5)
+    figSize = (47,45)
+    gridRes = (11,11)
     meshRes = 100
     outputFolder = f'{repoLoc}/outputs'
-    # figFolder = setFigureFolder(outputFolder)
-    # print('Figure folder: ', figFolder)
+
+
+
+
+
+
     sInfo = SaveInformation(fileName = f'{outputFolder}/testPlot', 
-                            savePDF=True, 
+                            savePDF=False, 
                             savePNG=True)
     plotSpace(designSpace,
             classifier= clf,
@@ -83,6 +97,10 @@ def main():
             constraints=consVector,
             benchmark=benchmarkClf)
     plt.close()
+
+
+
+
 
     # repoLoc = 'E:/Data/adaptiveRepo4'
     # dataLoc = repoLoc + '/data'

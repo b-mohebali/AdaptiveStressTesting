@@ -278,7 +278,7 @@ def reconstructDesignMatrix(variableValues):
         This function takes the dict of lists (coming from the loadVariableValues function) and normalizes it to make the design matrix consisting only of 1 and -1 elements. 
         
         Inputs: 
-            - variableVAlues: Dict(string, List[float]) containing the values for the variables used in the analysis.
+            - variableValues: Dict(string, List[float]) containing the values for the variables used in the analysis.
         
         Output:
             - Design matrix consisting of 1 and -1 elements where 1 is related to the upper limit of the variable and -1 to its lower limit. 
