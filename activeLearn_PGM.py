@@ -55,9 +55,10 @@ def main():
 
 
     #-------------------SETTINGS OF THE PROCESS---------------------------
-    includeBenchmarkSample = False
-    loadInitialSample = False
-    runInitialSample = True 
+    includeBenchmarkSample = True
+    loadInitialSample = True
+    resampleInitial = True
+    runInitialSample = False 
     discardEvaluations = False
 
     #---------------------------------------------------------------------
@@ -65,14 +66,19 @@ def main():
     # Extracting the hyperparameters of the analysis:
     budget = simConfig.sampleBudget
     batchSize = simConfig.batchSize
+    exploreBatchSize = simConfig.exploreBatchSize
+    exploitBudget = batchSize - exploreBatchSize 
     initialSampleSize = simConfig.initialSampleSize
 
-    variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
+    variables = getAllVariableConfigs(yamlFileAddress=variablesFile, 
+                        scalingScheme=Scale.LINEAR)
 
     # Setting the main files and locations:
     descriptionFile = currentDir + '/assets/yamlFiles/varDescription.yaml'
-    sampleSaveFile = currentDir + '/assets/experiments/adaptive_sample-400(80)-1_Num10.txt'
-    repoLoc = adaptRepo10
+    sampleSaveFile = currentDir + '/assets/experiments/AS-400(100)-4.txt'
+    repoLoc = adaptRepo12
+    if not os.path.isdir(repoLoc):
+        os.mkdir(repoLoc)
     dataLoc = repoLoc + '/data'
     if not os.path.isdir(dataLoc):
         os.mkdir(dataLoc)
@@ -99,8 +105,10 @@ def main():
                                                 sampleSize=initialSampleSize,
                                                 method = InitialSampleMethod.CVT,
                                                 checkForEmptiness=False,
-                                                constraints=consVector)
-
+                                                constraints=consVector,
+                                                resample = resampleInitial)
+        # The maximum number of the samples taken is the intended size of the initial sample.
+        initialSamples = initialSamples[:min(len(initialSamples), initialSampleSize)]
         ### Preparing and running the initial sample: 
         formattedSample = getSamplePointsAsDict(dimNames, initialSamples)
         saveSampleToTxtFile(formattedSample, sampleSaveFile)
@@ -115,8 +123,11 @@ def main():
         formattedSample = loadSampleFromTxtFile(sampleSaveFile)
 
     if runInitialSample: 
+        lastSample = getLastSimulatedSampleNumber(dataLoc=dataLoc)
+        sampleGroup = range(lastSample + 1, len(formattedSample)+1)
         runSample(caseLocation=modelLoc,
                     sampleDictList=formattedSample,
+                    sampleGroup = sampleGroup,
                     remoteRepo=dataLoc)
     #--------------------------------------------------------------------
 
@@ -126,7 +137,7 @@ def main():
     if discardEvaluations:
         samplesList = list(range(1, initialSampleSize+1))
     else:
-        print('Fiding the samples that are not evaluated yet. ')
+        print('Fiding the samples that are not evaluated yet.')
         samplesList = getNotEvaluatedSamples(dataLoc = dataLoc)
     print('Not evaluated samples:', samplesList)
     ### Calling the metrics function on all the samples:
@@ -141,9 +152,9 @@ def main():
     """
         This part loads a pickled classifier that is trained on the Monte-Carlo sample taken from the model. The purpose for his classifier is to act as a benchmark for the active classifier that we are trying to make. 
 
-        NOTE: This part is only used when the 'includeBenchmarkSample' setting is activated. Otherwise the benchmark classifier is not included in the plots as well.
+        NOTE: This part is only used when the 'includeBenchmarkSample' setting is True. Otherwise the benchmark classifier is not included in the plots as well.
     """
-    motherClfPickle = picklesLoc + 'mother_clf.pickle'
+    motherClfPickle = picklesLoc + 'mother_clf_constrained.pickle'
     classifierBench = None
 
     if includeBenchmarkSample and os.path.exists(motherClfPickle) and os.path.isfile(motherClfPickle):
@@ -167,8 +178,7 @@ def main():
 
     # Updating the budget:
     # NOTE: The update must be done based on the number of accepted samples and not the number of initial sample size. 
-    lastSimulated = getLastSimulatedSampleNumber(dataLoc = dataLoc)
-    currentBudget = budget - lastSimulated
+    currentBudget = budget - len(labels)
 
     convergenceSample = ConvergenceSample(designSpace)
     # This vector holds all the values for the change measure and will be used for monitoring and plotting later. 
@@ -189,11 +199,13 @@ def main():
 
     # Defining the explorer object for future use: 
     # TODO: Include the explorer in the analysis
-    # explorer = GA_Explorer(space = designSpace,
-    #                         batchSize=batchSize, 
-    #                         convergence_curve=False,
-    #                         progress_bar=True,
-    #                         beta = 100)
+    explorer = GA_Explorer(space = designSpace,
+                            batchSize=batchSize, 
+                            convergence_curve=False,
+                            progress_bar=True,
+                            beta = 100,
+                            constraints=consVector)
+
 
     iterationReports = []
     # Creating the report object:
@@ -216,18 +228,14 @@ def main():
     # # Setting up the parameters for visualization: 
     insigDims = [2,3]
     figSize = (32,30)
-    gridRes = (7,7)
+    gridRes = (5,5)
     meshRes = 200
     sInfo = SaveInformation(fileName = f'{figFolder}/initial_plot', 
-                            savePDF=True, 
+                            savePDF=False, 
                             savePNG=True)
     """
-    TODO: Implementation of the benchmark for this visualizer. 
-        The correct way is to use a pickle that contains the classifier 
-        trained on the mother sample. Since the results of the evaluation 
-        of the mother sample are in the local system.
-
-        NOTE: Done but not tested yet.
+    TODO: Implementation of the benchmark for this visualizer. The correct way is to use a pickle that contains the classifier trained on the mother sample. Since the results of the evaluation of the mother sample are in the local system.
+    NOTE: Done but not tested yet.
     """
     plotSpace(designSpace,
             figsize = figSize,
@@ -254,17 +262,24 @@ def main():
         
         # Upodating the exploiter object classifier at each iteration. 
         exploiter.clf = clf
-        newPointsFound = exploiter.findNextPoints(min(currentBudget, batchSize))
+        newExploiters = exploiter.findNextPoints(min(currentBudget, exploitBudget))
+        newExplorers = explorer.findNextPoints(min(currentBudget, exploreBatchSize))
+
         # Updating the remaining budget:
-        currentBudget -= len(newPointsFound)
+        # NOTE: The size of the explore sample and exploit sample may vary based on the remaining budget. So we are not using the static batch size value for updating the budget in each iteration.  
+        currentBudget -= (len(newExplorers)+ len(newExploiters))
         # formatting the samples for simulation:
         # NOTE: this is due to the old setting used for the DOE code in the past.
-        formattedFoundPoints = getSamplePointsAsDict(dimNames, newPointsFound)
+        formattedExploiters = getSamplePointsAsDict(dimNames, newExploiters)
+        formattedExplorers = getSamplePointsAsDict(dimNames, newExplorers)
+        formattedFoundPoints = []
+        formattedFoundPoints.extend(formattedExploiters)
+        formattedFoundPoints.extend(formattedExplorers)
         currentSample.extend(formattedFoundPoints) 
         # Getting the number of next samples:
         nextSamples = getNextSampleNumber(dataLoc, 
                                         createFolder=False, 
-                                        count = len(newPointsFound))
+                                        count = len(formattedFoundPoints))
         print('Next samples:', nextSamples)
         # running the simulation at the points that were just found:
         """
@@ -322,8 +337,9 @@ def main():
         iterReport.setStop()
         iterReport.budgetRemaining = currentBudget
         iterReport.iterationNumber = iterationNum
-        iterReport.setMetricResults(labels[-len(newPointsFound):])
-        iterReport.setSamples(newPointsFound)
+        iterReport.setMetricResults(labels[-len(formattedFoundPoints):])
+        iterReport.setExploitatives(newExploiters)
+        iterReport.setExplorers(newExplorers)
         iterReport.setChangeMeasure(newChangeMeasure)
         iterationReports.append(iterReport)
         saveIterationReport(iterationReports,iterationReportsFile)
@@ -342,10 +358,3 @@ def main():
 if __name__=='__main__':
     freeze_support()
     main()
-
-
-
-
-
-
-

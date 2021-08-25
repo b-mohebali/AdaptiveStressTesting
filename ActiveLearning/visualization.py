@@ -12,6 +12,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from ActiveLearning.benchmarks import Benchmark 
 import os
 from ActiveLearning.Sampling import StandardClassifier
+import matplotlib.patches as mpatches
 
 class SaveInformation():
     def __init__(self, fileName, savePDF = False, savePNG = False):
@@ -47,18 +48,14 @@ def plotSpace(space: SampleSpace,
               constraints = []) -> None:
     """This function plots the samples in a Space object.
     - Options: 3D and 2D spaces. (4D coming up)
-    - TO-DO: Higher dimensions implementation by generating a set 
-        of plots  in which the 4th dimension is fixed at a point. 
+    - TO-DO: Higher dimensions implementation by generating a set of plots  in which the 4th dimension is fixed at a point. 
         The set of the fixed values are passed to this function. 
     ****
     Inputs:
         - space: the space object containing the samples and their labels
-        - classifier: The trained classifier for the decision boundary 
-            plotting
-        - forth_dimension: The dimension that is not shown in the plots 
-            but is fixed in each plot. Only for spaces with d>3.
-        - fDim_values: The set of values at which the forth dimension factor 
-            is fixed in each plot. Only for spaces with d>3.
+        - classifier: The trained classifier for the decision boundary plotting
+        - forth_dimension: The dimension that is not shown in the plots but is fixed in each plot. Only for spaces with d>3.
+        - fDim_values: The set of values at which the forth dimension factor is fixed in each plot. Only for spaces with d>3.
     """
     # Three options for the dimension of the design space are available: 
     if space.dNum ==2:
@@ -179,6 +176,7 @@ def _plotSpace4D(space: SampleSpace,
             dataVec[:,insigDimensions[1]] = onesVec * insigDim2Vals[colNum]
             ax = plt.subplot(gridRes[0],gridRes[1],plotNum)
             decisionFunction = classifier.decision_function(dataVec).reshape(XX.shape)
+            # In case the output is probability, 50 % plus minus 10% is being plotted. 
             lvls = [0.4,0.5,0.6] if classifier.probability else [-1,0,1]
             cs2 = ax.contour(XX, YY, decisionFunction, colors='k', levels=lvls, alpha=1,linestyles=['dashed','solid','dotted'])
             csLabels2 = ['DF=-1','DF=0 (hypothesis)','DF=+1']
@@ -187,17 +185,17 @@ def _plotSpace4D(space: SampleSpace,
                     cs2.collections[i].set_label(csLabels2[i])
             
             ### Tagging and labeling the axes:
-            if plotNum <= gridRes[1]:
-                ax.set_title(f'{dimNames[insigDimensions[1]]} = {insigDim2Vals[colNum]:.4f}')
-            if plotNum%gridRes[1]==0:
+            if 1:# plotNum%gridRes[1]==0:
                 ax2 = ax.twinx()
                 ax2.set_ylabel(f'{dimNames[insigDimensions[0]]} = {insigDim1Vals[rowNum]:.4f}')
                 ax2.set_yticklabels([])
-            if plotNum%gridRes[1]==1:
+            # if plotNum%gridRes[1]==1:
                 ax.set_ylabel(dimNames[sigDims[1]])
-            if (plotNum+gridRes[1]) > (gridRes[0]*gridRes[1]):
+            # if (plotNum+gridRes[1]) > (gridRes[0]*gridRes[1]):
                 ax.set_xlabel(dimNames[sigDims[0]])
-
+            # if plotNum <= gridRes[1]:
+                ax.set_title(f'{dimNames[insigDimensions[1]]} = {insigDim2Vals[colNum]:.4f}')
+            
             ### Plotting the benchmark classifier
             if benchmark is not None:
                 scores = benchmark.getScoreVec(dataVec).reshape(XX.shape)
@@ -229,10 +227,11 @@ def _plotSpace4D(space: SampleSpace,
                         cs.collections[i].set_label(cslabels[i])
             # Applying the space constraints if there is any:
             if len(constraints) > 0:
+                pointSize = 1
                 results = np.array([np.apply_along_axis(cons, axis=1,arr=dataVec) for cons in constraints]).T
                 taking = np.apply_along_axis(all, axis = 1,arr = results).astype(int)
                 takingGrid = taking.reshape(XX.shape)
-                reducedIdx = range(0,len(taking),23)
+                reducedIdx = range(0,len(taking),6)
                 cs3 = ax.contour(XX,YY,takingGrid, colors='orange',levels=[0.5],alpha =1, linestyles=['dashdot'])
                 
                 # Scatter plotting the violating, feasible and infeasible regions:
@@ -246,13 +245,13 @@ def _plotSpace4D(space: SampleSpace,
                 if not constraintsLabeled:
                     constraintsLabeled = True
                     cs3.collections[0].set_label('Constraint(s)')
-                    ax.scatter(feasXy[:,0], feasXy[:,1], s=0.2,color='lime',label='Feeasible Region')
-                    ax.scatter(infeasXy[:,0], infeasXy[:,1], s=0.2,color='gold',label='Infeasible Region')
-                    ax.scatter(noResXy[:,0], noResXy[:,1], s=0.2,color='orangered',label='Violationg constraints')
+                    ax.scatter(feasXy[:,0], feasXy[:,1], s=pointSize,color='lime',label='Feasible Region')
+                    ax.scatter(infeasXy[:,0], infeasXy[:,1], s=pointSize,color='gold',label='Infeasible Region')
+                    ax.scatter(noResXy[:,0], noResXy[:,1], s=pointSize,color='orangered',label='Violationg constraints')
                 else:
-                    ax.scatter(feasXy[:,0], feasXy[:,1], s=0.2,color='lime')
-                    ax.scatter(infeasXy[:,0], infeasXy[:,1], s=0.2,color='gold')
-                    ax.scatter(noResXy[:,0], noResXy[:,1], s=0.2,color='orangered')
+                    ax.scatter(feasXy[:,0], feasXy[:,1], s=pointSize,color='lime')
+                    ax.scatter(infeasXy[:,0], infeasXy[:,1], s=pointSize,color='gold')
+                    ax.scatter(noResXy[:,0], noResXy[:,1], s=pointSize,color='orangered')
                     
             ax.grid(showGrid)
             # Updating the plot number, needed for locating the subplots.

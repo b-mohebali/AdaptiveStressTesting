@@ -192,7 +192,8 @@ class ConvergenceSample():
     # TODO: Get a threshold for the classification. Right now the default threshold 
     #       is 0.5, which may not be the best for the application.
     def getPerformanceMetrics(self,
-                            benchmark: Benchmark,
+                            benchmark: Benchmark = None,
+                            yTrue = None,
                             classifier = None,
                             percentage = True,
                             metricType: PerformanceMeasure = PerformanceMeasure.ACCURACY):
@@ -215,7 +216,8 @@ class ConvergenceSample():
         # If the classifier is not entered, the last set of labels are used for the 
         #   evaluation. 
         yPred = self.currentLabels if classifier is None else classifier.predict(self.samples)
-        yTrue = benchmark.getLabelVec(self.samples)
+        if yTrue is None: 
+            yTrue = benchmark.getLabelVec(self.samples)
         if metricType == PerformanceMeasure.ACCURACY:
             metric = accuracy_score(yTrue, yPred)
         elif metricType == PerformanceMeasure.PRECISION:
@@ -338,8 +340,8 @@ def generateInitialSample(space: SampleSpace,
         nr = sampleSize - na
         # If resample is activated then the sample is taken again to compensate for all the rejected samples.
         if resample and na < sampleSize : 
-            newSampleSize = int((sampleSize **2)/na) + 1
-            print(f'{nr} Samples were rejected due to wiolating constraints. The samples will be retaken to compensate for the rejected ones. New sample size will be {newSampleSize}.')
+            newSampleSize = int((sampleSize**2)/na) + 1
+            print(f'{nr} Samples were rejected due to violating constraints. The samples will be retaken to compensate for the rejected ones. New sample size will be {newSampleSize}.')
             return generateInitialSample(
                 space = space,
                 sampleSize = newSampleSize,
