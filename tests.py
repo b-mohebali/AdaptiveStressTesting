@@ -1,12 +1,22 @@
 #! /usr/bin/python3
 
-# import repositories as repos 
-# repos.addCodeBaseToPath()
+from ActiveLearning.visualization import setFigureFolder, SaveInformation, plotSpace
+from ActiveLearning.benchmarks import TrainedSvmClassifier
+from ActiveLearning.dataHandling import getNextSampleNumber, readDataset
+from yamlParseObjects.yamlObjects import * 
+from ActiveLearning.Sampling import * 
+import matplotlib.pyplot as plt 
+import repositories as repos
+import os 
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-from rscad import * 
-from rscad.fs import *
+import pickle 
 
-scratchPath = get_plasma_scratch_dir()
-print(scratchPath)
-s = glog.Glogger.cfg_options(18,10)
-print(s)
+motherClfPickle = repos.picklesLoc + 'mother_clf_constrained.pickle'
+with open(motherClfPickle, 'rb') as pickleIn:
+    motherClf = pickle.load(pickleIn)
+
+print(motherClf)
+
+sv = motherClf.getSupportVectors()
+print(sv.shape)
