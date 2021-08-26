@@ -1,3 +1,4 @@
+from ActiveLearning.dataHandling import getFirstEmptyFolder
 from yamlParseObjects.yamlObjects import * 
 from yamlParseObjects.variablesUtil import *
 import logging
@@ -71,16 +72,20 @@ clf.fit(initialSamples, initialLabels)
 mySpace.addSamples(initialSamples, initialLabels)
 
 # # Setting up the location of the output of the process:
-outputFolder = simConfig.outputFolder
+outputFolder = f'{simConfig.outputFolder}/{getFirstEmptyFolder(simConfig.outputFolder)}'
+print('Output folder for figures: ', outputFolder)
 iterationReportFile = f'{outputFolder}/iterationReport.yaml'
 figFolder = setFigureFolder(outputFolder)
 sInfo = SaveInformation(fileName = f'{figFolder}/InitialPlot', savePDF=True, savePNG=True)
 
 # Visualization of the first iteration of the space with the initial sample:
+meshRes = 200
+figSize = (10,8)
 
 plotSpace(mySpace, 
         classifier=clf, 
-        figsize = (10,8), 
+        figsize = figSize, 
+        meshRes=meshRes,
         legend = True, 
         showPlot=False,
         saveInfo = sInfo, 
@@ -155,11 +160,12 @@ while currentBudget > 0:
     # Visualization and saving the results:
     sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_NotLabeled'
     plotSpace(mySpace, 
-        figsize = (10,8),
+        figsize = figSize,
         legend = True, 
         showPlot=False, 
         classifier = clf,
         saveInfo=sInfo,
+        meshRes = meshRes,
         newPoints=exploiterPoints,
         explorePoints=explorerPoints,
         benchmark = myBench,
@@ -191,10 +197,11 @@ while currentBudget > 0:
     # Visualization of the results after the new samples are evaluated:
     sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_Labeled'
     plotSpace(space = mySpace,
-        figsize = (10,8),
+        figsize = figSize,
         legend = True,
         classifier = clf, 
         benchmark = myBench,
+        meshRes = meshRes,
         newPoints=None,
         saveInfo=sInfo,
         showPlot=False,

@@ -24,6 +24,24 @@ def getSampleFolders(dataLoc, sort = False, descending = False):
     if sort: sf.sort()
     return sf[::-1] if descending else sf
 
+def getFirstEmptyFolder(outputFolder):
+    """
+        Finds out which folder is the first folder that is not used for outputs of the test process. 
+
+        Inputs:
+            - outputFolder: The folder containing all the numbered folders that may or may not be empty
+
+        Outputs: 
+            - emptyFolder: The first empty folder (the empty folder with the smallest number as its name)
+    """
+    folders = [int(name) for name in os.listdir(outputFolder) if name.isdigit()]
+    folders.sort()
+    for folder in folders: 
+        files = os.listdir(f'{outputFolder}/{folder}')
+        if len(files) == 0: return folder 
+    return -1
+
+
 def readDataset(dataLoc, dimNames, includeTimes = False, sampleRange = None, normalize = False):
     """
         Reading a dataset from a group of evaluated samples.
@@ -46,7 +64,6 @@ def readDataset(dataLoc, dimNames, includeTimes = False, sampleRange = None, nor
 
     """
     sampleFolders = getSampleFolders(dataLoc=dataLoc, sort = True)
-    # print('Sample Folders', sampleFolders)
     # This makes sure that only the samples that actually exist in the 
     #   repo will be loaded into the dataset.
     if sampleRange is not None:

@@ -431,26 +431,25 @@ def _plotSpace2D(space: SampleSpace,
         legendLabel = 'Exploitative point' + ('s' if explorePoints.shape[0]>1 else '')
         ax.scatter(explorePoints[:,0], explorePoints[:,1], marker = 's',s = 20, label = legendLabel, color = 'g')
     # Drawing the constraints:
-    if len(constraints)>0:
-
-        results = np.array([np.apply_along_axis(cons, axis=1,arr=xy) for cons in constraints]).T
-        taking = np.apply_along_axis(all, axis = 1,arr = results).astype(int)
-        takingGrid = taking.reshape(XX.shape)
-        reducedIdx = range(0,len(taking),int(meshRes/8))
-        cs3 = ax.contour(XX,YY,takingGrid, colors='orange',levels=[0.5],alpha =1, linestyles=['dashdot'])
-        cs3.collections[0].set_label('Constraint(s)')
+    # if len(constraints)>0:
+    #     results = np.array([np.apply_along_axis(cons, axis=1,arr=xy) for cons in constraints]).T
+    #     taking = np.apply_along_axis(all, axis = 1,arr = results).astype(int)
+    #     takingGrid = taking.reshape(XX.shape)
+    #     reducedIdx = range(0,len(taking),int(meshRes/41))
+    #     cs3 = ax.contour(XX,YY,takingGrid, colors='orange',levels=[0.5],alpha =1, linestyles=['dashdot'])
+    #     cs3.collections[0].set_label('Constraint(s)')
         
-        # Scatter plotting the violating, feasible and infeasible regions:
-        labels = classifier.predict(xy)
-        reducedLabels = labels[reducedIdx]
-        reducedTaking = taking[reducedIdx]
-        redXy = xy[reducedIdx,:]
-        feasXy = redXy[reducedLabels==0,:]
-        infeasXy = redXy[reducedLabels==1,:]
-        noResXy = redXy[reducedTaking==0,:]
-        ax.scatter(feasXy[:,0], feasXy[:,1], s=0.2,color='lime',label='Feeasible Region')
-        ax.scatter(infeasXy[:,0], infeasXy[:,1], s=0.2,color='gold',label='Infeasible Region')
-        ax.scatter(noResXy[:,0], noResXy[:,1], s=0.2,color='orangered',label='Violationg constraints')
+    #     # Scatter plotting the violating, feasible and infeasible regions:
+    #     labels = classifier.predict(xy)
+    #     reducedLabels = labels[reducedIdx]
+    #     reducedTaking = taking[reducedIdx]
+    #     redXy = xy[reducedIdx,:]
+    #     feasXy = redXy[reducedLabels==0,:]
+    #     infeasXy = redXy[reducedLabels==1,:]
+    #     noResXy = redXy[reducedTaking==0,:]
+    #     ax.scatter(feasXy[:,0], feasXy[:,1], s=0.2,color='lime',label='Feeasible Region')
+    #     ax.scatter(infeasXy[:,0], infeasXy[:,1], s=0.2,color='gold',label='Infeasible Region')
+    #     ax.scatter(noResXy[:,0], noResXy[:,1], s=0.2,color='orangered',label='Violationg constraints')
 
     ax.grid(showGrid)
     if legend:
