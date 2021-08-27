@@ -62,7 +62,8 @@ initialSamples = generateInitialSample(space = mySpace,
                                         sampleSize = initialSampleSize,
                                         method = InitialSampleMethod.CVT,
                                         checkForEmptiness=False,
-                                        constraints=consVector)
+                                        constraints=consVector,
+                                        resample = True)
 initialLabels = myBench.getLabelVec(initialSamples)
 
 # Initial iteration of the classifier trained on the initial samples and their labels:
@@ -126,7 +127,8 @@ acc = [convergenceSample.getPerformanceMetrics(benchmark = myBench,
 print('Initial accuracy: ', acc[0])   
 sampleNumbers = [mySpace.sampleNum]
 # Calculating the remaining budget:
-currentBudget = budget - initialSampleSize
+initialSampleSize = len(initialLabels)
+currentBudget = budget - len(initialLabels)
 
 # Setting up the iteration reports file:
 iterationReports = []
@@ -144,15 +146,12 @@ iterationReports.append(initialReport)
 saveIterationReport(iterationReports, iterationReportFile)
 
 prevClf = clf
-convergenceSample = ConvergenceSample(space = mySpace, 
-                                constraints = consVector,
-                                size = 10000)
 resourceAllocator = ResourceAllocator(convSample = convergenceSample,
                         epsilon = 0.2, 
                         simConfig = simConfig,
                         outputLocation = outputFolder,
-                        l=1.2)
-
+                        l=1.2,
+                        initSample = initialSampleSize)
 
 while currentBudget > 0:
     print('------------------------------------------------------------------------------')
@@ -198,11 +197,6 @@ while currentBudget > 0:
         exploreLabels=exploreLabels,
         saveReport = True
     )
-
-
-
-
-
 
     # Adding the newly evaluated samples to the dataset:
     mySpace.addSamples(exploiterPoints, newLabels)

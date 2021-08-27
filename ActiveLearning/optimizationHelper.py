@@ -154,6 +154,8 @@ class GA_Voronoi_Explorer(GA_Optimizer):
                         progress_bar=progress_bar,
                         constraints = constraints)
         self.ranges = space.getAllDimensionsRanges()
+        self.prevExploitTendency = 1
+        self.prevExploreTendency = 1
     
     def objFunction(self, X):
         return -1 * np.min(np.linalg.norm(np.divide(self.currentSpaceSamples - X, self.ranges), axis = 1))
@@ -176,7 +178,8 @@ class ResourceAllocator:
             epsilon: float,
             simConfig:simulationConfig = None,
             outputLocation = None,
-            l:float = 1.0):
+            l:float = 1.0,
+            initSample = None):
         self.convSample = convSample
         self.l = l
         if epsilon > 0.5:
@@ -185,12 +188,14 @@ class ResourceAllocator:
         self.budget = simConfig.sampleBudget
         self.batchSize = simConfig.batchSize
         self.budget = simConfig.sampleBudget 
-        self.initialSampleSize = simConfig.initialSampleSize
+        self.initialSampleSize = simConfig.initialSampleSize if initSample is None else initSample 
         self.reports = [] 
         self.outputLocation = outputLocation
         self.reportName = f'{outputLocation}/ResourceAllocationReport.yaml'
         self.prevExploitTendency = 1 # Placeholder for saving the exploitation tendency in each iteration
         self.prevExploreTendency = 1 # Placeholder for the exploration tendency.
+        print('Resource Allocator: budget size is ', self.budget)
+        print('Resource Allocator: Initial sample size is', self.initialSampleSize)
 
     def saveReports(self):
         """
@@ -214,6 +219,7 @@ class ResourceAllocator:
         exploitBudget = 0 
         exploreBudget = 0
 
+        sampleSize = len(mainLabels) + len(exploitLabels) + len(exploreLabels)
         # Training the reference classifier:
         mainClf = svm.SVC(kernel = 'rbf', C = 1000)
         mainClf.fit(mainSamples, mainLabels)
@@ -221,30 +227,29 @@ class ResourceAllocator:
         # Constructing two sets of data: 
         #   - Main data + exploitation data
         #   - Main data + exploration data
-        exploitData = np.append(np.copy(mainSamples), exploitSamples, axis = 0)
-        exploreData = np.append(np.copy(mainSamples), exploreSamples, axis = 0)
-        exploitLabels = np.append(np.copy(mainLabels), exploitLabels, axis = 0)
-        exploreLabels = np.append(np.copy(mainLabels), exploreLabels, axis = 0)
+        if len(exploitLabels)>0:
+            exploitData = np.append(np.copy(mainSamples), exploitSamples, axis = 0)
+            exploitLabels = np.append(np.copy(mainLabels), exploitLabels, axis = 0)
+            clf_exploit = svm.SVC(kernel = 'rbf', C = 1000)
+            clf_exploit.fit(exploitData, exploitLabels)
+            exploitDiff = self.convSample.getDifferenceMeasure(mainClf, clf_exploit)
+            exploitTendency = exploitDiff * self.l
+            exploitBounds = self._exptBounds(sampleSize)
+            # exploitTendency = self._calTendency(exploitTendency, exploitBounds)
+        else:
+            exploitTendency = self.prevExploitTendency    
         
-        # training a set of two classifiers on the data that we constructed:
-        clf_exploit = svm.SVC(kernel = 'rbf', C = 1000)
-        clf_explore = svm.SVC(kernel = 'rbf', C = 1000)
-        clf_exploit.fit(exploitData, exploitLabels)
-        clf_explore.fit(exploreData, exploreLabels)
-        
-        # Getting the difference that each group of points make in the boundary:
-        exploitDiff = self.convSample.getDifferenceMeasure(mainClf, clf_exploit)
-        exploreDiff = self.convSample.getDifferenceMeasure(mainClf, clf_explore)
-
-        # Calculating the tendencies:
-        exploitTendency = exploitDiff * self.l
-        exploreTendency = exploreDiff * self.l
-        # Capping the tendencies: 
-        sampleSize = len(mainLabels) + len(exploitLabels) + len(exploreLabels)
-        exploitBounds = self._exptBounds(sampleSize)
-        exploreBounds = self._exprBounds(sampleSize)
-        exploitTendency = self._calTendency(exploitTendency, exploitBounds)
-        exploreTendency = self._calTendency(exploreTendency, exploreBounds)
+        if len(exploreLabels) > 0:
+            exploreLabels = np.append(np.copy(mainLabels), exploreLabels, axis = 0)
+            exploreData = np.append(np.copy(mainSamples), exploreSamples, axis = 0)
+            clf_explore = svm.SVC(kernel = 'rbf', C = 1000)
+            clf_explore.fit(exploreData, exploreLabels)
+            exploreDiff = self.convSample.getDifferenceMeasure(mainClf, clf_explore)
+            exploreTendency = exploreDiff * self.l
+            exploreBounds = self._exprBounds(sampleSize)
+            # exploreTendency = self._calTendency(exploreTendency, exploreBounds)
+        else: 
+            exploreTendency = self.prevExploreTendency        
 
         exploitBudget,exploreBudget, r_expt, r_expr = self._calSampleNumbers(exploitTendency, exploreTendency, return_Rs=True)
 
@@ -252,17 +257,20 @@ class ResourceAllocator:
         if saveReport:
             resourceReport = ResourceAllocationReport()
             resourceReport.iteration_number= (sampleSize - self.initialSampleSize)/self.batchSize 
-            resourceReport.exploration_tendency = exploreTendency
-            resourceReport.exploitation_tendency = exploitTendency
+            resourceReport.exploration_tendency = float(exploreTendency)
+            resourceReport.exploitation_tendency = float(exploitTendency)
             resourceReport.R_explore = r_expr 
             resourceReport.R_exploit = r_expt
             resourceReport.calculated_exploration_budget = exploreBudget
             resourceReport.calculated_exploitation_budget = exploitBudget
             resourceReport.exploitBounds = exploitBounds 
             resourceReport.exploreBounds = exploreBounds
-            
+            resourceReport.budgetRatio = sampleSize / self.budget
             self.reports.append(resourceReport)
             self.saveReports()
+
+        self.prevExploitTendency = exploitTendency
+        self.prevExploreTendency = exploreTendency
         
         # Returning the results of the calculations:
         return exploitBudget, exploreBudget
@@ -272,6 +280,7 @@ class ResourceAllocator:
     # Step 3A:
     def _exprBounds(self, sampleSize: int):
         budgetRatio = sampleSize / self.budget
+        print('Resource Allocator: Budget ratio for exploration bounds: ', budgetRatio)
         lowerBound = self.epsilon * (1 - budgetRatio)
         upperBound = (1-self.epsilon) * (1 - budgetRatio)
         return lowerBound, upperBound
@@ -279,6 +288,7 @@ class ResourceAllocator:
     # Step 3B:
     def _exptBounds(self, sampleSize:int):
         budgetRatio = sampleSize / self.budget
+        print('Resource Allocator: Budget ratio for exploitation bounds', budgetRatio)
         lowerBound = budgetRatio + self.epsilon * (1 - budgetRatio)
         upperBound = 1 - self.epsilon*(1 - budgetRatio)
         return lowerBound, upperBound
