@@ -117,15 +117,34 @@ class FinalReport():
         self.label = report['result_label']
         self.variables = report['variables']
 
-"""
-    TODO: The iteration report. Will be saved in a single file and contains information
-        about how the iteration went. 
-        The final report is a list of yaml objects one for each iteration. 
 
-    NOTE: The starting time is counted from the moment the iteration report 
-        object is instantiated.
-"""
+class ResourceAllocationReport:
+
+    def __init__(self, iterNum = None,
+                exploreTendency = None,
+                exploitTendency = None,
+                R_explore = None,
+                R_exploit = None,
+                exploreBudget = None,
+                exploitBudget = None):
+        self.iteration_number = iterNum
+        self.exploration_tendency = exploreTendency
+        self.exploitation_tendency = exploitTendency
+        self.R_explore = R_explore,
+        self.R_exploit = R_exploit
+        self.calculated_exploration_budget = exploreBudget
+        self.calculated_exploitation_budget = exploitBudget
+        self.exploitBounds = None 
+        self.exploreBounds = None
+        
+
 class IterationReport():
+    """
+        TODO: The iteration report. Will be saved in a single file and contains information about how the iteration went. 
+            The final report is a list of yaml objects one for each iteration. 
+
+        NOTE: The starting time is counted from the moment the iteration report object is instantiated.
+    """
     def __init__(self, varNames, 
                 batchSize = 1, 
                 iterationNumber = 1,

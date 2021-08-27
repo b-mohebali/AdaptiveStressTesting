@@ -11,8 +11,8 @@ import shutil
 import matplotlib.pyplot as plt 
 from enum import Enum
 from sklearn import svm
-from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Voronoi_Explorer
-from copy import copy
+from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Voronoi_Explorer, ResourceAllocator, allocateResources
+from copy import copy, deepcopy
 
 from ActiveLearning.visualization import *
 import time 
@@ -79,7 +79,7 @@ figFolder = setFigureFolder(outputFolder)
 sInfo = SaveInformation(fileName = f'{figFolder}/InitialPlot', savePDF=True, savePNG=True)
 
 # Visualization of the first iteration of the space with the initial sample:
-meshRes = 200
+meshRes = 300
 figSize = (10,8)
 
 plotSpace(mySpace, 
@@ -143,6 +143,17 @@ initialReport.setSamples(initialSamples)
 iterationReports.append(initialReport)
 saveIterationReport(iterationReports, iterationReportFile)
 
+prevClf = clf
+convergenceSample = ConvergenceSample(space = mySpace, 
+                                constraints = consVector,
+                                size = 10000)
+resourceAllocator = ResourceAllocator(convSample = convergenceSample,
+                        epsilon = 0.2, 
+                        simConfig = simConfig,
+                        outputLocation = outputFolder,
+                        l=1.2)
+
+
 while currentBudget > 0:
     print('------------------------------------------------------------------------------')
     # Setting up the iteration report timing members:
@@ -169,17 +180,39 @@ while currentBudget > 0:
         newPoints=exploiterPoints,
         explorePoints=explorerPoints,
         benchmark = myBench,
+        prev_classifier= prevClf,
         constraints = consVector)
     plt.close()
     # Evaluating the newly found samples: 
     newLabels = myBench.getLabelVec(exploiterPoints)
     exploreLabels = myBench.getLabelVec(explorerPoints)
+
+    # Resource Allocation for the next iteration: 
+    # This function saves the resource allocation report itself. 
+    calcExploitBudget, calcExploreBudget = resourceAllocator.allocateResources(
+        mainSamples = mySpace.samples,
+        mainLabels = mySpace.eval_labels,
+        exploitSamples = exploiterPoints,
+        exploitLabels = newLabels,
+        exploreSamples= explorerPoints,
+        exploreLabels=exploreLabels,
+        saveReport = True
+    )
+
+
+
+
+
+
     # Adding the newly evaluated samples to the dataset:
     mySpace.addSamples(exploiterPoints, newLabels)
     mySpace.addSamples(explorerPoints, exploreLabels)
+    # Updating the previous classifier before training the new one:
+    prevClf = deepcopy(clf)
     # Training the next iteration of the classifier:
     clf = StandardClassifier(kernel = 'rbf', C=1000)
     clf.fit(mySpace.samples, mySpace.eval_labels)
+    # Updating the classifier that the exploiter uses. The explorer samples independent of the classifier hence it does not need the classifier or update on it. 
     exploiter.clf = clf
     # Calculation of the new measure of change and accuracy after training:
     newChangeMeasure = convergenceSample.getChangeMeasure(percent = True, 
@@ -205,6 +238,7 @@ while currentBudget > 0:
         newPoints=None,
         saveInfo=sInfo,
         showPlot=False,
+        prev_classifier=prevClf,
         constraints = consVector)
     plt.close()
     # Adding the iteration information to the report for saving.
@@ -217,6 +251,8 @@ while currentBudget > 0:
     iterReport.setChangeMeasure(newChangeMeasure)
     iterationReports.append(iterReport)
     saveIterationReport(iterationReports, iterationReportFile)
+
+
 
 # Final visualization of the results: 
 plotSpace(space = mySpace, figsize=(10,8), legend = True,

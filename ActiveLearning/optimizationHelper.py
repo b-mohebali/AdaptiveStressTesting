@@ -1,4 +1,4 @@
-from yamlParseObjects.yamlObjects import simulationConfig
+from yamlParseObjects.yamlObjects import ResourceAllocationReport, simulationConfig
 from geneticalgorithm import geneticalgorithm as ga
 # from .Sampling import ConvergenceSample, SampleSpace
 from ActiveLearning.Sampling import ConvergenceSample, SampleSpace
@@ -8,6 +8,7 @@ from scipy.linalg import norm
 from math import *
 from sklearn import svm
 from enum import Enum
+import yaml
 
 class Exploration_Type(Enum):
     VORONOI = 0
@@ -158,13 +159,24 @@ class GA_Voronoi_Explorer(GA_Optimizer):
         return -1 * np.min(np.linalg.norm(np.divide(self.currentSpaceSamples - X, self.ranges), axis = 1))
 
 class ResourceAllocator:
+    """
+        Resource allocator class. Takes the exploitative and exploratory samples at each iteration and tells the algorithm how many explorative or exploitative samples have to be calculated for the next iteration. 
+
+        Attributes: 
+            - space: The sample space where all the samples are and will be.
+            - convSample: The large random (or quasi random) sample of points used to measure the change in the hypothesis between the iterations. 
+            - simConfig: The simulation configuration object containing information about the total budget allocated for the whole process. 
+            - epsilon: Parameter that controls the range of possible variation for the tendencies.  
+            - outputLocation: Location of the report that will be saved. 
+            - l: The lambda parameter
+    """
+
     def __init__(self,
-            space: SampleSpace,
             convSample: ConvergenceSample,
-            l:float,
             epsilon: float,
-            simConfig:simulationConfig):
-        self.space = space
+            simConfig:simulationConfig = None,
+            outputLocation = None,
+            l:float = 1.0):
         self.convSample = convSample
         self.l = l
         if epsilon > 0.5:
@@ -172,33 +184,113 @@ class ResourceAllocator:
         self.epsilon = epsilon
         self.budget = simConfig.sampleBudget
         self.batchSize = simConfig.batchSize
+        self.budget = simConfig.sampleBudget 
+        self.initialSampleSize = simConfig.initialSampleSize
+        self.reports = [] 
+        self.outputLocation = outputLocation
+        self.reportName = f'{outputLocation}/ResourceAllocationReport.yaml'
+        self.prevExploitTendency = 1 # Placeholder for saving the exploitation tendency in each iteration
+        self.prevExploreTendency = 1 # Placeholder for the exploration tendency.
+
+    def saveReports(self):
+        """
+            Saving all the reports in a separate yaml file for debugging.
+        """
+        print('Saving the resource allocation report...')
+        with open(self.reportName, 'w') as yamlFile:
+            yaml.dump_all(self.reports, yamlFile)
+        
+
     
     # The function that drives the calculation algorithm:
-    def allocateResources(self):
-        pass
+    def allocateResources(self, 
+                        mainSamples, 
+                        mainLabels, 
+                        exploitSamples, 
+                        exploitLabels, 
+                        exploreSamples, 
+                        exploreLabels,
+                        saveReport = False ):
+        exploitBudget = 0 
+        exploreBudget = 0
+
+        # Training the reference classifier:
+        mainClf = svm.SVC(kernel = 'rbf', C = 1000)
+        mainClf.fit(mainSamples, mainLabels)
+
+        # Constructing two sets of data: 
+        #   - Main data + exploitation data
+        #   - Main data + exploration data
+        exploitData = np.append(np.copy(mainSamples), exploitSamples, axis = 0)
+        exploreData = np.append(np.copy(mainSamples), exploreSamples, axis = 0)
+        exploitLabels = np.append(np.copy(mainLabels), exploitLabels, axis = 0)
+        exploreLabels = np.append(np.copy(mainLabels), exploreLabels, axis = 0)
+        
+        # training a set of two classifiers on the data that we constructed:
+        clf_exploit = svm.SVC(kernel = 'rbf', C = 1000)
+        clf_explore = svm.SVC(kernel = 'rbf', C = 1000)
+        clf_exploit.fit(exploitData, exploitLabels)
+        clf_explore.fit(exploreData, exploreLabels)
+        
+        # Getting the difference that each group of points make in the boundary:
+        exploitDiff = self.convSample.getDifferenceMeasure(mainClf, clf_exploit)
+        exploreDiff = self.convSample.getDifferenceMeasure(mainClf, clf_explore)
+
+        # Calculating the tendencies:
+        exploitTendency = exploitDiff * self.l
+        exploreTendency = exploreDiff * self.l
+        # Capping the tendencies: 
+        sampleSize = len(mainLabels) + len(exploitLabels) + len(exploreLabels)
+        exploitBounds = self._exptBounds(sampleSize)
+        exploreBounds = self._exprBounds(sampleSize)
+        exploitTendency = self._calTendency(exploitTendency, exploitBounds)
+        exploreTendency = self._calTendency(exploreTendency, exploreBounds)
+
+        exploitBudget,exploreBudget, r_expt, r_expr = self._calSampleNumbers(exploitTendency, exploreTendency, return_Rs=True)
+
+        # Creating the report for this iteration: 
+        if saveReport:
+            resourceReport = ResourceAllocationReport()
+            resourceReport.iteration_number= (sampleSize - self.initialSampleSize)/self.batchSize 
+            resourceReport.exploration_tendency = exploreTendency
+            resourceReport.exploitation_tendency = exploitTendency
+            resourceReport.R_explore = r_expr 
+            resourceReport.R_exploit = r_expt
+            resourceReport.calculated_exploration_budget = exploreBudget
+            resourceReport.calculated_exploitation_budget = exploitBudget
+            resourceReport.exploitBounds = exploitBounds 
+            resourceReport.exploreBounds = exploreBounds
+            
+            self.reports.append(resourceReport)
+            self.saveReports()
+        
+        # Returning the results of the calculations:
+        return exploitBudget, exploreBudget
 
     
 
     # Step 3A:
-    def _exprBounds(self, currentBudget: int):
-        budgetRatio = currentBudget / self.budget
+    def _exprBounds(self, sampleSize: int):
+        budgetRatio = sampleSize / self.budget
         lowerBound = self.epsilon * (1 - budgetRatio)
         upperBound = (1-self.epsilon) * (1 - budgetRatio)
         return lowerBound, upperBound
 
     # Step 3B:
-    def _exptBounds(self, currentBudget:int):
-        budgetRatio = currentBudget / self.budget
+    def _exptBounds(self, sampleSize:int):
+        budgetRatio = sampleSize / self.budget
         lowerBound = budgetRatio + self.epsilon * (1 - budgetRatio)
         upperBound = 1 - self.epsilon*(1 - budgetRatio)
         return lowerBound, upperBound
 
     # Step 4:
-    def _calTendency(self, dynamicTendency, lowerBound, upperBound):
+    def _calTendency(self, dynamicTendency, bounds):
+        lowerBound = bounds[0]
+        upperBound = bounds[1]
         return max(min(dynamicTendency, upperBound), lowerBound)
 
     # Step 5:
-    def _calSampleNumbers(self, exprTen, exptTen):
+    def _calSampleNumbers(self, exptTen, exprTen, return_Rs = False):
         # Calculating resource allocation coefficients:
         R_expr = exprTen / (exprTen + exptTen)
         R_expt = exptTen / (exprTen + exptTen)
@@ -208,7 +300,9 @@ class ResourceAllocator:
         expt_samples = round(R_expt * self.batchSize)
 
         # Returning the results:
-        return expr_samples, expt_samples
+        if return_Rs:
+            return expt_samples, expr_samples, R_expt, R_expr
+        return expt_samples, expr_samples
 
 
 def allocateResources(mainSamples,
@@ -217,6 +311,7 @@ def allocateResources(mainSamples,
                     exploitLabels,
                     exploreSamples,
                     exploreLabels,
+                    totalBudget,
                     convSample: ConvergenceSample):
     exploitBudget = 0
     exploreBudget = 0
