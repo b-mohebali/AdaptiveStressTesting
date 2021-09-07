@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 
-from metricsRunTest import runBatch
+from metricsInterface import runBatch
 from ActiveLearning.dataHandling import getNotEvaluatedSamples
 from ActiveLearning.Sampling import InitialSampleMethod, SampleSpace, generateInitialSample, getSamplePointsAsDict
 import sys

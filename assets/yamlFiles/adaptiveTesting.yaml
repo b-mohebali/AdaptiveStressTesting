@@ -15,5 +15,7 @@ outputFolder: './assets/outputReports'
 sampleRepo: "D:/Data/Sample80/data"
 sampleBudget: 100
 initialSampleSize: 20
-batchSize: 4
+batchSize: 5
+resourceLambda: 1.2
+resourceEpsilon: 0.2
 ... 

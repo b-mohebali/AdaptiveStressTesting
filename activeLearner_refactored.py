@@ -1,8 +1,8 @@
-from ActiveLearning.dataHandling import getFirstEmptyFolder
+from ActiveLearning.dataHandling import MetricsSaver, getFirstEmptyFolder
 from yamlParseObjects.yamlObjects import * 
 from yamlParseObjects.variablesUtil import *
 import logging
-import os,sys
+from shutil import copyfile
 import subprocess
 from ActiveLearning.benchmarks import DistanceFromCenter, Branin, Benchmark, Hosaki
 from ActiveLearning.Sampling import *
@@ -11,7 +11,7 @@ import shutil
 import matplotlib.pyplot as plt 
 from enum import Enum
 from sklearn import svm
-from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Voronoi_Explorer, ResourceAllocator, allocateResources
+from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Voronoi_Explorer, ResourceAllocator
 from copy import copy, deepcopy
 
 from ActiveLearning.visualization import *
@@ -30,9 +30,12 @@ def constraint2(X):
     cons = x2 < 3.5
     return cons
 consVector = [constraint1, constraint2]
+consVector = [] 
+
 
 # Loading the config files of the process:
-simConfig = simulationConfig('./assets/yamlFiles/adaptiveTesting.yaml')
+simConfigFile = './assets/yamlFiles/adaptiveTesting.yaml'
+simConfig = simulationConfig(simConfigFile)
 variableFiles = './assets/yamlFiles/varAdaptTest.yaml'
 variables = getAllVariableConfigs(yamlFileAddress=variableFiles, scalingScheme=Scale.LINEAR)
 
@@ -42,8 +45,10 @@ batchSize = simConfig.batchSize
 initialSampleSize = simConfig.initialSampleSize
 
 # Individual budgets. Will be replaced by dynamic resource allocator:
-exploitationBudget = 2
+exploitationBudget = min(3,batchSize)
 explorationBudget = batchSize - exploitationBudget
+print('Exploitation budget: ', exploitationBudget)
+print('Exploration budget: ', explorationBudget)
 
 # Defining the design space based on the variables config file: 
 mySpace = SampleSpace(variableList=variables)
@@ -75,6 +80,7 @@ mySpace.addSamples(initialSamples, initialLabels)
 # # Setting up the location of the output of the process:
 outputFolder = f'{simConfig.outputFolder}/{getFirstEmptyFolder(simConfig.outputFolder)}'
 print('Output folder for figures: ', outputFolder)
+copyfile(simConfigFile, f'{outputFolder}/{os.path.basename(simConfigFile)}')
 iterationReportFile = f'{outputFolder}/iterationReport.yaml'
 figFolder = setFigureFolder(outputFolder)
 sInfo = SaveInformation(fileName = f'{figFolder}/InitialPlot', savePDF=True, savePNG=True)
@@ -124,6 +130,15 @@ acc = [convergenceSample.getPerformanceMetrics(benchmark = myBench,
                                             classifier=clf,
                                             percentage = True, 
                                             metricType=PerformanceMeasure.ACCURACY)]
+precision = [convergenceSample.getPerformanceMetrics(benchmark = myBench,
+                                            classifier=clf,
+                                            percentage = True, 
+                                            metricType=PerformanceMeasure.PRECISION)]
+recall = [convergenceSample.getPerformanceMetrics(benchmark = myBench,
+                                            classifier=clf,
+                                            percentage = True, 
+                                            metricType=PerformanceMeasure.RECALL)]
+sampleCount = [len(initialLabels)]
 print('Initial accuracy: ', acc[0])   
 sampleNumbers = [mySpace.sampleNum]
 # Calculating the remaining budget:
@@ -146,12 +161,18 @@ iterationReports.append(initialReport)
 saveIterationReport(iterationReports, iterationReportFile)
 
 prevClf = clf
+
+# Setting up the object that does the calculations for the resource allocation to exploration and exploitation:
 resourceAllocator = ResourceAllocator(convSample = convergenceSample,
-                        epsilon = 0.2, 
                         simConfig = simConfig,
                         outputLocation = outputFolder,
-                        l=1.2,
                         initSample = initialSampleSize)
+
+# Setting up the object that saves the metrics outputs at each iteration: 
+metricsSaver = MetricsSaver()
+metricsSaver.saveMetrics(outputFolder, acc,changeMeasure, precision, recall)
+exploreBudgets = []
+exploitBudgets = []
 
 while currentBudget > 0:
     print('------------------------------------------------------------------------------')
@@ -162,7 +183,15 @@ while currentBudget > 0:
     print('Current budget: ', currentBudget, ' samples')
     # Finding new points using the exploiter object:
     # NOTE: The classifier has to be passed everytime to the exploiter for update.
-    # exploiterPoints = exploiter.findNextPoints(min(currentBudget, batchSize))
+    
+    # Dynamin resource allocation:
+    # NOTE: The overall budget for each group is capped by the current remaining budget. The priority is with exploiration. Exploration is done only if budget is remained after exploitation.
+    exploitationBudget = min(currentBudget, exploitationBudget)
+    explorationBudget = min(explorationBudget, currentBudget - exploitationBudget)
+    print('Dynamic Resource Allocation is active.')
+    print('Exploitation budget:', exploitationBudget,' samples')
+    print('Exploration budget:', explorationBudget,' samples')
+    
     exploiterPoints = exploiter.findNextPoints(pointNum=exploitationBudget)
     explorerPoints = explorer.findNextPoints(pointNum=explorationBudget)
     # Updating the remaining budget:    
@@ -177,7 +206,7 @@ while currentBudget > 0:
         saveInfo=sInfo,
         meshRes = meshRes,
         newPoints=exploiterPoints,
-        explorePoints=explorerPoints,
+        explorePoints=explorerPoints if explorationBudget>0 else None,
         benchmark = myBench,
         prev_classifier= prevClf,
         constraints = consVector)
@@ -198,6 +227,10 @@ while currentBudget > 0:
         saveReport = True
     )
 
+    # Setting the budget for the next iteration:
+    exploitBudgets.append(exploitationBudget)
+    exploreBudgets.append(explorationBudget)
+    # exploitationBudget, explorationBudget = calcExploitBudget, calcExploreBudget
     # Adding the newly evaluated samples to the dataset:
     mySpace.addSamples(exploiterPoints, newLabels)
     mySpace.addSamples(explorerPoints, exploreLabels)
@@ -212,12 +245,26 @@ while currentBudget > 0:
     newChangeMeasure = convergenceSample.getChangeMeasure(percent = True, 
                                             classifier = clf, 
                                             updateLabels=True)
-    changeMeasure.append(newChangeMeasure)
     newAccuracy = convergenceSample.getPerformanceMetrics(benchmark = myBench, 
                                             percentage=True, 
                                             classifier=clf,
                                             metricType=PerformanceMeasure.ACCURACY)
+    newPrecision = convergenceSample.getPerformanceMetrics(benchmark = myBench, 
+                                            percentage=True, 
+                                            classifier=clf,
+                                            metricType=PerformanceMeasure.PRECISION)
+    newRecall = convergenceSample.getPerformanceMetrics(benchmark = myBench, 
+                                            percentage=True, 
+                                            classifier=clf,
+                                            metricType=PerformanceMeasure.RECALL)
+    changeMeasure.append(newChangeMeasure)
     acc.append(newAccuracy)
+    precision.append(newPrecision)
+    recall.append(newRecall)
+    sampleCount.append(len(mySpace.eval_labels))
+    # Saving the new iteration of the metrics output:
+    metricsSaver.saveMetrics(outputFolder, acc,changeMeasure, precision, recall, sampleCount)
+
     print('Hypothesis change estimate: ', changeMeasure[-1:], ' %')
     print('Current accuracy estimate: ', acc[-1:], ' %')
     sampleNumbers.append(mySpace.sampleNum)

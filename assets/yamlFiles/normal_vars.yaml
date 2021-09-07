@@ -1,0 +1,17 @@
+---
+name: x1
+type: timeIndep
+initialState: 1
+lowerLimit: 0
+upperLimit: 1
+description: "x1"
+
+---
+name: x2
+type: timeIndep
+initialState: 1
+lowerLimit: 0
+upperLimit: 1
+description: "x2"
+
+...

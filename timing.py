@@ -3,7 +3,7 @@
 from ActiveLearning.dataHandling import readDataset
 from yamlParseObjects.variablesUtil import * 
 from yamlParseObjects.yamlObjects import * 
-from metricsRunTest import *
+from metricsInterface import *
 from multiprocessing import freeze_support
 import time
 import matplotlib.pyplot as plt

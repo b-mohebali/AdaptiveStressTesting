@@ -77,6 +77,7 @@ class GA_Optimizer(ABC):
         return gaModel
 
     def findNextPoints(self,pointNum=None):
+        pointNum = int(pointNum)
         pointNum = self.batchSize if pointNum is None else pointNum
         newPointsFound = []
         self.currentSpaceSamples = self.space.samples
@@ -175,16 +176,14 @@ class ResourceAllocator:
 
     def __init__(self,
             convSample: ConvergenceSample,
-            epsilon: float,
             simConfig:simulationConfig = None,
             outputLocation = None,
-            l:float = 1.0,
             initSample = None):
         self.convSample = convSample
-        self.l = l
-        if epsilon > 0.5:
+        self.l = simConfig.resourceLambda
+        self.epsilon = simConfig.resourceEpsilon
+        if self.epsilon > 0.5:
             raise ValueError('The value of epsilon is invalid.')
-        self.epsilon = epsilon
         self.budget = simConfig.sampleBudget
         self.batchSize = simConfig.batchSize
         self.budget = simConfig.sampleBudget 
@@ -215,7 +214,8 @@ class ResourceAllocator:
                         exploitLabels, 
                         exploreSamples, 
                         exploreLabels,
-                        saveReport = False ):
+                        saveReport = False,
+                        tendency_bounds = False):
         exploitBudget = 0 
         exploreBudget = 0
 
@@ -259,13 +259,17 @@ class ResourceAllocator:
             resourceReport.iteration_number= (sampleSize - self.initialSampleSize)/self.batchSize 
             resourceReport.exploration_tendency = float(exploreTendency)
             resourceReport.exploitation_tendency = float(exploitTendency)
-            resourceReport.R_explore = r_expr 
-            resourceReport.R_exploit = r_expt
-            resourceReport.calculated_exploration_budget = exploreBudget
-            resourceReport.calculated_exploitation_budget = exploitBudget
-            resourceReport.exploitBounds = exploitBounds 
-            resourceReport.exploreBounds = exploreBounds
-            resourceReport.budgetRatio = sampleSize / self.budget
+            resourceReport.R_explore = float(r_expr)
+            resourceReport.R_exploit = float(r_expt)
+            if len(exploitLabels) > 0: 
+                resourceReport.exploitBounds = [float(_) for _ in exploitBounds]
+                resourceReport.calculated_exploitation_budget = float(exploitBudget)
+            
+            if len(exploreLabels) > 0: 
+                resourceReport.exploreBounds = [float(_) for _ in exploreBounds]
+                resourceReport.calculated_exploration_budget = float(exploreBudget)
+            
+            resourceReport.budgetRatio = float(sampleSize / self.budget)
             self.reports.append(resourceReport)
             self.saveReports()
 
@@ -277,16 +281,21 @@ class ResourceAllocator:
 
     
 
-    # Step 3A:
     def _exprBounds(self, sampleSize: int):
+        """
+            Contains the logic that controls the bounds on the exploration tendency of the algorithm.
+        """
         budgetRatio = sampleSize / self.budget
         print('Resource Allocator: Budget ratio for exploration bounds: ', budgetRatio)
         lowerBound = self.epsilon * (1 - budgetRatio)
         upperBound = (1-self.epsilon) * (1 - budgetRatio)
         return lowerBound, upperBound
 
-    # Step 3B:
+
     def _exptBounds(self, sampleSize:int):
+        """
+            Contains the logic that controls the bounds on the exploitation tendency of the algorithm. 
+        """
         budgetRatio = sampleSize / self.budget
         print('Resource Allocator: Budget ratio for exploitation bounds', budgetRatio)
         lowerBound = budgetRatio + self.epsilon * (1 - budgetRatio)
@@ -315,40 +324,40 @@ class ResourceAllocator:
         return expt_samples, expr_samples
 
 
-def allocateResources(mainSamples,
-                    mainLabels,
-                    exploitSamples,
-                    exploitLabels,
-                    exploreSamples,
-                    exploreLabels,
-                    totalBudget,
-                    convSample: ConvergenceSample):
-    exploitBudget = 0
-    exploreBudget = 0
+# def allocateResources(mainSamples,
+#                     mainLabels,
+#                     exploitSamples,
+#                     exploitLabels,
+#                     exploreSamples,
+#                     exploreLabels,
+#                     totalBudget,
+#                     convSample: ConvergenceSample):
+#     exploitBudget = 0
+#     exploreBudget = 0
 
-    # Training the reference classifier:
-    mainClf = svm.SVC(kernel = 'rbf', C = 1000)
-    mainClf.fit(mainSamples, mainLabels)
-    # Constructing two sets of data: 
-    #   - Main data + exploitation data
-    #   - Main data + exploration data
-    exploitData = np.append(np.copy(mainSamples), exploitSamples, axis = 0)
-    exploreData = np.append(np.copy(mainSamples), exploreSamples, axis = 0)
-    exploitLabels = np.append(np.copy(mainLabels), exploitLabels, axis = 0)
-    exploreLabels = np.append(np.copy(mainLabels), exploreLabels, axis = 0)
+#     # Training the reference classifier:
+#     mainClf = svm.SVC(kernel = 'rbf', C = 1000)
+#     mainClf.fit(mainSamples, mainLabels)
+#     # Constructing two sets of data: 
+#     #   - Main data + exploitation data
+#     #   - Main data + exploration data
+#     exploitData = np.append(np.copy(mainSamples), exploitSamples, axis = 0)
+#     exploreData = np.append(np.copy(mainSamples), exploreSamples, axis = 0)
+#     exploitLabels = np.append(np.copy(mainLabels), exploitLabels, axis = 0)
+#     exploreLabels = np.append(np.copy(mainLabels), exploreLabels, axis = 0)
     
-    # training a set of two classifiers on the data that we constructed:
-    clf_exploit = svm.SVC(kernel = 'rbf', C = 1000)
-    clf_explore = svm.SVC(kernel = 'rbf', C = 1000)
-    clf_exploit.fit(exploitData, exploitLabels)
-    clf_explore.fit(exploreData, exploreLabels)
+#     # training a set of two classifiers on the data that we constructed:
+#     clf_exploit = svm.SVC(kernel = 'rbf', C = 1000)
+#     clf_explore = svm.SVC(kernel = 'rbf', C = 1000)
+#     clf_exploit.fit(exploitData, exploitLabels)
+#     clf_explore.fit(exploreData, exploreLabels)
     
-    # Getting the difference that each group of points make in the boundary:
-    exploitDiff = convSample.getDifferenceMeasure(mainClf, clf_exploit)
-    exploreDiff = convSample.getDifferenceMeasure(mainClf, clf_explore)
+#     # Getting the difference that each group of points make in the boundary:
+#     exploitDiff = convSample.getDifferenceMeasure(mainClf, clf_exploit)
+#     exploreDiff = convSample.getDifferenceMeasure(mainClf, clf_explore)
 
-    # Calculating the budgets for each part of the algorithm:
+#     # Calculating the budgets for each part of the algorithm:
 
-    # Returning the results:
-    return exploitBudget, exploreBudget
+#     # Returning the results:
+#     return exploitBudget, exploreBudget
 

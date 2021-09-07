@@ -10,6 +10,10 @@ import repositories as repos
 import os 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
+"""
+    This script is for evaluating the progress of the adaptive sampling scheme on the real time model. 
+"""
+
 
 def constraint(X):
     freq = X[0]

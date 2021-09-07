@@ -11,7 +11,7 @@ from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Explorer
 from ActiveLearning.benchmarks import TrainedSvmClassifier
 from ActiveLearning.simInterface import *
 from repositories import *
-from metricsRunTest import * 
+from metricsInterface import * 
 from multiprocessing import freeze_support
 
 """

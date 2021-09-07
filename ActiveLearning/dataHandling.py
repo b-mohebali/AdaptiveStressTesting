@@ -327,4 +327,24 @@ def normalizeDataset(dataset):
     stds = np.std(dataset, axis = 0)
     return (dataset - means) / stds # Dataset normalized by the mean and standard deviation. 
     
-     
+
+class MetricsSaver:
+    def __init__(self, acc = None, changeMeasure = None, precision = None, recall= None, sampleCount = None) -> None:
+        self.accuracy = acc 
+        self.changeMeasure = changeMeasure
+        self.precision = precision 
+        self.recall = recall 
+        self.smpleCount = sampleCount
+        
+
+    def saveMetrics(self, saveLoc,acc = None, changeMeasure = None, precision = None, recall = None, sampleCount = None):
+        if acc is not None: self.acc = acc 
+        if changeMeasure is not None: self.changeMeasure = changeMeasure
+        if precision is not None: self.precision = precision
+        if recall is not None: self.recall = recall 
+        if sampleCount is not None: self.sampleCount = sampleCount
+        dataFolder = f'{saveLoc}/data'
+        if not os.path.isdir(dataFolder): os.mkdir(dataFolder)
+        with open(f'{dataFolder}/metrics.pickle', 'wb') as pickleOut:
+            pickle.dump(self, pickleOut)
+        print('The metrics data was saved using pickle at', f'{dataFolder}/metrics.pickle')

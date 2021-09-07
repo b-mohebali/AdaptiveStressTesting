@@ -42,13 +42,17 @@ class simulationConfig():
         self.batchSize = self._getNecessaryProperty('batchSize')
         self.outputFolder = self._getNecessaryProperty('outputFolder')
         self.metricNames = self.yamlObj['metricNames'] if 'metricNames' in self.yamlObj else []
-        self.exploreBatchSize = self.yamlObj['exploreBatch'] if 'exploreBatch' in self.yamlObj else 0
-        
+        self.exploreBatchSize = self._getProperty('exploreBatch', 0)
+        self.resourceLambda = self._getProperty('resourceLambda', 1.0)
+        self.resourceEpsilon = self._getProperty('resourceEpsilon', 0.2)
 
     def _getNecessaryProperty(self,propName):
         if propName not in self.yamlObj:
             raise ValueError(f'The {propName} is not specified for the process.')
         return self.yamlObj[propName]
+    
+    def _getProperty(self, propName, defaultValue):
+        return self.yamlObj[propName] if propName in self.yamlObj else defaultValue
         
     def __str__(self):
         nl = '\n \t\t\t\t\t'
