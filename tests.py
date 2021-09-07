@@ -1,30 +1,36 @@
-# #! /usr/bin/python3
-
-from ActiveLearning.visualization import setFigureFolder, SaveInformation, plotSpace
-from ActiveLearning.benchmarks import TrainedSvmClassifier
-from ActiveLearning.dataHandling import *
-from yamlParseObjects.yamlObjects import * 
-from ActiveLearning.Sampling import * 
-import matplotlib.pyplot as plt 
-import repositories as repos
-import os 
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-
-
+import repositories as repo 
 import pickle 
+from samply.hypercube import cvt 
+from yamlParseObjects.yamlObjects import * 
+from ActiveLearning.Sampling import *
+from ActiveLearning.benchmarks import * 
 
-motherClfPickle = repos.picklesLoc + 'mother_clf_constrained.pickle'
-with open(motherClfPickle, 'rb') as pickleIn:
-    motherClf = pickle.load(pickleIn)
+simConfigFile = './assets/yamlFiles/adaptiveTesting.yaml'
+simConfig = simulationConfig(simConfigFile)
+pickleName = f'{simConfig.outputFolder}/71/testClf.pickle'
+varsFile = './assets/yamlFiles/varAdaptTest.yaml'
+variables = getAllVariableConfigs(yamlFileAddress=varsFile, scalingScheme=Scale.LINEAR)
+n = 100000
+with open(pickleName, 'rb') as pickleIn:
+    testClf = pickle.load(pickleIn)
 
-print(motherClf)
+sample = halton(count = n, dimensionality=2) 
+space = SampleSpace(variableList=variables)
+dims = space.dimensions
+for dimIndex, dimension in enumerate(dims):
+    sample[:,dimIndex] *= dimension.range
+    sample[:,dimIndex] += dimension.bounds[0] 
 
-sv = motherClf.getSupportVectors()
-print(sv.shape)
+myBench = Hosaki(threshold = -1)
 
-simConfig = simulationConfig('./assets/yamlFiles/adaptiveTesting.yaml')
-outputFolder = simConfig.outputFolder
-print(outputFolder)
+actualLabels = myBench.getLabelVec(sample)
+hypoLabels = testClf.predict(sample) 
+selected = sample[actualLabels!= hypoLabels,:]
+print(len(selected))
 
-outputFolder= getFirstEmptyFolder(outputFolder) 
-print(f'{simConfig.outputFolder}/{outputFolder}')
+import matplotlib.pyplot as plt 
+plt.scatter(sample[:,0], sample[:,1], s=2)
+plt.scatter(selected[:,0], selected[:,1], s=2,color='red')
+
+plt.grid(True)
+plt.show()

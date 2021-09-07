@@ -293,7 +293,12 @@ while currentBudget > 0:
     iterationReports.append(iterReport)
     saveIterationReport(iterationReports, iterationReportFile)
 
-
+import pickle 
+import repositories as repo 
+pickleLoc = repo.picklesLoc
+pickleName = f'{outputFolder}/testClf.pickle'
+with open(pickleName, 'wb') as pickleOut:
+    pickle.dump(clf, pickleOut) 
 
 # Final visualization of the results: 
 plotSpace(space = mySpace, figsize=(10,8), legend = True,

@@ -428,7 +428,7 @@ def _plotSpace2D(space: SampleSpace,
     if explorePoints is not None:
         explorePoints = np.array(explorePoints)
         explorePoints = explorePoints.reshape(1,len(explorePoints)) if len(explorePoints.shape) <2 else explorePoints
-        legendLabel = 'Exploitative point' + ('s' if explorePoints.shape[0]>1 else '')
+        legendLabel = 'Exploratory point' + ('s' if explorePoints.shape[0]>1 else '')
         ax.scatter(explorePoints[:,0], explorePoints[:,1], marker = 's',s = 20, label = legendLabel, color = 'g')
     # Drawing the constraints:
     if len(constraints)>0:
