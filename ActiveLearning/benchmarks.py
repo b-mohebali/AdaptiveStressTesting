@@ -117,3 +117,6 @@ class TrainedSvmClassifier(Benchmark):
     
     def isProbability(self):
         return self.classifier.probability
+    
+    def predict(self, data):
+        return self.classifier.predict(data)

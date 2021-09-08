@@ -5,10 +5,13 @@ import sys
 dataFolder = '/home/caps/.wine/drive_c/SCRATCH/Mohebali/Data/AC_PGM_LogFiles'
 
 # This is the number of the rack that will be used for the simulation: 
-rackNum = 18
+rackNum = 17
 ##_______________________________________________________
 # Location of the assets local to the codebase:
-assetsLoc = './assets/'
+currentDir = os.getcwd()
+isRepoRemote = True
+
+assetsLoc = currentDir + '/assets/'
 yamlFilesLoc = assetsLoc + 'yamlFiles/'
 picklesLoc = assetsLoc + 'pickles/'
 experimentsLoc = assetsLoc + 'experiments/'
@@ -311,8 +314,9 @@ adaptRepo10 = newAdaptiveRepo + 'adaptiveRepo10'
 adaptRepo11 = newAdaptiveRepo + 'adaptiveRepo11'
 # Adaptive sample 400(100)-4 with batch sampling and exploration enabled. The exploration is one sample per 3 exploitative sample. The resource allocation part is not implemented yet. 
 adaptRepo12 = newAdaptiveRepo + 'adaptiveRepo12'
- 
 
+# Sample taken from the regions where the benchmark sample and the adaptive sample disagree on the label of the data points:
+disagreementRepo = newAdaptiveRepo + 'disagreementSample'
 
 
 """
@@ -350,5 +354,3 @@ testRepo14 = newTestRepo + 'test14'
 # just to test the test for repo location
 testRepo15 = newTestRepo + 'test15'
 
-currentDir = os.getcwd()
-isRepoRemote = True

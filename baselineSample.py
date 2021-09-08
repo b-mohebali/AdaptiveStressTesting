@@ -17,17 +17,21 @@ def constraint(X):
     return cons
 consVector = [constraint]
 
-def main(run_exper = True, run_eval = True, load_sample = False):
-    repoLoc = repositories.constrainedSample3
+def main(run_exper = True, 
+        run_eval = True, 
+        load_sample = False, 
+        repoLoc = None):
+    # Setting a default for repository location: 
+    if repoLoc is None: repoLoc = repositories.disagreementRepo
     dataLoc = repoLoc + '/data'
     if not os.path.isdir(dataLoc):
         os.mkdir(dataLoc)
     figLoc = repoLoc + '/figures'
     print(repositories.currentDir)
-    simConfig = simulationConfig('./assets/yamlFiles/ac_pgm_conf.yaml')
+    simConfig = simulationConfig(repositories.yamlFilesLoc + 'ac_pgm_conf.yaml')
     modelLoc = repositories.cefLoc + simConfig.modelLocation
-    variablesFile = './assets/yamlFiles/ac_pgm_restricted.yaml'
-    experFile = './assets/experiments/constrainedSample3.txt'
+    variablesFile = repositories.yamlFilesLoc + 'ac_pgm_restricted.yaml'
+    experFile = repositories.experimentsLoc + 'disagreement.txt'
     variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
     designSpace = SampleSpace(variableList=variables)
     dimNames = designSpace.getAllDimensionNames()
@@ -48,7 +52,8 @@ def main(run_exper = True, run_eval = True, load_sample = False):
         saveSampleToTxtFile(formattedSample, experFile)
     # Running the sample:
     if run_exper:
-        sampleGroup = list(range(2178,len(formattedSample)+1))
+        # sampleGroup = list(range(2178,len(formattedSample)+1))
+        sampleGroup = None 
         runSample(caseLocation = modelLoc,
                 sampleDictList=formattedSample,
                 remoteRepo = dataLoc,

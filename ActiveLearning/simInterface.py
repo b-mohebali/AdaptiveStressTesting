@@ -13,7 +13,6 @@ import contextlib
 from rscad import *
 import time
 
-defaultRackNum = 18
 
 class Case: 
     def __init__(self, caseLocation, 
