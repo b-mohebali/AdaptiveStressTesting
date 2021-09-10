@@ -1,36 +1,46 @@
+#! /usr/bin/python3
+
+from ActiveLearning.dataHandling import readDataset
 import repositories as repo 
 import pickle 
 from samply.hypercube import cvt 
 from yamlParseObjects.yamlObjects import * 
 from ActiveLearning.Sampling import *
 from ActiveLearning.benchmarks import * 
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 
 simConfigFile = './assets/yamlFiles/adaptiveTesting.yaml'
 simConfig = simulationConfig(simConfigFile)
 pickleName = f'{simConfig.outputFolder}/71/testClf.pickle'
-varsFile = './assets/yamlFiles/varAdaptTest.yaml'
-variables = getAllVariableConfigs(yamlFileAddress=varsFile, scalingScheme=Scale.LINEAR)
-n = 100000
-with open(pickleName, 'rb') as pickleIn:
-    testClf = pickle.load(pickleIn)
+variablesFile = repo.currentDir + '/assets/yamlFiles/ac_pgm_restricted.yaml'
+variables = getAllVariableConfigs(yamlFileAddress=variablesFile, scalingScheme=Scale.LINEAR)
 
-sample = halton(count = n, dimensionality=2) 
-space = SampleSpace(variableList=variables)
-dims = space.dimensions
-for dimIndex, dimension in enumerate(dims):
-    sample[:,dimIndex] *= dimension.range
-    sample[:,dimIndex] += dimension.bounds[0] 
+mySpace = SampleSpace(variableList=variables)
+dimNames = mySpace.getAllDimensionNames()
+# Loading the two classifiers for comparison: 
+disRepo = repo.disagreementRepo 
+disData = disRepo + '/data'
 
-myBench = Hosaki(threshold = -1)
+dataset, labels = readDataset(dataLoc = disData, dimNames = dimNames)
 
-actualLabels = myBench.getLabelVec(sample)
-hypoLabels = testClf.predict(sample) 
-selected = sample[actualLabels!= hypoLabels,:]
-print(len(selected))
 
-import matplotlib.pyplot as plt 
-plt.scatter(sample[:,0], sample[:,1], s=2)
-plt.scatter(selected[:,0], selected[:,1], s=2,color='red')
+picklesLoc = repo.picklesLoc
+benchClfFile = picklesLoc + 'mother_clf_constrained.pickle'
+with open(benchClfFile, 'rb') as pickleIn:
+    motherClf = pickle.load(pickleIn)
+threshold = 0.5 if motherClf.probability else 0 
+benchClassifier = TrainedSvmClassifier(motherClf, len(variables), threshold)
 
-plt.grid(True)
-plt.show()
+adaptiveRepo = repo.adaptRepo12
+adaptiveData = adaptiveRepo + '/data'
+adaptDataset, adaptLabels = readDataset(adaptiveData, dimNames = dimNames)
+adaptiveClf = StandardClassifier(kernel = 'rbf', C =1000)
+adaptiveClf.fit(adaptDataset, adaptLabels)
+
+yPredAdaptive = adaptiveClf.predict(dataset)
+yPredBench  = benchClassifier.predict(dataset)
+adaptAcc = accuracy_score(labels, yPredAdaptive)
+benchAcc = accuracy_score(labels, yPredBench)
+
+print('Adaptive classifier accuracy:', adaptAcc)
+print('Benchmark classifier accuracy:', benchAcc)
