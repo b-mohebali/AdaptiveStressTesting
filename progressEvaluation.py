@@ -1,4 +1,4 @@
-# # ! /usr/bin/python3
+#! /usr/bin/python3
 
 from ActiveLearning.visualization import setFigureFolder, SaveInformation, plotSpace
 from ActiveLearning.benchmarks import TrainedSvmClassifier
