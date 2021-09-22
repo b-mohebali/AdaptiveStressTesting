@@ -124,6 +124,17 @@ class SampleSpace():
         else:
             result = np.min(np.linalg.norm(np.divide(samplesList-X,r),axis=1))
         return result
+
+    def distanceToClosestOppositeClass(self,sv,label, normalize = False):
+        if normalize: 
+            r=self.ranges 
+        else: 
+            r = self.ones  
+        lookingLabel = int(label^1)
+        distances = np.linalg.norm(np.divide(self.samples - sv, r), axis = 1)
+        
+        
+        pass 
 """
     NOTE: The initial classifier used here is SVM. The necessity for any other type of 
     classifier was not felt at this point.
@@ -167,6 +178,17 @@ class ConvergenceSample():
         return (diff * 100.0) if percent else diff 
     
     
+    @classmethod    
+    def _movingAverage(cls,vector, n):
+        minIdx = max(0, len(vector) - n)
+        avgVec = vector[minIdx:]
+        return np.mean(avgVec)
+
+    @classmethod
+    def movingAverageVec(slc, vector, n):
+        ma = [np.mean(vector[max(0,_-n+1):_+1]) for _ in range(len(vector))]
+        return ma 
+
     def getDifferenceMeasure(self, 
                         clf1,
                         clf2,

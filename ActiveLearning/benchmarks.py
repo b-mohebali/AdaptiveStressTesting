@@ -11,6 +11,8 @@ class TooManyArguments(Exception):
     pass
 class InputDimensionsDoNotMatch(Exception):
     pass
+class BadInputDimension(Exception):
+    pass 
 
 class ComparisonDirectionPositive(Enum):
     LESS_THAN_TH = 0
@@ -18,7 +20,7 @@ class ComparisonDirectionPositive(Enum):
 
 
 class Benchmark(ABC):
-    
+        
     def __init__(self, threshold):
         self.threshold = threshold
         self.inputDim = 0
@@ -64,7 +66,6 @@ class Benchmark(ABC):
     def getScoreVec(self, data):
         self._checkInputVecDimensions(data)
         return self._functionVec(data)
-    
 
 class Branin(Benchmark):
     
@@ -96,6 +97,75 @@ class DistanceFromCenter(Benchmark):
         
     def _function(self, datum):
         return math.sqrt(sum((datum-self.center)**2))
+
+class CorridorBenchmark(Benchmark):
+    def __init__(self, threshold=0):
+        Benchmark.__init__(self,threshold)
+        self.inputDim = 2 
+        self.direction = ComparisonDirectionPositive.LESS_THAN_TH
+
+    def _function(self, datum):
+        x1,x2 = datum[0], datum[1]
+        return x2 - abs(tan(x1/2 + 2)) - 3
+
+
+class ThreeD1(Benchmark):
+    '''
+        This is the benchmark based on Equation 5.30 on Mohebali's prospectus. Although the dimension of the boundary can be arbitrary, this implementation chose 3 as the number of dimensions. 
+    '''
+    def __init__(self, threshold=0):
+        Benchmark.__init__(self,threshold)
+        self.inputDim = 3
+    
+    def _function(self, datum):
+        x1,x2,x3 = datum[0], datum[1],datum[2]
+        return (x1-2)**2 + x2**2 + (x3+2)**2 - 3*x1*x2*x3 + 1
+
+class FourD(Benchmark):
+    def __init__(self, threshold=0):
+        Benchmark.__init__(self, threshold)
+        self.inputDim = 4 
+
+    def _function(self, datum):
+        x1,x2,x3,x4 = datum
+        g = (x1-2)**2 +x2**2+(x3+2)**2+(x4-2)**2 - 3*(x1*x2*x3 + x2*x3*x4) + 1
+        return g 
+
+class ArbitraryDimension(Benchmark):
+    beta = [-1,0,1]
+
+    def __init__(self,inputDim, threshold=0):
+        if inputDim < 3:
+            raise BadInputDimension('The input dimension must be at least 3.')
+        Benchmark.__init__(self,threshold)
+        self.inputDim = inputDim
+
+    def _function(self, datum):
+        A = np.sum([(datum[i] + 2*self.beta[i%3])**2 for i in range(self.inputDim)])
+        B = -3 * np.sum([(datum[_]*datum[_+1]*datum[_+2]) for _ in range(self.inputDim-2)])
+        g = A + B + 1
+        return g
+
+class BumpyFunc(Benchmark):
+    def __init__(self, threshold=0):
+        super().__init__(threshold)
+        self.inputDim = 2 
+        self.direction = ComparisonDirectionPositive.MORE_THAN_TH
+
+    def _function(self, datum):
+        x1 = datum[0]
+        x2 = datum[1]
+        return 3*exp(-2 * (x1-4)**2) + exp(-2 * (x1 - 7)**2) + exp(x1/10) - x2 
+
+class SineFunc(Benchmark):
+    def __init__(self, threshold = 0):
+        Benchmark.__init__(self,threshold)
+        self.inputDim = 2 
+    
+    def _function(self, datum):
+        x1,x2 = datum 
+        return x2 - 2 * sin(x1) - 5 
+
 
 class TrainedSvmClassifier(Benchmark):
     """

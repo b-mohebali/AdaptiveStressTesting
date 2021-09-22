@@ -4,7 +4,7 @@ from yamlParseObjects.variablesUtil import *
 import logging
 from shutil import copyfile
 import subprocess
-from ActiveLearning.benchmarks import DistanceFromCenter, Branin, Benchmark, Hosaki
+from ActiveLearning.benchmarks import ArbitraryDimension, BumpyFunc, CorridorBenchmark, DistanceFromCenter, Branin, Benchmark, FourD, Hosaki, SineFunc, ThreeD1
 from ActiveLearning.Sampling import *
 import platform
 import shutil
@@ -45,8 +45,10 @@ batchSize = simConfig.batchSize
 initialSampleSize = simConfig.initialSampleSize
 
 # Individual budgets. Will be replaced by dynamic resource allocator:
-exploitationBudget = min(3,batchSize)
-explorationBudget = batchSize - exploitationBudget
+# exploitationBudget = min(3,batchSize)
+# explorationBudget = batchSize - exploitationBudget
+exploitationBudget = 5 
+explorationBudget = 0
 print('Exploitation budget: ', exploitationBudget)
 print('Exploration budget: ', explorationBudget)
 
@@ -57,7 +59,13 @@ initialReport = IterationReport(dimNames)
 # Defining the benchmark:
 # myBench = DistanceFromCenter(threshold=1.5, inputDim=mySpace.dNum, center = [4] * mySpace.dNum)
 # myBench = Branin(threshold=8)
-myBench = Hosaki(threshold = -1)
+# myBench = Hosaki(threshold = -1)
+# myBench = CorridorBenchmark(threshold = 0)
+# myBench = BumpyFunc(threshold = 0)
+# myBench = ThreeD1(threshold = 0)
+# myBench = FourD(threshold = 0)
+# myBench = ArbitraryDimension(inputDim = 5, threshold = 0)
+myBench = SineFunc(threshold = 0)
 # Generating the initial sample. This step is pure exploration MC sampling:
 
 # Starting time:
@@ -87,7 +95,7 @@ sInfo = SaveInformation(fileName = f'{figFolder}/InitialPlot', savePDF=True, sav
 
 # Visualization of the first iteration of the space with the initial sample:
 meshRes = 300
-figSize = (10,8)
+figSize = (12,10)
 
 plotSpace(mySpace, 
         classifier=clf, 
@@ -124,8 +132,9 @@ convergenceSample = ConvergenceSample(mySpace, constraints=consVector)
 changeMeasure = [convergenceSample.getChangeMeasure(percent = True, 
                                     classifier = clf, 
                                     updateLabels=True)]
-
-# Getting the initial accuracy:
+# The vector that stores the moving average of the change measure:
+changeAvg = [ConvergenceSample._movingAverage(changeMeasure, n=5)]
+# Getting the initial accuracy and other performance metrics:
 acc = [convergenceSample.getPerformanceMetrics(benchmark = myBench,
                                             classifier=clf,
                                             percentage = True, 
@@ -154,8 +163,8 @@ initialReport.budgetRemaining = currentBudget
 initialReport.setChangeMeasure(changeMeasure[0])
 initialReport.batchSize = initialSampleSize
 initialReport.iterationNumber = iterationNum
-initialReport.setMetricResults(initialLabels)
-initialReport.setSamples(initialSamples)
+initialReport.setExploreResults(initialLabels)
+initialReport.setExplorers(initialSamples)
 
 iterationReports.append(initialReport)
 saveIterationReport(iterationReports, iterationReportFile)
@@ -174,7 +183,7 @@ metricsSaver.saveMetrics(outputFolder, acc,changeMeasure, precision, recall)
 exploreBudgets = []
 exploitBudgets = []
 
-while currentBudget > 0:
+while currentBudget > 0 and changeAvg[-1] > 0.4:
     print('------------------------------------------------------------------------------')
     # Setting up the iteration report timing members:
     iterationNum += 1
@@ -198,19 +207,20 @@ while currentBudget > 0:
     currentBudget -= min(currentBudget, batchSize) 
     # Visualization and saving the results:
     sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_NotLabeled'
-    plotSpace(mySpace, 
-        figsize = figSize,
-        legend = True, 
-        showPlot=False, 
-        classifier = clf,
-        saveInfo=sInfo,
-        meshRes = meshRes,
-        newPoints=exploiterPoints,
-        explorePoints=explorerPoints if explorationBudget>0 else None,
-        benchmark = myBench,
-        prev_classifier= prevClf,
-        constraints = consVector)
-    plt.close()
+    if iterationNum % 1 ==0 and len(dimNames) <4:
+        plotSpace(mySpace, 
+            figsize = figSize,
+            legend = True, 
+            showPlot=False, 
+            classifier = clf,
+            saveInfo=sInfo,
+            meshRes = meshRes,
+            newPoints=exploiterPoints,
+            explorePoints=explorerPoints if explorationBudget>0 else None,
+            benchmark = myBench,
+            prev_classifier= prevClf,
+            constraints = consVector)
+        plt.close()
     # Evaluating the newly found samples: 
     newLabels = myBench.getLabelVec(exploiterPoints)
     exploreLabels = myBench.getLabelVec(explorerPoints)
@@ -258,37 +268,39 @@ while currentBudget > 0:
                                             classifier=clf,
                                             metricType=PerformanceMeasure.RECALL)
     changeMeasure.append(newChangeMeasure)
+    changeAvg.append(ConvergenceSample._movingAverage(changeMeasure,n=5))
     acc.append(newAccuracy)
     precision.append(newPrecision)
     recall.append(newRecall)
     sampleCount.append(len(mySpace.eval_labels))
     # Saving the new iteration of the metrics output:
-    metricsSaver.saveMetrics(outputFolder, acc,changeMeasure, precision, recall, sampleCount)
-
+    metricsSaver.saveMetrics(outputFolder, acc=acc,changeMeasure = changeMeasure, precision = precision, recall = recall, sampleCount = sampleCount, changeAvg = changeAvg)
     print('Hypothesis change estimate: ', changeMeasure[-1:], ' %')
     print('Current accuracy estimate: ', acc[-1:], ' %')
     sampleNumbers.append(mySpace.sampleNum)
     # Visualization of the results after the new samples are evaluated:
     sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_Labeled'
-    plotSpace(space = mySpace,
-        figsize = figSize,
-        legend = True,
-        classifier = clf, 
-        benchmark = myBench,
-        meshRes = meshRes,
-        newPoints=None,
-        saveInfo=sInfo,
-        showPlot=False,
-        prev_classifier=prevClf,
-        constraints = consVector)
-    plt.close()
+    if iterationNum % 1 == 0:
+        plotSpace(space = mySpace,
+            figsize = figSize,
+            legend = True,
+            classifier = clf, 
+            benchmark = myBench,
+            meshRes = meshRes,
+            newPoints=None,
+            saveInfo=sInfo,
+            showPlot=False,
+            prev_classifier=prevClf,
+            constraints = consVector)
+        plt.close()
     # Adding the iteration information to the report for saving.
     iterReport.setStop()
     iterReport.budgetRemaining = currentBudget
     iterReport.iterationNumber = iterationNum
-    iterReport.setMetricResults(newLabels)
     iterReport.setExploitatives(exploiterPoints)
     iterReport.setExplorers(explorerPoints)
+    iterReport.setExploitResults(newLabels)
+    iterReport.setExploreResults(exploreLabels)
     iterReport.setChangeMeasure(newChangeMeasure)
     iterationReports.append(iterReport)
     saveIterationReport(iterationReports, iterationReportFile)
@@ -301,8 +313,8 @@ with open(pickleName, 'wb') as pickleOut:
     pickle.dump(clf, pickleOut) 
 
 # Final visualization of the results: 
-plotSpace(space = mySpace, figsize=(10,8), legend = True,
-                        saveInfo=sInfo, showPlot=True, classifier = clf, 
+plotSpace(space = mySpace, figsize=figSize, legend = True,
+                        saveInfo=None, showPlot=True, classifier = clf, 
                         benchmark = myBench, constraints = consVector)
 
 

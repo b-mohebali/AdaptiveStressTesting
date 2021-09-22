@@ -187,8 +187,10 @@ class IterationReport():
         self.changeMeasure = float(changeMeasure)
     # Making a dictionary with sample index as key and its corresponding label as values.
     # NOTE: The keys' indexing starts from 1.
-    def setMetricResults(self, metricResults):
-        self.metricResults = dict((_+1,int(metricResults[_])) for _ in range(len(metricResults)))
+    def setExploreResults(self, metricResults):
+        self.exploreResults = dict((_+1,int(metricResults[_])) for _ in range(len(metricResults)))
+    def setExploitResults(self, metricResults):
+        self.exploitResults = dict((_+1,int(metricResults[_])) for _ in range(len(metricResults)))
     def setAccuracy(self, acc):
         self.accuracy = acc
 

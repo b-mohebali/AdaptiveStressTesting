@@ -13,6 +13,7 @@ from ActiveLearning.benchmarks import Benchmark
 import os
 from ActiveLearning.Sampling import StandardClassifier
 import matplotlib.patches as mpatches
+import pickle
 
 class SaveInformation():
     def __init__(self, fileName, savePDF = False, savePNG = False):
@@ -42,7 +43,7 @@ def plotSpace(space: SampleSpace,
               saveInfo: SaveInformation = None,
               showPlot = True,
               insigDimensions = [2,3], 
-              gridRes = None,
+              gridRes = (5,5),
               prev_classifier =None,
               comparison_classifier = None,
               constraints = []) -> None:
@@ -261,7 +262,7 @@ def _plotSpace4D(space: SampleSpace,
         fig.legend(loc = 'upper left',bbox_to_anchor=(1.03, 1.0))
     fig.tight_layout()
     if saveInfo is not None:
-        saveFigures(saveInfo = saveInfo)
+        saveFigures(saveInfo = saveInfo, fig = fig)
     if showPlot:
         plt.show()
         return 
@@ -319,7 +320,7 @@ def _plotSpace3D(space: SampleSpace,
     
     # Evaluating the benchmark and adding it to the plot:
     if benchmark is not None:
-        scores = space.benchmark.getScoreVec(XYZ).reshape(XX.shape)
+        scores = benchmark.getScoreVec(XYZ).reshape(XX.shape)
         out = measure.marching_cubes(scores,level = benchmark.threshold)
         verts = out[0]
         faces = out[1]
@@ -353,7 +354,7 @@ def _plotSpace3D(space: SampleSpace,
         ax.scatter(explorePoints[:,0], explorePoints[:,1], explorePoints[:,2], marker = 's',s = 20, label = legendLabel, color = 'green' )
     ax.grid(showGrid)
     if saveInfo is not None:
-        saveFigures(saveInfo=saveInfo)
+        saveFigures(saveInfo=saveInfo, fig=fig)
     if showPlot:
         plt.show()
         return 
@@ -374,7 +375,7 @@ def _plotSpace2D(space: SampleSpace,
                 constraints = []):
     labels = space.eval_labels
     
-    _,ax = plt.subplots(figsize = figsize)  
+    fig,ax = plt.subplots(figsize = figsize)  
     ranges = space.getAllDimensionBounds()
     dimensionNames = space.getAllDimensionDescriptions()
     x1range = ranges[0]
@@ -456,19 +457,24 @@ def _plotSpace2D(space: SampleSpace,
         plt.legend(loc = 'upper left',bbox_to_anchor=(1.05, 1.0))
     plt.tight_layout()
     if saveInfo is not None:
-        saveFigures(saveInfo=saveInfo)
+        saveFigures(saveInfo=saveInfo,fig = fig)
     if showPlot:
         plt.show()
     return 
 
 
-def saveFigures(saveInfo):
+def saveFigures(saveInfo, fig = None):
     if saveInfo.savePDF:
         plt.savefig(fname = f'{saveInfo.fileName}.pdf',
                     facecolor='w', edgecolor = 'w', transparent = False, bbox_inches='tight')
     if saveInfo.savePNG:
         plt.savefig(fname = f'{saveInfo.fileName}.png',
                     facecolor='w', edgecolor = 'w', transparent = False, bbox_inches='tight')
+    
+    if fig is not None:
+        with open(f'{saveInfo.fileName}.pickle', 'wb') as pickleOut:
+            pickle.dump(fig, pickleOut)
+    
 
 def setFigureFolder(outputReportsLoc):
     figFolder = f'{outputReportsLoc}/Figures'

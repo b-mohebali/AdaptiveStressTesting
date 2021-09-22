@@ -329,20 +329,23 @@ def normalizeDataset(dataset):
     
 
 class MetricsSaver:
-    def __init__(self, acc = None, changeMeasure = None, precision = None, recall= None, sampleCount = None) -> None:
+    def __init__(self, acc = None, changeMeasure = None, precision = None, recall= None, sampleCount = None, changeAvg = None) -> None:
         self.accuracy = acc 
         self.changeMeasure = changeMeasure
         self.precision = precision 
         self.recall = recall 
         self.smpleCount = sampleCount
+        self.changeAvg = changeAvg
         
 
-    def saveMetrics(self, saveLoc,acc = None, changeMeasure = None, precision = None, recall = None, sampleCount = None):
+    def saveMetrics(self, saveLoc,acc = None, changeMeasure = None, precision = None, recall = None, sampleCount = None, changeAvg = None):
         if acc is not None: self.acc = acc 
         if changeMeasure is not None: self.changeMeasure = changeMeasure
         if precision is not None: self.precision = precision
         if recall is not None: self.recall = recall 
         if sampleCount is not None: self.sampleCount = sampleCount
+        if changeAvg is not None: self.changeAvg = changeAvg
+
         dataFolder = f'{saveLoc}/data'
         if not os.path.isdir(dataFolder): os.mkdir(dataFolder)
         with open(f'{dataFolder}/metrics.pickle', 'wb') as pickleOut:

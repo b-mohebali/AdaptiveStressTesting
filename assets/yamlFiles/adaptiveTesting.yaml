@@ -13,8 +13,8 @@ modelLocation: "MVDC_SPS/RTDS_V5.007/fileman/PGM_SampleSystem/V5_NewFactors"
 modelName: "PGM_V5_NF"
 outputFolder: './assets/outputReports'
 sampleRepo: "D:/Data/Sample80/data"
-sampleBudget: 100
-initialSampleSize: 20
+sampleBudget: 200
+initialSampleSize: 100
 batchSize: 5
 resourceLambda: 1.2
 resourceEpsilon: 0.2

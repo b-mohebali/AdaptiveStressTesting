@@ -3,7 +3,7 @@ name: x1
 type: timeIndep
 initialState: 1
 lowerLimit: 0
-upperLimit: 5
+upperLimit: 10
 description: "x1"
 
 ---
@@ -11,7 +11,7 @@ name: x2
 type: timeIndep
 initialState: 1
 lowerLimit: 0
-upperLimit: 5
+upperLimit: 10
 description: "x2"
 
 ...
