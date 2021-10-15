@@ -4,14 +4,14 @@ from yamlParseObjects.variablesUtil import *
 import logging
 from shutil import copyfile
 import subprocess
-from ActiveLearning.benchmarks import DistanceFromCenter, Branin, Benchmark, Hosaki
+from ActiveLearning.benchmarks import DistanceFromCenter, Branin, Benchmark, Hosaki, SineFunc
 from ActiveLearning.Sampling import *
 import platform
 import shutil
 import matplotlib.pyplot as plt 
 from enum import Enum
 from sklearn import svm
-from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Voronoi_Explorer, ResourceAllocator
+from ActiveLearning.optimizationHelper import GA_Convergence_Sampler, GA_Exploiter, GA_Voronoi_Explorer, ResourceAllocator
 from copy import copy, deepcopy
 
 from ActiveLearning.visualization import *
@@ -52,7 +52,8 @@ initialReport = IterationReport(dimNames)
 # Defining the benchmark:
 # myBench = DistanceFromCenter(threshold=1.5, inputDim=mySpace.dNum, center = [4] * mySpace.dNum)
 # myBench = Branin(threshold=8)
-myBench = Hosaki(threshold = -1)
+# myBench = Hosaki(threshold = -1)
+myBench = SineFunc(threshold=0)
 # Generating the initial sample. This step is pure exploration MC sampling:
 
 # Starting time:
@@ -96,72 +97,220 @@ plotSpace(mySpace,
         benchmark = myBench,
         constraints = consVector)
 
-# Finding the next point: 
-supportVectors = clf.getSupportVectors(standard = True)
-print(supportVectors)
+plt.close()
 
-from collections import namedtuple 
-SVDistance = namedtuple('SVDistance', ('distance', 'supportVector'))
 
-labels = clf.predict(supportVectors)
-print(labels)
+# Finishing time
+initialReport.stopTime = datetime.now()
+initialReport.setStop()
+# Defining the exploiter: 
+exploiter = GA_Exploiter(space = mySpace, 
+                    epsilon = 0.05,
+                    batchSize = simConfig.batchSize,
+                    convergence_curve=False,
+                    progress_bar=False,
+                    clf = clf, 
+                    constraints = consVector)
 
-r = mySpace.ranges 
-supportVectorDistances = [] 
+# Defining the explorer object:
+# explorer = GA_Voronoi_Explorer(space = mySpace, 
+#                     batchSize = simConfig.batchSize,
+#                     convergence_curve=False, 
+#                     progress_bar=False, 
+#                     constraints = consVector)
 
-def minDistanceFromOppositeClass(sv, label, space:SampleSpace,r = None):
-    if r is None:
-        r = space.ones
-    oppLabel = label ^1 
-    # oppPoints = space.samples[sp]
-    distances = np.linalg.norm(np.divide(space.samples - sv,r), axis = 1)
-    distance = min(distances[space._eval_labels==oppLabel])
-    foundPointIdx = np.where(distances == distance)[0]
-    foundPoint = space.samples[foundPointIdx,:].squeeze()
-    return foundPoint, distance
+# Defining the convergence optimizer: 
+converger = GA_Convergence_Sampler(space = mySpace,
+                    clf = clf,
+                    batchSize = 1,
+                    convergence_curve=False,
+                    progress_bar=False,
+                    constraints = consVector)
 
-def findNextPoint(classifier: StandardClassifier, space:SampleSpace):
-    # TODO: This implementation is only for one point. The batch sampling is simple and has to be done later.
-    bestPoints = {}
-    supportVectors = classifier.getSupportVectors(standard = True)
-    labels = classifier.predict(supportVectors)
-    for idx,sv in enumerate(supportVectors):
-        svLabel = labels[idx]
-        foundPoint, svDistance = minDistanceFromOppositeClass(sv, svLabel, space,r)
-        print(f'Found point for SV # {idx+1}: {foundPoint}, SV itself: {sv}')
-        bestPoints[svDistance] = (sv,foundPoint)
-    bestDistance = max(bestPoints.keys())
-    newPoint = (bestPoints[bestDistance][0] + bestPoints[bestDistance][1])/2
-    return newPoint 
+# Defining the convergence sample that implementes the change measure as well as
+#   the performance metrics for the process. 
+convergenceSample = ConvergenceSample(mySpace, constraints=consVector)
+changeMeasure = [convergenceSample.getChangeMeasure(percent = True, 
+                                    classifier = clf, 
+                                    updateLabels=True)]
+# The vector that stores the moving average of the change measure:
+changeAvg = [ConvergenceSample._movingAverage(changeMeasure, n=5)]
+# Getting the initial accuracy and other performance metrics:
+acc = [convergenceSample.getPerformanceMetrics(benchmark = myBench,
+                                            classifier=clf,
+                                            percentage = True, 
+                                            metricType=PerformanceMeasure.ACCURACY)]
+precision = [convergenceSample.getPerformanceMetrics(benchmark = myBench,
+                                            classifier=clf,
+                                            percentage = True, 
+                                            metricType=PerformanceMeasure.PRECISION)]
+recall = [convergenceSample.getPerformanceMetrics(benchmark = myBench,
+                                            classifier=clf,
+                                            percentage = True, 
+                                            metricType=PerformanceMeasure.RECALL)]
+sampleCount = [len(initialLabels)]
+print('Initial accuracy: ', acc[0])   
+sampleNumbers = [mySpace.sampleNum]
+# Calculating the remaining budget:
+initialSampleSize = len(initialLabels)
+currentBudget = budget - len(initialLabels)
 
-budget = 10
-for _ in range(budget):
-    newPoint = findNextPoint(clf, mySpace)
-    sInfo.fileName = f'{figFolder}/{_+1}_before_label'
-    plotSpace(mySpace, 
-        classifier=clf, 
-        figsize = figSize, 
-        meshRes=meshRes,
-        legend = True, 
-        showPlot=False,
-        newPoints = [newPoint],
-        saveInfo = sInfo, 
-        benchmark = myBench,
-        constraints = consVector)
-    plt.close()
-    print(_,newPoint)
-    newLabel = myBench.getLabel(newPoint)
-    mySpace.addSample(newPoint, newLabel)
-    clf = StandardClassifier(C = 1000)
+# Setting up the iteration reports file:
+iterationReports = []
+
+# Getting the iteration report after the initial sample:
+iterationNum = 0
+initialReport.budgetRemaining = currentBudget
+initialReport.setChangeMeasure(changeMeasure[0])
+initialReport.batchSize = initialSampleSize
+initialReport.iterationNumber = iterationNum
+initialReport.setExploreResults(initialLabels)
+initialReport.setExplorers(initialSamples)
+
+iterationReports.append(initialReport)
+saveIterationReport(iterationReports, iterationReportFile)
+
+prevClf = clf
+
+# Setting up the object that does the calculations for the resource allocation to exploration and exploitation:
+resourceAllocator = ResourceAllocator(convSample = convergenceSample,
+                        simConfig = simConfig,
+                        outputLocation = outputFolder,
+                        initSample = initialSampleSize)
+
+# Setting up the object that saves the metrics outputs at each iteration: 
+metricsSaver = MetricsSaver()
+metricsSaver.saveMetrics(outputFolder, acc,changeMeasure, precision, recall)
+exploreBudgets = []
+exploitBudgets = []
+
+while currentBudget > 0 and changeAvg[-1] > 0.4:
+    print('------------------------------------------------------------------------------')
+    # Setting up the iteration report timing members:
+    iterationNum += 1
+    iterReport = IterationReport(dimNames, batchSize=batchSize)
+    iterReport.setStart()
+    print('Current budget: ', currentBudget, ' samples')
+    # Finding new points using the exploiter object:
+    # NOTE: The classifier has to be passed everytime to the exploiter for update.
+    
+    # # Dynamin resource allocation:
+    # # NOTE: The overall budget for each group is capped by the current remaining budget. The priority is with exploiration. Exploration is done only if budget is remained after exploitation.
+    # exploitationBudget = min(currentBudget, exploitationBudget)
+    # explorationBudget = min(explorationBudget, currentBudget - exploitationBudget)
+    # print('Dynamic Resource Allocation is active.')
+    # print('Exploitation budget:', exploitationBudget,' samples')
+    # print('Exploration budget:', explorationBudget,' samples')
+    
+    exploiterPoints = exploiter.findNextPoints(pointNum=1)
+    # explorerPoints = explorer.findNextPoints(pointNum=explorationBudget)
+    convergePoints = converger.findNextPoints(pointNum=1)
+    # Updating the remaining budget:    
+    currentBudget -= min(currentBudget, batchSize) 
+    # Visualization and saving the results:
+    sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_NotLabeled'
+    if iterationNum % 1 ==0 and len(dimNames) <4:
+        plotSpace(mySpace, 
+            figsize = figSize,
+            legend = True, 
+            showPlot=False, 
+            classifier = clf,
+            saveInfo=sInfo,
+            meshRes = meshRes,
+            newPoints=exploiterPoints,
+            convergePoints=convergePoints,
+            benchmark = myBench,
+            prev_classifier= prevClf,
+            constraints = consVector)
+        plt.close()
+    # Evaluating the newly found samples: 
+    newLabels = myBench.getLabelVec(exploiterPoints)
+    convergeLabels = myBench.getLabelVec(convergePoints)
+
+    # Resource Allocation for the next iteration: 
+    # This function saves the resource allocation report itself. 
+    # calcExploitBudget, calcExploreBudget = resourceAllocator.allocateResources(
+    #     mainSamples = mySpace.samples,
+    #     mainLabels = mySpace.eval_labels,
+    #     exploitSamples = exploiterPoints,
+    #     exploitLabels = newLabels,
+    #     exploreSamples= explorerPoints,
+    #     exploreLabels=exploreLabels,
+    #     saveReport = True
+    # )
+
+    # Adding the newly evaluated samples to the dataset:
+    mySpace.addSamples(exploiterPoints, newLabels)
+    mySpace.addSamples(convergePoints, convergeLabels)
+    # Updating the previous classifier before training the new one:
+    prevClf = deepcopy(clf)
+    # Training the next iteration of the classifier:
+    clf = StandardClassifier(kernel = 'rbf', C=1000)
     clf.fit(mySpace.samples, mySpace.eval_labels)
-    sInfo.fileName = f'{figFolder}/{_+1}_labeled'
-    plotSpace(mySpace, 
-        classifier=clf, 
-        figsize = figSize, 
-        meshRes=meshRes,
-        legend = True, 
-        showPlot=False,
-        saveInfo = sInfo, 
-        benchmark = myBench,
-        constraints = consVector)
-    plt.close()
+    # Updating the classifier that the exploiter uses. The explorer samples independent of the classifier hence it does not need the classifier or update on it. 
+    exploiter.clf = clf
+    # Calculation of the new measure of change and accuracy after training:
+    newChangeMeasure = convergenceSample.getChangeMeasure(percent = True, 
+                                            classifier = clf, 
+                                            updateLabels=True)
+    newAccuracy = convergenceSample.getPerformanceMetrics(benchmark = myBench, 
+                                            percentage=True, 
+                                            classifier=clf,
+                                            metricType=PerformanceMeasure.ACCURACY)
+    newPrecision = convergenceSample.getPerformanceMetrics(benchmark = myBench, 
+                                            percentage=True, 
+                                            classifier=clf,
+                                            metricType=PerformanceMeasure.PRECISION)
+    newRecall = convergenceSample.getPerformanceMetrics(benchmark = myBench, 
+                                            percentage=True, 
+                                            classifier=clf,
+                                            metricType=PerformanceMeasure.RECALL)
+    changeMeasure.append(newChangeMeasure)
+    changeAvg.append(ConvergenceSample._movingAverage(changeMeasure,n=5))
+    acc.append(newAccuracy)
+    precision.append(newPrecision)
+    recall.append(newRecall)
+    sampleCount.append(len(mySpace.eval_labels))
+    # Saving the new iteration of the metrics output:
+    metricsSaver.saveMetrics(outputFolder, acc=acc,changeMeasure = changeMeasure, precision = precision, recall = recall, sampleCount = sampleCount, changeAvg = changeAvg)
+    print('Hypothesis change estimate: ', changeMeasure[-1:], ' %')
+    print('Current accuracy estimate: ', acc[-1:], ' %')
+    sampleNumbers.append(mySpace.sampleNum)
+    # Visualization of the results after the new samples are evaluated:
+    sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_Labeled'
+    if iterationNum % 1 == 0:
+        plotSpace(space = mySpace,
+            figsize = figSize,
+            legend = True,
+            classifier = clf, 
+            benchmark = myBench,
+            meshRes = meshRes,
+            newPoints=None,
+            saveInfo=sInfo,
+            showPlot=False,
+            prev_classifier=prevClf,
+            constraints = consVector)
+        plt.close()
+    # Adding the iteration information to the report for saving.
+    iterReport.setStop()
+    iterReport.budgetRemaining = currentBudget
+    iterReport.iterationNumber = iterationNum
+    iterReport.setExploitatives(exploiterPoints)
+    iterReport.setConvergers(convergePoints)
+    iterReport.setExploitResults(newLabels)
+    iterReport.setConvergerResults(convergeLabels)
+    iterReport.setChangeMeasure(newChangeMeasure)
+    iterationReports.append(iterReport)
+    saveIterationReport(iterationReports, iterationReportFile)
+
+import pickle 
+import repositories as repo 
+pickleLoc = repo.picklesLoc
+pickleName = f'{outputFolder}/testClf.pickle'
+with open(pickleName, 'wb') as pickleOut:
+    pickle.dump(clf, pickleOut) 
+
+# Final visualization of the results: 
+plotSpace(space = mySpace, figsize=figSize, legend = True,
+                        saveInfo=None, showPlot=True, classifier = clf, 
+                        benchmark = myBench, constraints = consVector)

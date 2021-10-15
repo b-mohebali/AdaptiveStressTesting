@@ -166,6 +166,13 @@ class ConvergenceSample():
             self.pastLabels = self.currentLabels
         return (diff * 100.0) if percent else diff 
     
+    @classmethod
+    def _movingAverage(cls, measure, n=1):
+        if n < 1:
+            raise ValueError('n cannot be less than 1.')
+        startInd = max(0, len(measure)-n)
+        return sum(measure[startInd:])/n
+        pass 
     
     def getDifferenceMeasure(self, 
                         clf1,
@@ -386,6 +393,15 @@ class StandardClassifier(SVC,Benchmark):
         return super().decision_function(self.scaler.transform(X))
 
     def getSupportVectors(self, standard = True):
+        """
+            Returns the suppor vectors of the wrapped classifier.
+
+            Inputs: 
+                - standard: Boolean. If True, the actual value of the support vectors are passed. If False, the suppor vectors are normalized along all their axes before being passed. 
+
+            Outputs:
+                - supportVectors: List of the support vectors of the trained classifier
+        """
         if not standard:
             return self.support_vectors_
         else:

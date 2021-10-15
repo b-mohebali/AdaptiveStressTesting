@@ -180,6 +180,8 @@ class IterationReport():
         self.Exploitation = dict((i1+1, dict((self.variableNames[_], float(sample[_])) for _ in range(len(sample)))) for i1, sample in enumerate(exploiters))
     def setExplorers(self,explorers):
         self.Exploration = dict((i1+1, dict((self.variableNames[_], float(sample[_])) for _ in range(len(sample)))) for i1, sample in enumerate(explorers))
+    def setConvergers(self,convergers):
+        self.Convergers = dict((i1+1, dict((self.variableNames[_], float(sample[_])) for _ in range(len(sample)))) for i1, sample in enumerate(convergers))
     
 
     
@@ -191,6 +193,9 @@ class IterationReport():
         self.exploreResults = dict((_+1,int(metricResults[_])) for _ in range(len(metricResults)))
     def setExploitResults(self, metricResults):
         self.exploitResults = dict((_+1,int(metricResults[_])) for _ in range(len(metricResults)))
+    def setConvergerResults(self, metricResults):
+        self.convergerResults = dict((_+1,int(metricResults[_])) for _ in range(len(metricResults)))
+    
     def setAccuracy(self, acc):
         self.accuracy = acc
 

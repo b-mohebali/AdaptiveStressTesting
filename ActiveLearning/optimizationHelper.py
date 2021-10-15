@@ -1,7 +1,7 @@
 from yamlParseObjects.yamlObjects import ResourceAllocationReport, simulationConfig
 from geneticalgorithm import geneticalgorithm as ga
 # from .Sampling import ConvergenceSample, SampleSpace
-from ActiveLearning.Sampling import ConvergenceSample, SampleSpace
+from ActiveLearning.Sampling import ConvergenceSample, SampleSpace, StandardClassifier
 import numpy as np
 from abc import ABC, abstractmethod
 from scipy.linalg import norm
@@ -9,6 +9,7 @@ from math import *
 from sklearn import svm
 from enum import Enum
 import yaml
+import heapq
 
 class Exploration_Type(Enum):
     VORONOI = 0
@@ -160,6 +161,75 @@ class GA_Voronoi_Explorer(GA_Optimizer):
     
     def objFunction(self, X):
         return -1 * np.min(np.linalg.norm(np.divide(self.currentSpaceSamples - X, self.ranges), axis = 1))
+
+class GA_Convergence_Sampler(GA_Optimizer):
+    def __init__(self, 
+                space: SampleSpace,
+                clf: StandardClassifier,  
+                batchSize: int = 1, 
+                convergence_curve=True, 
+                progress_bar=True, 
+                constraints=[]):
+        GA_Optimizer.__init__(self, 
+                        space, 
+                        batchSize=batchSize, 
+                        convergence_curve=convergence_curve, 
+                        progress_bar=progress_bar, 
+                        constraints=constraints)
+        self.clf = clf  
+        self.ranges = space.getAllDimensionsRanges()
+
+    def getFittingSupportVector(self):
+        """
+            Finds the list of the support vectors that fit the conditions for sampling in the next iteration.
+            TODO: The batch sampling for this type of sample is still under investigation. 
+                So the current implementation samples a single point.
+        """
+        bestPoints = {} 
+        SVs = self.clf.getSupportVectors(standard = True)
+        labels = self.clf.predict(SVs)
+        for idx, sv in enumerate(SVs):
+            svLabel = labels[idx]
+            svDistance = self._minDistanceFromOppositeClass(sv, svLabel)
+            # print(f'Found point for SV # {idx+1}: {foundPoint}, SV itself: {sv}')
+            bestPoints[svDistance] = (sv,idx)      
+        bestDistance = max(bestPoints.keys())
+        # Radius is an instance variable that will be used in the objective function.
+        self.R = bestDistance / 2 
+        fittingSv, fittingIdx = bestPoints[bestDistance]
+        label = labels[fittingIdx]
+        return fittingSv, label
+
+
+    def _minDistanceFromOppositeClass(self, sv, label):
+        oppLabel = label ^ 1 
+        distances = np.linalg.norm(np.divide(self.space.samples-sv,self.ranges), axis = 1)
+        distance = min(distances[self.space._eval_labels==oppLabel])
+        return distance 
+    
+    def findNextPoints(self, pointNum=1):
+        sv, label = self.getFittingSupportVector()
+        self.sv = sv 
+        self.label = label 
+        return super().findNextPoints(pointNum=pointNum)
+    
+    def objFunction(self, X):
+        '''
+            NOTE: self.sv is normalized. when we want to meassure the distance with the input point, we need to normalize the point to the correct range as well. 
+        '''
+        # Decision function of the input point:
+        df = self.clf.decision_function(X.reshape(1,len(X)))
+        # Initial objective function is the decision function times the label of the SV. the reason is that the new point has to be on the opposite side of the boundary from the designated SV:
+        f = df * self.label
+        # Scaling the input point only for calculating its distance to the designated SV:
+        xScaled = self.clf.scaler.transform(X.reshape(1,len(X)))
+        distance = np.linalg.norm(xScaled - self.sv)
+        # Penalizing the objective function if the distance to the designated SV is more than R or the objective function becomes positive:
+        if distance > self.R or f > 0:
+            f += 1e6
+        return f
+    
+
 
 class ResourceAllocator:
     """
@@ -322,42 +392,4 @@ class ResourceAllocator:
         if return_Rs:
             return expt_samples, expr_samples, R_expt, R_expr
         return expt_samples, expr_samples
-
-
-# def allocateResources(mainSamples,
-#                     mainLabels,
-#                     exploitSamples,
-#                     exploitLabels,
-#                     exploreSamples,
-#                     exploreLabels,
-#                     totalBudget,
-#                     convSample: ConvergenceSample):
-#     exploitBudget = 0
-#     exploreBudget = 0
-
-#     # Training the reference classifier:
-#     mainClf = svm.SVC(kernel = 'rbf', C = 1000)
-#     mainClf.fit(mainSamples, mainLabels)
-#     # Constructing two sets of data: 
-#     #   - Main data + exploitation data
-#     #   - Main data + exploration data
-#     exploitData = np.append(np.copy(mainSamples), exploitSamples, axis = 0)
-#     exploreData = np.append(np.copy(mainSamples), exploreSamples, axis = 0)
-#     exploitLabels = np.append(np.copy(mainLabels), exploitLabels, axis = 0)
-#     exploreLabels = np.append(np.copy(mainLabels), exploreLabels, axis = 0)
-    
-#     # training a set of two classifiers on the data that we constructed:
-#     clf_exploit = svm.SVC(kernel = 'rbf', C = 1000)
-#     clf_explore = svm.SVC(kernel = 'rbf', C = 1000)
-#     clf_exploit.fit(exploitData, exploitLabels)
-#     clf_explore.fit(exploreData, exploreLabels)
-    
-#     # Getting the difference that each group of points make in the boundary:
-#     exploitDiff = convSample.getDifferenceMeasure(mainClf, clf_exploit)
-#     exploreDiff = convSample.getDifferenceMeasure(mainClf, clf_explore)
-
-#     # Calculating the budgets for each part of the algorithm:
-
-#     # Returning the results:
-#     return exploitBudget, exploreBudget
 

@@ -40,6 +40,7 @@ def plotSpace(space: SampleSpace,
               showGrid = False, 
               newPoints = None,
               explorePoints = None,
+              convergePoints = None,
               saveInfo: SaveInformation = None,
               showPlot = True,
               insigDimensions = [2,3], 
@@ -71,6 +72,7 @@ def plotSpace(space: SampleSpace,
                     saveInfo = saveInfo,
                     showPlot = showPlot,
                     explorePoints = explorePoints,
+                    convergePoints = convergePoints,
                     constraints = constraints)
     elif space.dNum == 3: 
         _plotSpace3D(space = space,
@@ -83,6 +85,7 @@ def plotSpace(space: SampleSpace,
                     showGrid=showGrid,
                     newPoints = newPoints,
                     explorePoints = explorePoints,
+                    convergePoints = convergePoints,
                     saveInfo=saveInfo)
     elif space.dNum == 4:
         _plotSpace4D(space = space, 
@@ -279,7 +282,8 @@ def _plotSpace3D(space: SampleSpace,
                 showGrid = False,
                 saveInfo:SaveInformation = None,
                 newPoints = None,
-                explorePoints = None):
+                explorePoints = None,
+                convergePoints = None):
     
     clf = classifier if classifier is not None else space.clf
     labels = space.eval_labels
@@ -352,6 +356,13 @@ def _plotSpace3D(space: SampleSpace,
         explorePoints = explorePoints.reshape(1,len(explorePoints)) if len(explorePoints.shape) <2 else explorePoints
         legendLabel = 'Exploratory point' + ('s' if explorePoints.shape[0]>1 else '')
         ax.scatter(explorePoints[:,0], explorePoints[:,1], explorePoints[:,2], marker = 's',s = 20, label = legendLabel, color = 'green' )
+    if convergePoints is not None:
+        convergePoints = np.array(convergePoints)
+        convergePoints = convergePoints.reshape(1,len(convergePoints)) if len(convergePoints.shape) <2 else convergePoints
+        legendLabel = 'Convergence point' + ('s' if convergePoints.shape[0] > 1 else '')
+        ax.scatter(convergePoints[:,0], convergePoints[:,1], convergePoints[:,2], marker = 's',s = 20, label = legendLabel, color = 'peru')
+
+    
     ax.grid(showGrid)
     if saveInfo is not None:
         saveFigures(saveInfo=saveInfo, fig=fig)
@@ -370,6 +381,7 @@ def _plotSpace2D(space: SampleSpace,
                 newPoints = None,
                 showGrid = False,
                 explorePoints = None,
+                convergePoints = None,
                 saveInfo:SaveInformation = None,
                 showPlot = True,
                 constraints = []):
@@ -431,6 +443,12 @@ def _plotSpace2D(space: SampleSpace,
         explorePoints = explorePoints.reshape(1,len(explorePoints)) if len(explorePoints.shape) <2 else explorePoints
         legendLabel = 'Exploratory point' + ('s' if explorePoints.shape[0]>1 else '')
         ax.scatter(explorePoints[:,0], explorePoints[:,1], marker = 's',s = 20, label = legendLabel, color = 'g')
+    if convergePoints is not None:
+        convergePoints = np.array(convergePoints)
+        convergePoints = convergePoints.reshape(1,len(convergePoints)) if len(convergePoints.shape) <2 else convergePoints
+        legendLabel = 'Convergence point' + ('s' if convergePoints.shape[0]>1 else '')
+        ax.scatter(convergePoints[:,0], convergePoints[:,1], marker = 's',s = 20, label = legendLabel, color = 'g')
+        
     # Drawing the constraints:
     if len(constraints)>0:
         results = np.array([np.apply_along_axis(cons, axis=1,arr=xy) for cons in constraints]).T
@@ -440,17 +458,6 @@ def _plotSpace2D(space: SampleSpace,
         cs3 = ax.contour(XX,YY,takingGrid, colors='orange',levels=[0.5],alpha =1, linestyles=['dashdot'])
         cs3.collections[0].set_label('Constraint(s)')
         
-    #     # Scatter plotting the violating, feasible and infeasible regions:
-    #     labels = classifier.predict(xy)
-    #     reducedLabels = labels[reducedIdx]
-    #     reducedTaking = taking[reducedIdx]
-    #     redXy = xy[reducedIdx,:]
-    #     feasXy = redXy[reducedLabels==0,:]
-    #     infeasXy = redXy[reducedLabels==1,:]
-    #     noResXy = redXy[reducedTaking==0,:]
-    #     ax.scatter(feasXy[:,0], feasXy[:,1], s=0.2,color='lime',label='Feeasible Region')
-    #     ax.scatter(infeasXy[:,0], infeasXy[:,1], s=0.2,color='gold',label='Infeasible Region')
-    #     ax.scatter(noResXy[:,0], noResXy[:,1], s=0.2,color='orangered',label='Violationg constraints')
 
     ax.grid(showGrid)
     if legend:
