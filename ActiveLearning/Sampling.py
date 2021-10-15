@@ -172,7 +172,16 @@ class ConvergenceSample():
             raise ValueError('n cannot be less than 1.')
         startInd = max(0, len(measure)-n)
         return sum(measure[startInd:])/n
-        pass 
+    
+    @classmethod
+    def movingAverageVec(cls, measure, n=1):
+        movingAv = [] 
+        for ind in range(len(measure)):
+            endInd = ind + 1 
+            startInd = max(0, endInd - n)
+            movingAv.append(sum(measure[startInd: endInd])/n)
+        return movingAv
+        
     
     def getDifferenceMeasure(self, 
                         clf1,
