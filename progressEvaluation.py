@@ -149,8 +149,9 @@ for sampleNum in range(initialSampleSize, budgetSize + 1, batchSize):
                 benchmark=None)
     prevClassifier = clf
 
+    figSize = (7,3)
     # Included in the loop so that we can get the update at any iteration. 
-    plt.figure(figsize = (10,5))
+    plt.figure(figsize = figSize)
     plt.plot(iterationNumber[1:], changeMeasureVector[1:])
     plt.grid(True)
     plt.xlabel('Iteration number')
@@ -158,7 +159,7 @@ for sampleNum in range(initialSampleSize, budgetSize + 1, batchSize):
     plt.savefig(f'{metricFigFolder}/changeMeasure_vs_Iteration.png')
     plt.close()
 
-    plt.figure(figsize = (10,5))
+    plt.figure(figsize = figSize)
     plt.plot(samplesUsed[1:], changeMeasureVector[1:])
     plt.grid(True)
     plt.xlabel('Number of samples used')
@@ -166,7 +167,7 @@ for sampleNum in range(initialSampleSize, budgetSize + 1, batchSize):
     plt.savefig(f'{metricFigFolder}/changeMeasure_samplesUsed.png')
     plt.close()
 
-    plt.figure(figsize = (10,5))
+    plt.figure(figsize = figSize)
     plt.plot(iterationNumber, f1)
     plt.grid(True)
     plt.xlabel('Iteration number')
@@ -174,7 +175,7 @@ for sampleNum in range(initialSampleSize, budgetSize + 1, batchSize):
     plt.savefig(f'{metricFigFolder}/f1_score_vs_Iteration.png')
     plt.close()
 
-    plt.figure(figsize = (10,5))
+    plt.figure(figsize = figSize)
     plt.plot(iterationNumber, precision)
     plt.grid(True)
     plt.xlabel('Iteration number')
@@ -182,7 +183,7 @@ for sampleNum in range(initialSampleSize, budgetSize + 1, batchSize):
     plt.savefig(f'{metricFigFolder}/precision_vs_Iteration.png')
     plt.close()
 
-    plt.figure(figsize = (10,5))
+    plt.figure(figsize = figSize)
     plt.plot(iterationNumber, recall)
     plt.grid(True)
     plt.xlabel('Iteration number')
