@@ -191,7 +191,6 @@ class GA_Convergence_Sampler(GA_Optimizer):
         for idx, sv in enumerate(SVs):
             svLabel = labels[idx]
             svDistance = self._minDistanceFromOppositeClass(sv, svLabel)
-            # print(f'Found point for SV # {idx+1}: {foundPoint}, SV itself: {sv}')
             bestPoints[svDistance] = (sv,idx)      
         bestDistance = max(bestPoints.keys())
         # Radius is an instance variable that will be used in the objective function.

@@ -419,3 +419,5 @@ class StandardClassifier(SVC,Benchmark):
     def _function(self, datum):
         return self.decision_function(datum.reshape(1,self.inputDim))
 
+def testImport():
+    print('The sampling script is imported.')
