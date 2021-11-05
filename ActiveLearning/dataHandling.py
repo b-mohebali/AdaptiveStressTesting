@@ -334,7 +334,7 @@ class MetricsSaver:
         self.changeMeasure = changeMeasure
         self.precision = precision 
         self.recall = recall 
-        self.smpleCount = sampleCount
+        self.sampleCount = sampleCount
         self.changeAvg = changeAvg
         
 

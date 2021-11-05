@@ -49,7 +49,7 @@ initialSampleSize = simConfig.initialSampleSize
 mySpace = SampleSpace(variableList=variables)
 dimNames = mySpace.getAllDimensionNames()
 initialReport = IterationReport(dimNames)
-# Defining the benchmark:
+### Defining the benchmark:
 # myBench = DistanceFromCenter(threshold=1.5, inputDim=mySpace.dNum, center = [4] * mySpace.dNum)
 # myBench = Branin(threshold=8)
 # myBench = Hosaki(threshold = -1)
@@ -71,6 +71,7 @@ initialLabels = myBench.getLabelVec(initialSamples)
 # Initial iteration of the classifier trained on the initial samples and their labels:
 clf = StandardClassifier(kernel = 'rbf', C = 1000)
 clf.fit(initialSamples, initialLabels)
+
 # Adding the samples and their labels to the space: 
 mySpace.addSamples(initialSamples, initialLabels)
 
@@ -103,6 +104,7 @@ plt.close()
 # Finishing time
 initialReport.stopTime = datetime.now()
 initialReport.setStop()
+
 # Defining the exploiter: 
 exploiter = GA_Exploiter(space = mySpace, 
                     epsilon = 0.05,
@@ -193,18 +195,8 @@ while currentBudget > 0 and changeAvg[-1] > 0.4:
     print('Current budget: ', currentBudget, ' samples')
     # Finding new points using the exploiter object:
     # NOTE: The classifier has to be passed everytime to the exploiter for update.
-    
-    # # Dynamin resource allocation:
-    # # NOTE: The overall budget for each group is capped by the current remaining budget. The priority is with exploiration. Exploration is done only if budget is remained after exploitation.
-    # exploitationBudget = min(currentBudget, exploitationBudget)
-    # explorationBudget = min(explorationBudget, currentBudget - exploitationBudget)
-    # print('Dynamic Resource Allocation is active.')
-    # print('Exploitation budget:', exploitationBudget,' samples')
-    # print('Exploration budget:', explorationBudget,' samples')
-    
     exploiterPoints = exploiter.findNextPoints(pointNum=1)
-    # explorerPoints = explorer.findNextPoints(pointNum=explorationBudget)
-    convergePoints = converger.findNextPoints(pointNum=1)
+    
     # Updating the remaining budget:    
     currentBudget -= min(currentBudget, batchSize) 
     # Visualization and saving the results:
@@ -218,30 +210,17 @@ while currentBudget > 0 and changeAvg[-1] > 0.4:
             saveInfo=sInfo,
             meshRes = meshRes,
             newPoints=exploiterPoints,
-            convergePoints=convergePoints,
+            convergePoints=FileNotFoundError,
             benchmark = myBench,
             prev_classifier= prevClf,
             constraints = consVector)
         plt.close()
     # Evaluating the newly found samples: 
     newLabels = myBench.getLabelVec(exploiterPoints)
-    convergeLabels = myBench.getLabelVec(convergePoints)
 
-    # Resource Allocation for the next iteration: 
-    # This function saves the resource allocation report itself. 
-    # calcExploitBudget, calcExploreBudget = resourceAllocator.allocateResources(
-    #     mainSamples = mySpace.samples,
-    #     mainLabels = mySpace.eval_labels,
-    #     exploitSamples = exploiterPoints,
-    #     exploitLabels = newLabels,
-    #     exploreSamples= explorerPoints,
-    #     exploreLabels=exploreLabels,
-    #     saveReport = True
-    # )
 
     # Adding the newly evaluated samples to the dataset:
     mySpace.addSamples(exploiterPoints, newLabels)
-    mySpace.addSamples(convergePoints, convergeLabels)
     # Updating the previous classifier before training the new one:
     prevClf = deepcopy(clf)
     # Training the next iteration of the classifier:
@@ -296,9 +275,7 @@ while currentBudget > 0 and changeAvg[-1] > 0.4:
     iterReport.budgetRemaining = currentBudget
     iterReport.iterationNumber = iterationNum
     iterReport.setExploitatives(exploiterPoints)
-    iterReport.setConvergers(convergePoints)
     iterReport.setExploitResults(newLabels)
-    iterReport.setConvergerResults(convergeLabels)
     iterReport.setChangeMeasure(newChangeMeasure)
     iterationReports.append(iterReport)
     saveIterationReport(iterationReports, iterationReportFile)

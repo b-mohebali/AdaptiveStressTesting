@@ -398,8 +398,8 @@ class StandardClassifier(SVC,Benchmark):
         normalX = self.scaler.transform(X)
         return super().predict(normalX)
     
-    def decision_function(self, X):
-        return super().decision_function(self.scaler.transform(X))
+    def decision_function(self, X, standardize= True):
+        return super().decision_function(self.scaler.transform(X) if standardize else X)
 
     def getSupportVectors(self, standard = True):
         """

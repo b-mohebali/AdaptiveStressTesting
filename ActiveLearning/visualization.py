@@ -16,10 +16,11 @@ import matplotlib.patches as mpatches
 import pickle
 
 class SaveInformation():
-    def __init__(self, fileName, savePDF = False, savePNG = False):
+    def __init__(self, fileName, savePDF = False, savePNG = False, savePickle = False):
         self.fileName = fileName
         self.savePDF = savePDF
         self.savePNG = savePNG
+        self.savePickle = savePickle
     
     def __str__(self):
         descriptor = f'''File Name: {self.fileName}
@@ -47,7 +48,8 @@ def plotSpace(space: SampleSpace,
               gridRes = (5,5),
               prev_classifier =None,
               comparison_classifier = None,
-              constraints = []) -> None:
+              constraints = [],
+              extraLevels = []) -> None:
     """This function plots the samples in a Space object.
     - Options: 3D and 2D spaces. (4D coming up)
     - TO-DO: Higher dimensions implementation by generating a set of plots  in which the 4th dimension is fixed at a point. 
@@ -72,8 +74,10 @@ def plotSpace(space: SampleSpace,
                     saveInfo = saveInfo,
                     showPlot = showPlot,
                     explorePoints = explorePoints,
+                    prev_classifier = prev_classifier, 
                     convergePoints = convergePoints,
-                    constraints = constraints)
+                    constraints = constraints,
+                    extraLevels = extraLevels)
     elif space.dNum == 3: 
         _plotSpace3D(space = space,
                     showPlot= showPlot,
@@ -294,12 +298,23 @@ def _plotSpace3D(space: SampleSpace,
     fig = plt.figure(figsize = figsize)
     ax = plt.gca(projection = '3d')
     dimensionNames = space.getAllDimensionDescriptions()
+    alpha = 0.4 
 
     # Scattering the sample points colored based on their labels: 
     if len(labels) > 0: 
         points = space.samples[:len(labels),:]
         ax.scatter(points[labels==0,0], points[labels==0,1], points[labels==0,2], s=10, c = 'r', label= '- Data points')
         ax.scatter(points[labels==1,0], points[labels==1,1], points[labels==1,2], s=10, c = 'b', label= '+ Data points')
+        if classifier:
+            supportVectors = classifier.getSupportVectors(standard=True)
+            # svLabels = classifier.predict(supportVectors)
+            # ax.scatter(supportVectors[svLabels==0,0], supportVectors[svLabels==0,1], supportVectors[svLabels==0,2], s=40, 
+            #             c='r', label='- Support vectors')
+            # ax.scatter(supportVectors[svLabels==1,0], supportVectors[svLabels==1,1], supportVectors[svLabels==1,2], s=40, 
+            #             c='b', label='+ Support vectors')
+            ax.scatter(supportVectors[:,0], supportVectors[:,1], supportVectors[:,2], s=40, 
+                        linewidth = 1, color = 'black', label='Support vectors')
+        
     else:
         points = space.samples
         ax.scatter(points[:,0], points[:,1], s = 10, c = 'black', label = 'samples')
@@ -330,7 +345,7 @@ def _plotSpace3D(space: SampleSpace,
         faces = out[1]
         verts = verts * [r1,r2,r3] / meshRes
         verts = verts + [x1range[0], x2range[0],x3range[0]]  
-        mesh = Poly3DCollection(verts[faces], facecolor = 'green', edgecolor = 'blue', alpha = 0.5)
+        mesh = Poly3DCollection(verts[faces], facecolor = 'blue', edgecolor = 'dimgrey', alpha = alpha)
         ax.add_collection3d(mesh)
 
     # Evaluating the decision function and adding it to the plot: 
@@ -340,7 +355,7 @@ def _plotSpace3D(space: SampleSpace,
     faces = out[1]
     verts = verts * [r1,r2,r3] / meshRes
     verts = verts + [x1range[0], x2range[0],x3range[0]]  
-    mesh = Poly3DCollection(verts[faces], facecolor = 'orange', edgecolor = 'gray', alpha = 0.5)
+    mesh = Poly3DCollection(verts[faces], facecolor = 'orange', edgecolor = 'gray', alpha = alpha)
     ax.add_collection3d(mesh)
     if legend:
         plt.legend(loc = 'upper left',bbox_to_anchor=(1.05, 1.0))
@@ -378,13 +393,15 @@ def _plotSpace2D(space: SampleSpace,
                 meshRes=100, 
                 benchmark = None,
                 legend=True,
+                prev_classifier = None, 
                 newPoints = None,
                 showGrid = False,
                 explorePoints = None,
                 convergePoints = None,
                 saveInfo:SaveInformation = None,
                 showPlot = True,
-                constraints = []):
+                constraints = [],
+                extraLevels = []):
     labels = space.eval_labels
     
     fig,ax = plt.subplots(figsize = figsize)  
@@ -421,17 +438,40 @@ def _plotSpace2D(space: SampleSpace,
     """ Plotting the contours of the decision function indicating the
         decision boundary and the margin. 
     """
+    levels = [-1,0,1]
+    colors = ['k']*3
+    styles = ['dashed','solid','dotted']
+    if extraLevels:
+        levels += extraLevels 
+        indices = np.argsort(levels)
+        colors += ['navy'] * len(extraLevels)
+        styles += ['dashdot'] * len(extraLevels)
+        # Fixing the indices to match the levels: 
+        csLabels2 = [f'DF = {levels[ind]}' for ind in indices] 
+        colors = [colors[ind] for ind in indices]
+        levels = [levels[ind] for ind in indices]
+        styles = [styles[ind] for ind in indices]
+    print(levels, colors, styles)
     if classifier is not None:
         # Inverse transforming the support vectors of the classifier since the SVs are a subset of the transformed data points. 
-        suppoerVectots = classifier.getSupportVectors(standard=True)
-        ax.scatter(suppoerVectots[:,0], suppoerVectots[:,1], s=80, 
+        supportVectors = classifier.getSupportVectors(standard=True)
+        ax.scatter(supportVectors[:,0], supportVectors[:,1], s=80, 
                     linewidth = 1, facecolors = 'none', edgecolors = 'orange', label='Support vectors')
         decisionFunction = classifier.decision_function(xy).reshape(XX.shape)
-        cs2 = ax.contour(XX, YY, decisionFunction, colors='k', levels=[-1,0,1], alpha=1,linestyles=['dashed','solid','dotted'])
-        csLabels2 = ['DF=-1','DF=0 (hypothesis)','DF=+1']
+        cs2 = ax.contour(XX, YY, decisionFunction, colors=colors, levels=levels, alpha=1,linestyles=styles)
+        if not extraLevels:
+            csLabels2 = ['DF=-1','DF=0 (hypothesis)','DF=+1']
         for i in range(len(csLabels2)):
             cs2.collections[i].set_label(csLabels2[i])                 
-    
+
+    if prev_classifier is not None:
+        prev_DF = prev_classifier.decision_function(xy).reshape(XX.shape)
+        prev_thresh = 0.5 if prev_classifier.probability else 0
+        cs = ax.contour(XX,YY,prev_DF, colors='g', levels = [prev_thresh], 
+            alpha = 1, linestyles = ['solid'])
+        cslabels = ['Previous iteration']
+        for i in range(len(cslabels)):
+            cs.collections[i].set_label(cslabels[i])    
     # If the new point(s) is (are) passed to the function it will be shown differently than the evaluated points:
     if newPoints is not None:
         newPoints = np.array(newPoints)
@@ -470,7 +510,7 @@ def _plotSpace2D(space: SampleSpace,
     return 
 
 
-def saveFigures(saveInfo, fig = None):
+def saveFigures(saveInfo:SaveInformation, fig = None):
     if saveInfo.savePDF:
         plt.savefig(fname = f'{saveInfo.fileName}.pdf',
                     facecolor='w', edgecolor = 'w', transparent = False, bbox_inches='tight')
@@ -478,7 +518,7 @@ def saveFigures(saveInfo, fig = None):
         plt.savefig(fname = f'{saveInfo.fileName}.png',
                     facecolor='w', edgecolor = 'w', transparent = False, bbox_inches='tight')
     
-    if fig is not None:
+    if fig is not None and saveInfo.savePickle:
         with open(f'{saveInfo.fileName}.pickle', 'wb') as pickleOut:
             pickle.dump(fig, pickleOut)
     

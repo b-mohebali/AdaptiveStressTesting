@@ -2,7 +2,7 @@
 name: x1
 type: timeIndep
 initialState: 1
-lowerLimit: 0
+lowerLimit: -10
 upperLimit: 10
 description: "x1"
 
@@ -10,8 +10,23 @@ description: "x1"
 name: x2
 type: timeIndep
 initialState: 1
-lowerLimit: 0
+lowerLimit: -10
 upperLimit: 10
 description: "x2"
 
+---
+name: x3
+type: timeIndep
+initialState: 1
+lowerLimit: -10
+upperLimit: 10
+description: "x3"
+
+---
+name: x4
+type: timeIndep
+initialState: 1
+lowerLimit: -10
+upperLimit: 10
+description: "x4"
 ...

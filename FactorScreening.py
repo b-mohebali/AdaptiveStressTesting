@@ -249,6 +249,7 @@ def main(run_exp:bool = True,
 
     saveSampleToTxtFile(samples = exper, fileName = experFile)
 
+    # Running the real time experiments if needed: 
     if run_exp:
         runExperiment(modelLoc= modelLoc, 
                         variables = timeIndepVars, 

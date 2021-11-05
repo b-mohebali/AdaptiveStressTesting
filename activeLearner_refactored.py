@@ -4,7 +4,7 @@ from yamlParseObjects.variablesUtil import *
 import logging
 from shutil import copyfile
 import subprocess
-from ActiveLearning.benchmarks import ArbitraryDimension, BumpyFunc, CorridorBenchmark, DistanceFromCenter, Branin, Benchmark, FourD, Hosaki, SineFunc, ThreeD1
+from ActiveLearning.benchmarks import ArbitraryDimension, BumpyFunc, Corridor, DistanceFromCenter, Branin, Benchmark, FourD, Hosaki, SineFunc, ThreeD1
 from ActiveLearning.Sampling import *
 import platform
 import shutil
@@ -13,11 +13,13 @@ from enum import Enum
 from sklearn import svm
 from ActiveLearning.optimizationHelper import GA_Exploiter, GA_Voronoi_Explorer, ResourceAllocator
 from copy import copy, deepcopy
+import pickle 
 
 from ActiveLearning.visualization import *
 import time 
 from datetime import datetime 
 import numpy as np 
+import gc 
 
 def constraint1(X):
     x1 = X[0]
@@ -41,14 +43,14 @@ variables = getAllVariableConfigs(yamlFileAddress=variableFiles, scalingScheme=S
 
 # Loading the parameters of the process:
 budget = simConfig.sampleBudget
-batchSize = simConfig.batchSize
 initialSampleSize = simConfig.initialSampleSize
 
+plotFigures = True 
+
 # Individual budgets. Will be replaced by dynamic resource allocator:
-# exploitationBudget = min(3,batchSize)
-# explorationBudget = batchSize - exploitationBudget
-exploitationBudget = 5 
-explorationBudget = 0
+exploitationBudget = 3
+explorationBudget = 1
+batchSize = exploitationBudget + explorationBudget
 print('Exploitation budget: ', exploitationBudget)
 print('Exploration budget: ', explorationBudget)
 
@@ -60,12 +62,12 @@ initialReport = IterationReport(dimNames)
 # myBench = DistanceFromCenter(threshold=1.5, inputDim=mySpace.dNum, center = [4] * mySpace.dNum)
 # myBench = Branin(threshold=8)
 # myBench = Hosaki(threshold = -1)
-# myBench = CorridorBenchmark(threshold = 0)
+# myBench = Corridor(threshold = 0)
 # myBench = BumpyFunc(threshold = 0)
 # myBench = ThreeD1(threshold = 0)
 # myBench = FourD(threshold = 0)
-# myBench = ArbitraryDimension(inputDim = 5, threshold = 0)
-myBench = SineFunc(threshold = 0)
+myBench = ArbitraryDimension(inputDim = 4, threshold = 0)
+# myBench = SineFunc(threshold = 0)
 # Generating the initial sample. This step is pure exploration MC sampling:
 
 # Starting time:
@@ -91,11 +93,12 @@ print('Output folder for figures: ', outputFolder)
 copyfile(simConfigFile, f'{outputFolder}/{os.path.basename(simConfigFile)}')
 iterationReportFile = f'{outputFolder}/iterationReport.yaml'
 figFolder = setFigureFolder(outputFolder)
-sInfo = SaveInformation(fileName = f'{figFolder}/InitialPlot', savePDF=True, savePNG=True)
+sInfo = SaveInformation(fileName = f'{figFolder}/InitialPlot', savePDF=True, savePNG=True, savePickle=False)
 
 # Visualization of the first iteration of the space with the initial sample:
-meshRes = 300
-figSize = (12,10)
+meshRes = 100
+figSize = (20,18)
+gridRes = (6,6)
 
 plotSpace(mySpace, 
         classifier=clf, 
@@ -103,6 +106,7 @@ plotSpace(mySpace,
         meshRes=meshRes,
         legend = True, 
         showPlot=False,
+        gridRes = gridRes,
         saveInfo = sInfo, 
         benchmark = myBench,
         constraints = consVector)
@@ -171,12 +175,6 @@ saveIterationReport(iterationReports, iterationReportFile)
 
 prevClf = clf
 
-# Setting up the object that does the calculations for the resource allocation to exploration and exploitation:
-resourceAllocator = ResourceAllocator(convSample = convergenceSample,
-                        simConfig = simConfig,
-                        outputLocation = outputFolder,
-                        initSample = initialSampleSize)
-
 # Setting up the object that saves the metrics outputs at each iteration: 
 metricsSaver = MetricsSaver()
 metricsSaver.saveMetrics(outputFolder, acc,changeMeasure, precision, recall)
@@ -197,28 +195,26 @@ while currentBudget > 0 and changeAvg[-1] > 0.4:
     # NOTE: The overall budget for each group is capped by the current remaining budget. The priority is with exploiration. Exploration is done only if budget is remained after exploitation.
     exploitationBudget = min(currentBudget, exploitationBudget)
     explorationBudget = min(explorationBudget, currentBudget - exploitationBudget)
-    print('Dynamic Resource Allocation is active.')
-    print('Exploitation budget:', exploitationBudget,' samples')
-    print('Exploration budget:', explorationBudget,' samples')
     
     exploiterPoints = exploiter.findNextPoints(pointNum=exploitationBudget)
     explorerPoints = explorer.findNextPoints(pointNum=explorationBudget)
     # Updating the remaining budget:    
-    currentBudget -= min(currentBudget, batchSize) 
+    currentBudget -= min(currentBudget, len(exploiterPoints) + len(explorerPoints)) 
     # Visualization and saving the results:
     sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_NotLabeled'
-    if iterationNum % 1 ==0 and len(dimNames) <4:
+    if iterationNum % 1 ==0 and len(dimNames) <4 and plotFigures:
         plotSpace(mySpace, 
             figsize = figSize,
             legend = True, 
             showPlot=False, 
             classifier = clf,
             saveInfo=sInfo,
-            meshRes = meshRes,
+            meshRes = meshRes,        
+            gridRes = gridRes,
             newPoints=exploiterPoints,
-            explorePoints=explorerPoints if explorationBudget>0 else None,
+            explorePoints=explorerPoints if explorationBudget > 0 else None,
             benchmark = myBench,
-            prev_classifier= prevClf,
+            # prev_classifier= prevClf,
             constraints = consVector)
         plt.close()
     # Evaluating the newly found samples: 
@@ -227,16 +223,7 @@ while currentBudget > 0 and changeAvg[-1] > 0.4:
 
     # Resource Allocation for the next iteration: 
     # This function saves the resource allocation report itself. 
-    calcExploitBudget, calcExploreBudget = resourceAllocator.allocateResources(
-        mainSamples = mySpace.samples,
-        mainLabels = mySpace.eval_labels,
-        exploitSamples = exploiterPoints,
-        exploitLabels = newLabels,
-        exploreSamples= explorerPoints,
-        exploreLabels=exploreLabels,
-        saveReport = True
-    )
-
+    
     # Setting the budget for the next iteration:
     exploitBudgets.append(exploitationBudget)
     exploreBudgets.append(explorationBudget)
@@ -246,6 +233,8 @@ while currentBudget > 0 and changeAvg[-1] > 0.4:
     mySpace.addSamples(explorerPoints, exploreLabels)
     # Updating the previous classifier before training the new one:
     prevClf = deepcopy(clf)
+    # Deleting the classifier object after it is copied as the previous classifier:
+    del clf 
     # Training the next iteration of the classifier:
     clf = StandardClassifier(kernel = 'rbf', C=1000)
     clf.fit(mySpace.samples, mySpace.eval_labels)
@@ -280,7 +269,7 @@ while currentBudget > 0 and changeAvg[-1] > 0.4:
     sampleNumbers.append(mySpace.sampleNum)
     # Visualization of the results after the new samples are evaluated:
     sInfo.fileName = f'{figFolder}/bdgt_{currentBudget}_Labeled'
-    if iterationNum % 1 == 0:
+    if iterationNum % 1 == 0 and plotFigures:
         plotSpace(space = mySpace,
             figsize = figSize,
             legend = True,
@@ -288,6 +277,7 @@ while currentBudget > 0 and changeAvg[-1] > 0.4:
             benchmark = myBench,
             meshRes = meshRes,
             newPoints=None,
+            gridRes = gridRes,
             saveInfo=sInfo,
             showPlot=False,
             prev_classifier=prevClf,
@@ -305,16 +295,21 @@ while currentBudget > 0 and changeAvg[-1] > 0.4:
     iterationReports.append(iterReport)
     saveIterationReport(iterationReports, iterationReportFile)
 
-import pickle 
-import repositories as repo 
-pickleLoc = repo.picklesLoc
-pickleName = f'{outputFolder}/testClf.pickle'
-with open(pickleName, 'wb') as pickleOut:
-    pickle.dump(clf, pickleOut) 
+    pickleName = f'{outputFolder}/results_outcome_{iterationNum}.pickle'
+    pickleDict = {} 
+    pickleDict['clf'] = clf 
+    pickleDict['space'] = mySpace 
+    pickleDict['benchmark'] = myBench
+    
+    with open(pickleName, 'wb') as pickleOut:
+        pickle.dump(pickleDict, pickleOut)
+    gc.collect()
 
 # Final visualization of the results: 
+sInfo.fileName = f'{figFolder}/Final_Result'
+sInfo.savePickle = True
 plotSpace(space = mySpace, figsize=figSize, legend = True,
-                        saveInfo=None, showPlot=True, classifier = clf, 
+                        saveInfo=sInfo, showPlot=True, classifier = clf, 
                         benchmark = myBench, constraints = consVector)
 
 

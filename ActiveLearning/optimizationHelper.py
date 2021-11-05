@@ -10,6 +10,7 @@ from sklearn import svm
 from enum import Enum
 import yaml
 import heapq
+import gc
 
 class Exploration_Type(Enum):
     VORONOI = 0
@@ -27,7 +28,9 @@ class GA_Optimizer(ABC):
                 progress_bar = True,
                 constraints = []):
         self.space = space
+        self.gaModel = None 
         self.clf = None 
+        self.bounds = None 
         self.convergence_curve = convergence_curve
         self.progress_bar = progress_bar
         self.batchSize = batchSize
@@ -60,32 +63,41 @@ class GA_Optimizer(ABC):
         return initialValue
 
     def getModel(self):
-        algoParam = {'max_num_iteration': 40,
-            'population_size':600,
-            'mutation_probability':0.1,
-            'elit_ratio': 0,
-            'crossover_probability': 0.5,
-            'parents_portion': 0.3,
-            'crossover_type':'uniform',
-            'max_iteration_without_improv':None}
-        gaModel = ga(function = self.constrainedObjFunction, 
+        if self.gaModel is not None:
+            del self.gaModel
+        try:
+            algoParam = {'max_num_iteration': 40,
+                'population_size':1000,
+                'mutation_probability':0.1,
+                'elit_ratio': 0,
+                'crossover_probability': 0.5,
+                'parents_portion': 0.3,
+                'crossover_type':'uniform',
+                'max_iteration_without_improv':None}
+            self.gaModel = ga(function = self.constrainedObjFunction, 
                         dimension = self.space.dNum, 
                         variable_type = 'real', 
-                        variable_boundaries= self.space.getAllDimensionBounds(),
+                        variable_boundaries= self.space.getAllDimensionBounds() if self.bounds is None else self.bounds,
                         convergence_curve=self.convergence_curve,
                         algorithm_parameters=algoParam,
                         progress_bar=self.progress_bar)
-        return gaModel
-
-    def findNextPoints(self,pointNum=None):
+            return True
+        except: 
+            return False 
+    def findNextPoints(self, pointNum=None, tries = 1):
         pointNum = int(pointNum)
         pointNum = self.batchSize if pointNum is None else pointNum
         newPointsFound = []
         self.currentSpaceSamples = self.space.samples
         for _ in range(pointNum):
-            gaModel = self.getModel()
-            gaModel.run()
-            newPoint = gaModel.output_dict['variable']
+            tryNum = 0
+            funcValue = 1e6 
+            while tryNum < tries and funcValue > 5e5: 
+                self.getModel()
+                self.gaModel.run()
+                newPoint = self.gaModel.output_dict['variable']
+                funcValue = self.gaModel.output_dict['function']
+                tryNum += 1 
             newPointsFound.append(newPoint)
             self.addPointToSampleList(newPoint)
         return np.array(newPointsFound)
@@ -101,6 +113,7 @@ class GA_Exploiter(GA_Optimizer):
                 epsilon: float, 
                 clf,
                 batchSize: int = 1, 
+                f=0,
                 convergence_curve = True, 
                 progress_bar = True,
                 constraints = []):
@@ -112,11 +125,12 @@ class GA_Exploiter(GA_Optimizer):
                     constraints = constraints)
         self.epsilon = epsilon                   
         self.clf = clf
+        self.f = f
     
     def objFunction(self, X):
         dist = self.space.nearestPointDistance(X, self.currentSpaceSamples, normalize=True)
         pen = 0
-        df = self.clf.decision_function(X.reshape(1,len(X)))
+        df = self.clf.decision_function(X.reshape(1,len(X))) - self.f 
         if abs(df) > self.epsilon:
             pen = abs(df) *100
         return -1 * dist + pen 
@@ -190,24 +204,27 @@ class GA_Convergence_Sampler(GA_Optimizer):
         labels = self.clf.predict(SVs)
         for idx, sv in enumerate(SVs):
             svLabel = labels[idx]
-            svDistance = self._minDistanceFromOppositeClass(sv, svLabel)
+            svDistance,cp = self._minDistanceFromOppositeClass(sv, svLabel)
             bestPoints[svDistance] = (sv,idx)      
         bestDistance = max(bestPoints.keys())
         # Radius is an instance variable that will be used in the objective function.
         self.R = bestDistance / 2 
         fittingSv, fittingIdx = bestPoints[bestDistance]
         label = labels[fittingIdx]
-        return fittingSv, label
+        return fittingSv, cp, label
 
 
     def _minDistanceFromOppositeClass(self, sv, label):
         oppLabel = label ^ 1 
-        distances = np.linalg.norm(np.divide(self.space.samples-sv,self.ranges), axis = 1)
-        distance = min(distances[self.space._eval_labels==oppLabel])
-        return distance 
+        oppSamples = self.space.samples[self.space._eval_labels==oppLabel,:]
+        distances = np.linalg.norm(np.divide(oppSamples-sv,self.ranges), axis = 1)
+        distInd = np.argmin(distances)
+        closestSample = oppSamples[distInd,:]
+        distance = distances[distInd]
+        return distance, closestSample
     
     def findNextPoints(self, pointNum=1):
-        sv, label = self.getFittingSupportVector()
+        sv, cp, label = self.getFittingSupportVector()
         self.sv = sv 
         self.label = label 
         return super().findNextPoints(pointNum=pointNum)
@@ -222,7 +239,8 @@ class GA_Convergence_Sampler(GA_Optimizer):
         f = df * self.label
         # Scaling the input point only for calculating its distance to the designated SV:
         xScaled = self.clf.scaler.transform(X.reshape(1,len(X)))
-        distance = np.linalg.norm(xScaled - self.sv)
+        svScaled = self.clf.scaler.transform(self.sv.reshape(1,len(self.sv)))
+        distance = np.linalg.norm(xScaled - svScaled)
         # Penalizing the objective function if the distance to the designated SV is more than R or the objective function becomes positive:
         if distance > self.R or f > 0:
             f += 1e6

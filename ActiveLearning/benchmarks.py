@@ -98,7 +98,7 @@ class DistanceFromCenter(Benchmark):
     def _function(self, datum):
         return math.sqrt(sum((datum-self.center)**2))
 
-class CorridorBenchmark(Benchmark):
+class Corridor(Benchmark):
     def __init__(self, threshold=0):
         Benchmark.__init__(self,threshold)
         self.inputDim = 2 
